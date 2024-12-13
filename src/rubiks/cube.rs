@@ -1,11 +1,13 @@
 use super::color::Color;
 
+// Define main data structure for the cube
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct RubiksCube {
     pub faces: [[Color; 9]; 6], // 6 faces, each with 9 stickers
 }
 
 impl RubiksCube {
+    // Create new cube in the solved state
     pub fn new() -> Self {
         RubiksCube {
             faces: [
@@ -19,6 +21,10 @@ impl RubiksCube {
         }
     }
 
+    // Apple scramble to the sube using the standard notation:
+    // R:  move right face clockwise
+    // R': move right face counterclockwise
+    // Same for L: left, U: up, D: down, F: front, B: back
     pub fn apply_scramble(&mut self, scramble: &str) {
         let mut chars = scramble.chars().peekable();
 
@@ -65,6 +71,7 @@ impl RubiksCube {
         }
     }
 
+    // Check if cube is in solved state
     pub fn is_solved(&self) -> bool {
         let solved_cube = RubiksCube::new();
         if solved_cube == *self {
@@ -73,6 +80,8 @@ impl RubiksCube {
         false
     }
 
+    // Apply one of the 12 possible moves to the cube by
+    // changing positions of single stickers
     pub fn u_clockwise(&mut self) {
         let temp = self.faces.clone();
         self.faces[0][0] = temp[0][6];
@@ -362,6 +371,7 @@ impl RubiksCube {
     }
 }
 
+// For visualization
 impl std::fmt::Display for RubiksCube {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         for (i, face) in self.faces.iter().enumerate() {
