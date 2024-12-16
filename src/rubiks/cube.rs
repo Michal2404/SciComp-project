@@ -1,4 +1,6 @@
 use super::color::Color;
+use crate::ui::app::MyApp;
+use eframe::NativeOptions;
 
 // Define main data structure for the cube
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -400,6 +402,16 @@ impl RubiksCube {
         self.faces[3][2] = temp[0][6];
         self.faces[3][5] = temp[0][3];
         self.faces[3][8] = temp[0][0];
+    }
+
+    pub fn visualize(self) {
+        let options = NativeOptions::default();
+        let cube_clone = self.clone();
+        let _ = eframe::run_native(
+            "Rubik's Cube Visualizer",
+            options,
+            Box::new(|_cc| Ok(Box::new(MyApp::new(cube_clone)))),
+        );
     }
 }
 
