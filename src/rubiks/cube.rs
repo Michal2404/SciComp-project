@@ -21,6 +21,38 @@ impl RubiksCube {
         }
     }
 
+    pub fn to_string(&self) -> String {
+        self.faces
+            .iter()
+            .flat_map(|face| face.iter())
+            .map(|color| match color {
+                Color::W => 'W',
+                Color::Y => 'Y',
+                Color::G => 'G',
+                Color::B => 'B',
+                Color::R => 'R',
+                Color::O => 'O',
+            })
+            .collect()
+    }
+
+    pub fn all_moves(&mut self) -> Vec<(&'static str, fn(&mut Self))> {
+        vec![
+            ("U", RubiksCube::u_clockwise),
+            ("U'", RubiksCube::u_counterclockwise),
+            ("D", RubiksCube::d_clockwise),
+            ("D'", RubiksCube::d_counterclockwise),
+            ("F", RubiksCube::f_clockwise),
+            ("F'", RubiksCube::f_counterclockwise),
+            ("B", RubiksCube::b_clockwise),
+            ("B'", RubiksCube::b_counterclockwise),
+            ("L", RubiksCube::l_clockwise),
+            ("L'", RubiksCube::l_counterclockwise),
+            ("R", RubiksCube::r_clockwise),
+            ("R'", RubiksCube::r_counterclockwise),
+        ]
+    }
+
     // Apple scramble to the sube using the standard notation:
     // R:  move right face clockwise
     // R': move right face counterclockwise
