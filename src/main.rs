@@ -1,6 +1,9 @@
 use rubiks::rubiks::cube::RubiksCube;
 use std::time::Instant;
 
+mod cfop;
+use cfop::cross::solve_cross; // Import the function
+
 fn main() {
     // Create new instance of the Cube
     let mut cube = RubiksCube::new();
@@ -9,15 +12,20 @@ fn main() {
     // Scramble the Cube
     cube.apply_scramble(scramble);
 
-    // Solve the cube using BFS
-    let start_time = Instant::now();
-    if let Some(solution) = cube.solve() {
-        println!("Solution found in {} moves: {:?}", solution.len(), solution);
-    } else {
-        println!("No solution found.");
-    }
-    let elapsed_time = start_time.elapsed();
-    println!("Elapsed time: {:?}", elapsed_time);
+    println!("{:?}", cube);
+
+    // // Solve the cube using BFS
+    // let start_time = Instant::now();
+    // if let Some(solution) = cube.solve() {
+    //     println!("Solution found in {} moves: {:?}", solution.len(), solution);
+    // } else {
+    //     println!("No solution found.");
+    // }
+    // let elapsed_time = start_time.elapsed();
+    // println!("Elapsed time: {:?}", elapsed_time);
+
+    // now we solve the cube using CFOP
+    cube.solve_cross();
 
     // Visualize scrambled cube
     cube.clone().visualize();
