@@ -1,24 +1,67 @@
-use rubiks::rubiks::cube::RubiksCube;
-use std::time::Instant;
-
+use eframe::egui::Options;
+use two_phase::gui::app::CubeVisualizer;
+use two_phase::rubiks::cubie::{self, CO_R, EP_R};
+use two_phase::rubiks::cubie::{CP_R, EO_R};
+use two_phase::rubiks::defs;
+use two_phase::rubiks::enums::{Corner as Co, Edge as Ed};
+use two_phase::rubiks::face;
 fn main() {
-    // Create new instance of the Cube
-    let mut cube = RubiksCube::new();
-    // Define the scramble in the standard notation
-    let scramble = "L R U D";
-    // Scramble the Cube
-    cube.apply_scramble(scramble);
+    // Create scrambled Cube
+    let scramble = "R U R' U'";
+    let mut scrambled = cubie::CubieCube::from_scramble(&scramble);
+    println!("Scrambled cube in Cubie notation:");
+    println!("{:?}\n", scrambled);
 
-    // Solve the cube using BFS
-    let start_time = Instant::now();
-    if let Some(solution) = cube.solve() {
-        println!("Solution found in {} moves: {:?}", solution.len(), solution);
-    } else {
-        println!("No solution found.");
-    }
-    let elapsed_time = start_time.elapsed();
-    println!("Elapsed time: {:?}", elapsed_time);
+    // Make FaceCube from CubieCube
+    let face_scrambled = scrambled.to_facelet_cube().to_2dstring();
+    println!("Scrambled cube in Facelet notation:");
+    println!("{}\n", face_scrambled);
 
-    // Visualize scrambled cube
-    cube.clone().visualize();
+    // Inverse the Cube
+    let mut inverse = cubie::CubieCube::new(None, None, None, None);
+    scrambled.inv_cubie_cube(&mut inverse);
+    println!("Inverse of scrambled cube in Facelet notation:");
+    println!("{}\n", inverse.to_facelet_cube().to_2dstring());
+
+    // Corner parity of scrambled cube
+    let corner_parity = scrambled.corner_parity();
+    println!("Corner parity of scramlbed cube:");
+    println!("{}\n", corner_parity);
+
+    // Edge parity of scrambled cube
+    let edge_parity = scrambled.edge_parity();
+    println!("Edge parity of scramlbed cube:");
+    println!("{}\n", edge_parity);
+
+    // Corner orientation coordinate of the scrambled cube
+    let corner_orientation_coord = scrambled.get_twist();
+    println!("Corner orientation coordinate of scrambled cube (0<=twist<2187):");
+    println!("{}\n", corner_orientation_coord);
+
+    // Edge orientation coordinate of the scrambled cube
+    let edge_orientation_coord = scrambled.get_flip();
+    println!("Edge orientation coordinate of scrambled cube (0<=flip<2047):");
+    println!("{}\n", edge_orientation_coord);
+
+    // UD-slice edge coordinates of the scrambled cube
+    let ud_slice_coord = scrambled.get_slice();
+    println!("UD-slice coordinate of scrambeld cube (0<=slice<495)");
+    println!("{}\n", ud_slice_coord);
+
+    // Set corner twist
+    //let mut twist: u16 = 10;
+    //scrambled.set_twist(twist);
+
+    //let mut parity_cube = cubie::CubieCube::new(None, None, None, None);
+    //let mut twist: u16 = 27;
+    //parity_cube.set_twist(twist);
+
+    // Visualize the scramble
+    let app = CubeVisualizer::new(scrambled.to_facelet_cube());
+    let options = eframe::NativeOptions::default();
+    let _ = eframe::run_native(
+        "Cube Visualizer",
+        options,
+        Box::new(|_cc| Ok(Box::new(app))),
+    );
 }

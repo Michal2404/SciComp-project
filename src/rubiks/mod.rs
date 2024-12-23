@@ -1,3 +1,5 @@
-pub mod color;
-pub mod cube;
-pub mod solver;
+pub mod cubie;
+pub mod defs;
+pub mod enums;
+pub mod face;
+pub mod misc;

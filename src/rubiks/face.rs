@@ -1,0 +1,167 @@
+use super::cubie::CubieCube;
+use super::defs::{CORNER_COLOR, CORNER_FACELET, EDGE_COLOR, EDGE_FACELET, N_SYM};
+use super::enums::{Color, Corner as Co, Edge as Ed, Facelet};
+use crate::rubiks::cubie::FromUsize;
+
+#[derive(Debug)]
+pub struct FaceCube {
+    pub f: [Color; 54],
+}
+
+impl FaceCube {
+    pub fn new() -> Self {
+        let mut f = [Color::U; 54];
+        for i in 9..18 {
+            f[i] = Color::R;
+        }
+        for i in 18..27 {
+            f[i] = Color::F;
+        }
+        for i in 27..36 {
+            f[i] = Color::D;
+        }
+        for i in 36..45 {
+            f[i] = Color::L;
+        }
+        for i in 45..54 {
+            f[i] = Color::B;
+        }
+        FaceCube { f }
+    }
+
+    pub fn from_string(&mut self, s: &str) -> Result<(), String> {
+        if s.len() != 54 {
+            return Err(format!(
+                "Error: Cube definition string contains {} facelets instead of 54.",
+                s.len()
+            ));
+        }
+
+        let mut cnt = [0; 6];
+        for (i, c) in s.chars().enumerate() {
+            self.f[i] = match c {
+                'U' => {
+                    cnt[Color::U as usize] += 1;
+                    Color::U
+                }
+                'R' => {
+                    cnt[Color::R as usize] += 1;
+                    Color::R
+                }
+                'F' => {
+                    cnt[Color::F as usize] += 1;
+                    Color::F
+                }
+                'D' => {
+                    cnt[Color::D as usize] += 1;
+                    Color::D
+                }
+                'L' => {
+                    cnt[Color::L as usize] += 1;
+                    Color::L
+                }
+                'B' => {
+                    cnt[Color::B as usize] += 1;
+                    Color::B
+                }
+                _ => return Err(format!("Error: Invalid character '{}' in cube string.", c)),
+            };
+        }
+
+        if cnt.iter().all(|&x| x == 9) {
+            Ok(())
+        } else {
+            Err(format!(
+                "Error: Cube definition string does not contain exactly 9 facelets of each color."
+            ))
+        }
+    }
+
+    pub fn to_string(&self) -> String {
+        self.f
+            .iter()
+            .map(|&color| match color {
+                Color::U => 'U',
+                Color::R => 'R',
+                Color::F => 'F',
+                Color::D => 'D',
+                Color::L => 'L',
+                Color::B => 'B',
+            })
+            .collect()
+    }
+
+    pub fn to_2dstring(&self) -> String {
+        let s = self.to_string();
+        let mut result = String::new();
+        result.push_str(&format!(
+            "   {}\n   {}\n   {}\n",
+            &s[0..3],
+            &s[3..6],
+            &s[6..9]
+        ));
+        result.push_str(&format!(
+            "{}{}{}{}\n{}{}{}{}\n{}{}{}{}\n",
+            &s[36..39],
+            &s[18..21],
+            &s[9..12],
+            &s[45..48],
+            &s[39..42],
+            &s[21..24],
+            &s[12..15],
+            &s[48..51],
+            &s[42..45],
+            &s[24..27],
+            &s[15..18],
+            &s[51..54]
+        ));
+        result.push_str(&format!(
+            "   {}\n   {}\n   {}\n",
+            &s[27..30],
+            &s[30..33],
+            &s[33..36]
+        ));
+        result
+    }
+
+    pub fn to_cubie_cube(&self) -> CubieCube {
+        let mut cc = CubieCube::new(None, None, None, None);
+        for (i, &fac) in CORNER_FACELET.iter().enumerate() {
+            let mut ori = 0;
+            for k in 0..3 {
+                if self.f[fac[k] as usize] == Color::U || self.f[fac[k] as usize] == Color::D {
+                    ori = k;
+                    break;
+                }
+            }
+
+            let col1 = self.f[fac[(ori + 1) % 3] as usize];
+            let col2 = self.f[fac[(ori + 2) % 3] as usize];
+
+            for (j, &col) in CORNER_COLOR.iter().enumerate() {
+                if col1 == col[1] && col2 == col[2] {
+                    cc.cp[i] = Co::from_usize(j).unwrap();
+                    cc.co[i] = ori as u8;
+                    break;
+                }
+            }
+        }
+
+        for (i, &ef) in EDGE_FACELET.iter().enumerate() {
+            for (j, &ec) in EDGE_COLOR.iter().enumerate() {
+                if self.f[ef[0] as usize] == ec[0] && self.f[ef[1] as usize] == ec[1] {
+                    cc.ep[i] = Ed::from_usize(j).unwrap();
+                    cc.eo[i] = 0;
+                    break;
+                }
+                if self.f[ef[0] as usize] == ec[1] && self.f[ef[1] as usize] == ec[0] {
+                    cc.ep[i] = Ed::from_usize(j).unwrap();
+                    cc.eo[i] = 1;
+                    break;
+                }
+            }
+        }
+
+        cc
+    }
+}
