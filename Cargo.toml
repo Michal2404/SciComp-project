@@ -5,3 +5,5 @@ edition = "2021"
 
 [dependencies]
 eframe = "0.29.1"
+rubiks = { path = "rubiks"}
+cfop = { path = "cfop"}
