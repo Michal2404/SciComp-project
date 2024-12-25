@@ -1,8 +1,14 @@
 // use rubiks::rubiks::cube::RubiksCube;
-use crate::rubiks::cube::RubiksCube;
-// use std::time::Instant;
+// // use std::time::Instant;
+// // use cfop::cfop::cross::solve_cross; // Import the function
 // use cfop::cfop::cross::solve_cross; // Import the function
-use crate::cfop::cross::solve_cross; // Import the function
+
+mod rubiks;
+mod cfop;
+mod ui;
+
+use rubiks::cube::RubiksCube;
+use cfop::cross::solve_cross;
 
 fn main() {
     // Create new instance of the Cube
@@ -25,7 +31,7 @@ fn main() {
     // println!("Elapsed time: {:?}", elapsed_time);
 
     // now we solve the cube using CFOP
-    println!("{:?}", solve_cross(cube));
+    solve_cross(&cube);
 
     // Visualize scrambled cube
     cube.clone().visualize();
