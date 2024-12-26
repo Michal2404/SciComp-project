@@ -3,7 +3,7 @@ use crate::ui::app::MyApp;
 use eframe::NativeOptions;
 
 // Define main data structure for the cube
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct RubiksCube {
     pub faces: [[Color; 9]; 6], // 6 faces, each with 9 stickers
 }

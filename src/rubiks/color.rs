@@ -1,7 +1,7 @@
 use eframe::egui::Color32;
 
 // Defining colors of the stickers
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum Color {
     W, // White
     Y, // Yellow
