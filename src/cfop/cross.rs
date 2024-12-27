@@ -22,19 +22,19 @@ pub fn solve_cross(cube: &RubiksCube) {
     let face_target = find_nested_index(cube, &target);
 
     // Determine priority queue
-    let mut open_set: BinaryHeap<(usize, &RubiksCube, String)> = BinaryHeap::new();
-    open_set.push((0, cube, "".to_string()));
+    let mut open_set: BinaryHeap<(usize, RubiksCube, String)> = BinaryHeap::new();
+    open_set.push((0, cube.clone(), "".to_string()));
 
     // Track state transitions
-    let mut came_from: HashMap<(usize, &RubiksCube, String), (usize, &RubiksCube, String)> = HashMap::new();
+    let mut came_from: HashMap<(usize, RubiksCube, String), (usize, RubiksCube, String)> = HashMap::new();
 
     // Cost to reach a state
-    let mut g_score: HashMap<&RubiksCube, usize> = HashMap::from([(cube, 0)]);
+    let mut g_score: HashMap<RubiksCube, usize> = HashMap::from([(cube.clone(), 0)]);
     // Estimated total cost
-    let mut f_score: HashMap<&RubiksCube, usize> = HashMap::from([(cube, heuristics(cube))]);
+    let mut f_score: HashMap<RubiksCube, usize> = HashMap::from([(cube.clone(), heuristics(cube))]);
 
-    // println!("{:?}", edges);
-    // println!("{:?}", center_color);
+    println!("{:?}", edges);
+    println!("{:?}", center_color);
     
     // Step 4: Move the edges to the correct location
     // let mut current: (usize, &RubiksCube, String);
@@ -49,25 +49,29 @@ pub fn solve_cross(cube: &RubiksCube) {
                 println!("{:?}", i.2);
                 i = came_from[&i].clone();
             }
+            return;
         }
-    
+        
         // we generate all possible moves
-        // let mut current_cube = current.1.clone();
         for i in current_cube.all_moves() {
             let mut temp = current_cube.clone(); // Clone the cube for modifications
             temp.apply_scramble(i.0);
             // let neighbor = temp.apply_scramble(i.0);
-    
+            
             // Check or update tentative g_score
-            let tentative_g_score = g_score.get(&temp).unwrap_or(&usize::MAX) + 1; // Default to max if not found
+            // let tentative_g_score = *g_score.get(&temp).unwrap_or(&usize::MAX); // Default to max if not found
+            let tentative_g_score = *g_score.get(&current_cube).unwrap_or(&usize::MAX) + 1; // Default to max if not found
             if tentative_g_score < *g_score.get(&temp).unwrap_or(&usize::MAX) {
                 // Insert into g_score and came_from with owned types
-                g_score.insert(&temp, tentative_g_score);
-                came_from.insert((tentative_g_score, &temp, i.0.to_string()), (current.0, &current_cube, current.2.clone()));
-                open_set.push((tentative_g_score, &temp, i.0.to_string()));
+                g_score.insert(temp.clone(), tentative_g_score);
+                f_score.insert(temp.clone(), tentative_g_score + heuristics(&temp));
+                came_from.insert((*f_score.get(&temp).unwrap(), temp.clone(), i.0.to_string()), (current.0, current_cube.clone(), current.2.clone()));
+                open_set.push((*f_score.get(&temp).unwrap(), temp.clone(), i.0.to_string()));
             }
-    
-    
+            
+            
+            // println!("{:?}", tentative_g_score);
+            // println!("{:?}", *g_score.get(&temp).unwrap_or(&usize::MAX));
             // let tentative_g_score = g_score[&temp] + 1; // Assume uniform cost
         }
 
@@ -83,11 +87,12 @@ fn solved_state(cube: &RubiksCube, target: &Color) -> bool {
      */
     // initialize boolean
     let mut check: bool = false;
-    // first check the cross
+    // initialize variables here
     let face_target = find_nested_index(cube, target);
     let center = location_side_colors(cube, target);
     let list: Vec<usize> = vec![1, 3, 5, 7];
-    
+
+    // first check the cross
     for i in list{
         if cube.faces[face_target][i] == *target {
             check = true;
@@ -97,11 +102,13 @@ fn solved_state(cube: &RubiksCube, target: &Color) -> bool {
             break
         }
     }
-
+    
     // next the cross must align with face colors
     if check == true {
         for i in 0..center.len() {
-            if cube.faces[center[i].0.0][4] == cube.faces[center[i].0.0][1]{
+            // println!("{:?}", center[i].0.0);
+            if cube.faces[center[i].0.0][4] == cube.faces[center[i].0.0][7]{
+                // println!("went here");
                 check = true;
             }
             else {

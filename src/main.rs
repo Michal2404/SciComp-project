@@ -14,7 +14,9 @@ fn main() {
     // Create new instance of the Cube
     let mut cube = RubiksCube::new();
     // Define the scramble in the standard notation
-    let scramble = "L R U D";
+    // let scramble = "U";
+    // let scramble = "L R U D";
+    let scramble = "D";
     // Scramble the Cube
     cube.apply_scramble(scramble);
 
