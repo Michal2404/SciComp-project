@@ -16,7 +16,7 @@ fn main() {
     // Define the scramble in the standard notation
     // let scramble = "U";
     // let scramble = "L R U D";
-    let scramble = "D";
+    let scramble = "D L L D U R U";
     // Scramble the Cube
     cube.apply_scramble(scramble);
 

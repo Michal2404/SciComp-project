@@ -3,6 +3,8 @@ use crate::rubiks::cube::RubiksCube;
 use crate::rubiks::color::Color;
 use std::collections::HashMap;
 use std::collections::BinaryHeap;
+use std::cmp::Reverse;
+
 
 
 pub fn solve_cross(cube: &RubiksCube) {
@@ -22,8 +24,8 @@ pub fn solve_cross(cube: &RubiksCube) {
     let face_target = find_nested_index(cube, &target);
 
     // Determine priority queue
-    let mut open_set: BinaryHeap<(usize, RubiksCube, String)> = BinaryHeap::new();
-    open_set.push((0, cube.clone(), "".to_string()));
+    let mut open_set: BinaryHeap<Reverse<(usize, RubiksCube, String)>> = BinaryHeap::new();
+    open_set.push(Reverse((0, cube.clone(), "".to_string())));
 
     // Track state transitions
     let mut came_from: HashMap<(usize, RubiksCube, String), (usize, RubiksCube, String)> = HashMap::new();
@@ -31,24 +33,30 @@ pub fn solve_cross(cube: &RubiksCube) {
     // Cost to reach a state
     let mut g_score: HashMap<RubiksCube, usize> = HashMap::from([(cube.clone(), 0)]);
     // Estimated total cost
-    let mut f_score: HashMap<RubiksCube, usize> = HashMap::from([(cube.clone(), heuristics(cube))]);
+    let mut f_score: HashMap<RubiksCube, usize> = HashMap::from([(cube.clone(), heuristics(cube, &target))]);
 
-    println!("{:?}", edges);
-    println!("{:?}", center_color);
+    // println!("{:?}", edges);
+    // println!("{:?}", center_color);
     
     // Step 4: Move the edges to the correct location
     // let mut current: (usize, &RubiksCube, String);
     while !open_set.is_empty() {
-        let Some(current) = open_set.pop() else {panic!("something is wrong here")};
+        let Some(Reverse(current)) = open_set.pop() else {panic!("something is wrong here")};
         // Clone the Rubik's Cube part of the tuple for reuse
         let mut current_cube = current.1.clone();
         // if we made the cross, we stop and return the moves
-        if solved_state(&current_cube, &target) {
-            let mut i = current.clone();
+        if solved_state(&current_cube, &target).0 {
+            let mut i: (usize, RubiksCube, String) = current.clone();
+            // we will append this to a list and print out the list
+            let mut output_list: Vec<String> = Vec::new();
             while i.2 != ""{
-                println!("{:?}", i.2);
+                output_list.push(i.2.clone());
                 i = came_from[&i].clone();
             }
+
+            // reverse the list
+            output_list.reverse();
+            println!("{:?}", output_list);
             return;
         }
         
@@ -64,10 +72,12 @@ pub fn solve_cross(cube: &RubiksCube) {
             if tentative_g_score < *g_score.get(&temp).unwrap_or(&usize::MAX) {
                 // Insert into g_score and came_from with owned types
                 g_score.insert(temp.clone(), tentative_g_score);
-                f_score.insert(temp.clone(), tentative_g_score + heuristics(&temp));
+                f_score.insert(temp.clone(), tentative_g_score + heuristics(&temp, &target));
                 came_from.insert((*f_score.get(&temp).unwrap(), temp.clone(), i.0.to_string()), (current.0, current_cube.clone(), current.2.clone()));
-                open_set.push((*f_score.get(&temp).unwrap(), temp.clone(), i.0.to_string()));
+                open_set.push(Reverse((*f_score.get(&temp).unwrap(), temp.clone(), i.0.to_string())));
             }
+
+            // println!("{:?}", heuristics(&temp, &target));
             
             
             // println!("{:?}", tentative_g_score);
@@ -81,55 +91,32 @@ pub fn solve_cross(cube: &RubiksCube) {
 
 }
 
-fn solved_state(cube: &RubiksCube, target: &Color) -> bool {
+fn solved_state(cube: &RubiksCube, target: &Color) -> (bool, usize) {
     /*
-    This function checks if the final cross has been made
+    This function checks if the final cross has been made, and gives the number of edges that are in the wrong spot
      */
     // initialize boolean
-    let mut check: bool = false;
+    let mut check: bool = true;
     // initialize variables here
     let face_target = find_nested_index(cube, target);
     let center = location_side_colors(cube, target);
-    let list: Vec<usize> = vec![1, 3, 5, 7];
+    let list: Vec<usize> = vec![1, 7, 5, 3];
+    let mut misplaced: usize = 4;
 
     // first check the cross
-    for i in list{
-        if cube.faces[face_target][i] == *target {
-            check = true;
+    for (index, i) in list.iter().enumerate() {
+        // check if the edge face is on the cross and if its center color matches the edge piece
+        if cube.faces[face_target][*i] == *target && cube.faces[center[index].0.0][4] == cube.faces[center[index].0.0][7] {
+            misplaced -= 1;
         }
         else {
             check = false;
-            break
         }
     }
     
-    // next the cross must align with face colors
-    if check == true {
-        for i in 0..center.len() {
-            // println!("{:?}", center[i].0.0);
-            if cube.faces[center[i].0.0][4] == cube.faces[center[i].0.0][7]{
-                // println!("went here");
-                check = true;
-            }
-            else {
-                check = false;
-                break
-            }
-        }
-    }
-        
-        // // initialize vector which specifies conditions which satisifies the solved state
-        // let mut state: Vec<((usize, usize), &Color)> = Vec::new();
-        // state.push(((face_target, 1), target));
-        // state.push(((face_target, 3), target));
-        // state.push(((face_target, 5), target));
-        // state.push(((face_target, 7), target));
-
-    check
-
-
-
+    (check, misplaced)
 }
+
 fn find_edges_with_color(cube: &RubiksCube, target: &Color) -> Vec<(usize, usize)> {
     /*
     This function finds the edges with the target colors
@@ -140,12 +127,6 @@ fn find_edges_with_color(cube: &RubiksCube, target: &Color) -> Vec<(usize, usize
         for j in 0..9 as usize {
             // if the edge has the target color, we return this
             if cube.faces[i][j] == *target && (j == 1 || j == 3 || j == 5 || j == 7) {
-                // // find the color on the other side
-                // let mut a: usize = 0;
-                // let mut b: usize = 0;
-                // if i == 2 && (j != 0 || j != 1) {
-                //     a = 0
-                // }
                 edges.push((i, j));
             }
         }
@@ -212,10 +193,13 @@ fn opposite_face(face_num: usize) -> usize {
     opposite
 }
 
-fn heuristics(cube: &RubiksCube) -> usize {
+fn heuristics(cube: &RubiksCube, target:&Color) -> usize {
     /*
     This function calculates the priority given a heuristics algorithm
      */
-    let priority: usize = 0;
-    priority
+    // TODO
+
+    // we will calculate heuristics based on number of misplaced edges
+    let (_, misplaced) = solved_state(cube, target);
+    misplaced
 }
