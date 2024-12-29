@@ -3,12 +3,14 @@
 // // use cfop::cfop::cross::solve_cross; // Import the function
 // use cfop::cfop::cross::solve_cross; // Import the function
 
+use std::time::Instant;
 mod rubiks;
 mod cfop;
 mod ui;
 
 use rubiks::cube::RubiksCube;
 use cfop::cross::solve_cross;
+use cfop::f2l::solve_f2l;
 
 fn main() {
     // Create new instance of the Cube
@@ -16,25 +18,27 @@ fn main() {
     // Define the scramble in the standard notation
     // let scramble = "U";
     // let scramble = "L R U D";
-    let scramble = "D L L D U R U";
+    let scramble = "U L B' D D B B U B' L L U R R U' R R D D L L U U R R F F D' R R B' L'";
     // Scramble the Cube
     cube.apply_scramble(scramble);
 
-    println!("{:?}", cube);
+    // cube.clone().visualize();
 
-    // // Solve the cube using BFS
-    // let start_time = Instant::now();
-    // if let Some(solution) = cube.solve() {
-    //     println!("Solution found in {} moves: {:?}", solution.len(), solution);
-    // } else {
-    //     println!("No solution found.");
-    // }
-    // let elapsed_time = start_time.elapsed();
-    // println!("Elapsed time: {:?}", elapsed_time);
+    // Solve the cube using CFOP
+    // Determine the color of the bottom face
+    let target = cube.faces[1][4];
 
-    // now we solve the cube using CFOP
-    solve_cross(&cube);
-
+    // Step 1: Solve the cross
+    println!("-------------cross-------------");
+    let start_time = Instant::now();
+    let cube_cross = solve_cross(&mut cube, &target);
+    let elapsed_time = start_time.elapsed();
+    println!("Elapsed time: {:?}", elapsed_time);
+    
+    // Step 2: Solve the first 2 layers
+    println!("-------------f2l-------------");
+    solve_f2l(&cube_cross, &target);
+    
     // Visualize scrambled cube
-    cube.clone().visualize();
+    cube_cross.clone().visualize();
 }
