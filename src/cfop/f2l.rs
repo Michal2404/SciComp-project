@@ -8,7 +8,8 @@ use std::collections::HashMap;
 
 
 
-pub fn solve_f2l(cube: &RubiksCube, target: &Color) {
+// pub fn solve_f2l(cube: &mut RubiksCube, target: &Color) -> RubiksCube {
+pub fn solve_f2l(cube: &mut RubiksCube, target: &Color) {
     /*
     This function solves the f2l
      */
@@ -27,31 +28,69 @@ pub fn solve_f2l(cube: &RubiksCube, target: &Color) {
         (vec![Color::B, Color::O], vec![(3, 8), (5, 6)]),
     ]);
 
-    // second we determine the color of the corner and its location in global coordinate system
-    let corner_locations = corner_piece_location(cube, target);
-    let corner_locations_sort = ordering(corner_locations);
-    println!("{:?}", corner_locations_sort);
-    
-    // next find the location of the edges corresponding to the colors
-    let mut edge_locations: HashMap<Vec<Color>, Vec<(usize, usize)>> = HashMap::new();
-    for (key, val) in corner_locations_sort.into_iter() {
-        // find the edge_piece_location corresponding to the 2 colors
-        let edges: Vec<(usize, usize)> = edge_piece_location(cube, &key[0], &key[1]);
-        edge_locations.insert(key, edges);
-    }
-    let edge_locations_sort = ordering(edge_locations);
-    println!("{:?}", edge_locations_sort);
-    
+    // initialize vector that stores all the colors
+    let mut colors = vec![vec![Color::B, Color::R], vec![Color::G, Color::R], vec![Color::G, Color::O], vec![Color::B, Color::O]];
+
     // now we need to know where the pieces should end up in
     let map: HashMap<Vec<Color>, Vec<algorithm>> = read_file("src/cfop/f2l_algorithm.txt");
 
-    // loop through the 
+    // initialize list that contains all the moves
+    let mut output_list: Vec<String> = Vec::new();
 
-    println!("{:?}", map);
+    // loop through each color and try to find algorithm that solves f2l
+    while !colors.is_empty() {
+        // first loop through each color in the vector
+        for color in colors.clone() {   
+            // find corner and edge piece locations
+            let corner = corner_piece_location(cube, &target, &color[0], &color[1]);
+            let edge = edge_piece_location(cube, &color[0], &color[1]);
     
+            // check if they are already solved and if it is, we move onto the next color
+            if corner == *target_corner_locations.get(&color).unwrap() && edge == *target_edge_locations.get(&color).unwrap() {
+                let index = colors.iter().position(|x| *x == *color).unwrap();
+                colors.remove(index);
+                continue
+            }
     
-    
-    
+            // otherwise, we determine if we can run any other algorithms on it
+            for algo in map.get(&color).unwrap() {
+                // if we found the algorithm perform it
+                if algo.corner == corner && algo.edge == edge {
+                    output_list.push(algo.moves.clone());
+                    cube.apply_scramble(algo.moves.as_str());
+                    // remove the color from vector
+                    let index = colors.iter().position(|x| *x == *color).unwrap();
+                    colors.remove(index);
+                    
+                }
+            }
+            
+        }
+        // if the colors is still not empty, that means we have to make a random move and try it again
+        if !colors.is_empty() {
+            output_list.push("U".to_string());
+            cube.apply_scramble("U");
+        }
+    }
+    // once all done, we will print out the list
+    println!("{}", output_list.join(" "));
+
+    // return cube.clone()
+    // // next find the location of the edges corresponding to the colors
+    // let mut corner_locations: HashMap<Vec<Color>, Vec<(usize, usize)>> = HashMap::new();
+    // let mut edge_locations: HashMap<Vec<Color>, Vec<(usize, usize)>> = HashMap::new();
+    // for key in colors.clone() {
+    //     // find corner_piece_location corresponding to the 2 colors
+    //     let corners: Vec<(usize, usize)> = corner_piece_location(cube, &target, &key[0], &key[1]);
+    //     corner_locations.insert(key.clone(), corners);
+    //     // find the edge_piece_location corresponding to the 2 colors
+    //     let edges: Vec<(usize, usize)> = edge_piece_location(cube, &key[0], &key[1]);
+    //     edge_locations.insert(key.clone(), edges);
+    // }
+    // let corner_locations_sort = ordering(corner_locations);
+    // println!("{:?}", corner_locations_sort);
+    // let edge_locations_sort = ordering(edge_locations);
+    // println!("{:?}", edge_locations_sort);   
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
@@ -178,29 +217,39 @@ fn edge_piece_location(cube: &RubiksCube, edge_1: &Color, edge_2: &Color) -> Vec
     
 }
 
-fn corner_piece_location(cube: &RubiksCube, target: &Color) -> HashMap<Vec<Color>, Vec<(usize, usize)>>{
+// fn corner_piece_location(cube: &RubiksCube, target: &Color) -> HashMap<Vec<Color>, Vec<(usize, usize)>>{
+fn corner_piece_location(cube: &RubiksCube, target: &Color, corner_1: &Color, corner_2: &Color) -> Vec<(usize, usize)>{
     /*
     This function finds the location of all corner pieces with the specified target color
     */
     // first find all the location with corner pieces with the target color
-    let corner = find_corner_with_color(cube, target);
+    // let corner = find_corner_with_color(cube, target);
+    let location = find_corner_with_color(cube, corner_1);
+    // println!("for {:?}, {:?}", corner_1, corner_2);
+    // println!("{:?}", location);
+    // println!("");
     
     // next we determine the color of the other 2 colors on the corner piece
     // to do this, we convert the local coordinate system into global, then back again into local
-    let mut location: HashMap<Vec<Color>, Vec<(usize, usize)>> = HashMap::new();
-    // let mut location: HashMap<(usize, usize, usize), (Color, Color)> = HashMap::new();
-    for i in 0..corner.len() {
+    // let mut location: HashMap<Vec<Color>, Vec<(usize, usize)>> = HashMap::new();
+    for i in 0..location.len() {
         // convert local into global
-        let (x, y, z) = local_to_global(corner[i].0, corner[i].1);
+        let (x, y, z) = local_to_global(location[i].0, location[i].1);
         // convert back to local
         let mut local_positions = global_to_local(x, y, z);
-        local_positions.retain(|&x| x != corner[i]);
+        local_positions.retain(|&x| x != location[i]);
         
-        // determine the color of the other 2 faces
-        // location.insert((x,y,z), (cube.faces[local_positions[0].0][local_positions[0].1], cube.faces[local_positions[1].0][local_positions[1].1]));
-        location.insert(vec![cube.faces[local_positions[0].0][local_positions[0].1], cube.faces[local_positions[1].0][local_positions[1].1]], local_positions);
+        // if the local_position matches the edge_2 color, we return these locations
+        if cube.faces[local_positions[0].0][local_positions[0].1] == *corner_2 && cube.faces[local_positions[1].0][local_positions[1].1] == *target {
+            return vec![location[i], local_positions[0]]
+        } else if cube.faces[local_positions[1].0][local_positions[1].1] == *corner_2 && cube.faces[local_positions[0].0][local_positions[0].1] == *target {
+            return vec![location[i], local_positions[1]]
+        }
+        // // determine the color of the other 2 faces
+        // location.insert(vec![cube.faces[local_positions[0].0][local_positions[0].1], cube.faces[local_positions[1].0][local_positions[1].1]], local_positions);
     }
-    return location
+    // return location
+    return vec![(3, 9)]
     
     
 }

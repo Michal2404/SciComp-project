@@ -17,8 +17,8 @@ fn main() {
     let mut cube = RubiksCube::new();
     // Define the scramble in the standard notation
     // let scramble = "U";
-    // let scramble = "L R U D";
-    let scramble = "U L B' D D B B U B' L L U R R U' R R D D L L U U R R F F D' R R B' L'";
+    let scramble = "L R U D";
+    // let scramble = "U L B' D D B B U B' L L U R R U' R R D D L L U U R R F F D' R R B' L'";
     // Scramble the Cube
     cube.apply_scramble(scramble);
 
@@ -31,14 +31,19 @@ fn main() {
     // Step 1: Solve the cross
     println!("-------------cross-------------");
     let start_time = Instant::now();
-    let cube_cross = solve_cross(&mut cube, &target);
+    // let mut cube_cross = solve_cross(&mut cube, &target);
+    solve_cross(&mut cube, &target);
     let elapsed_time = start_time.elapsed();
     println!("Elapsed time: {:?}", elapsed_time);
     
     // Step 2: Solve the first 2 layers
     println!("-------------f2l-------------");
-    solve_f2l(&cube_cross, &target);
+    let start_time = Instant::now();
+    // let mut cube_f2l = solve_f2l(&mut cube_cross, &target);
+    solve_f2l(&mut cube, &target);
+    let elapsed_time = start_time.elapsed();
+    println!("Elapsed time: {:?}", elapsed_time);
     
     // Visualize scrambled cube
-    cube_cross.clone().visualize();
+    cube.clone().visualize();
 }

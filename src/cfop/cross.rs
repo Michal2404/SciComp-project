@@ -7,7 +7,8 @@ use std::collections::BinaryHeap;
 use std::cmp::Reverse;
 
 
-pub fn solve_cross(cube: &mut RubiksCube, target: &Color) -> RubiksCube {
+pub fn solve_cross(cube: &mut RubiksCube, target: &Color) {
+// pub fn solve_cross(cube: &mut RubiksCube, target: &Color) -> RubiksCube {
     /*
     This function solves the cross depending on what color we choose
     */
@@ -48,7 +49,8 @@ pub fn solve_cross(cube: &mut RubiksCube, target: &Color) -> RubiksCube {
             cube.apply_scramble(solve.as_str());
             
             println!("{}", output_list.join(" "));
-            return cube.clone();
+            // return cube.clone();
+            break
 
         }
         
@@ -80,7 +82,7 @@ pub fn solve_cross(cube: &mut RubiksCube, target: &Color) -> RubiksCube {
         
     }
     
-    return cube.clone();
+    // return cube.clone();
 }
 
 fn solved_state(cube: &RubiksCube, target: &Color) -> (bool, usize) {
