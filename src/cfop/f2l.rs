@@ -6,8 +6,6 @@ use crate::cfop::helper::*;
 use std::fs;
 use std::collections::HashMap;
 
-
-
 // pub fn solve_f2l(cube: &mut RubiksCube, target: &Color) -> RubiksCube {
 pub fn solve_f2l(cube: &mut RubiksCube, target: &Color) {
     /*
@@ -71,6 +69,8 @@ pub fn solve_f2l(cube: &mut RubiksCube, target: &Color) {
             output_list.push("U".to_string());
             cube.apply_scramble("U");
         }
+
+        // TODO: for niche situations where none of this works, we need to locate this troubled piece and convert it into a state where we can perform algorithm
     }
     // once all done, we will print out the list
     println!("{}", output_list.join(" "));
@@ -143,54 +143,6 @@ fn read_file(filename: &str) -> HashMap<Vec<Color>, Vec<algorithm>> {
     algorithm_data
 }
 
-fn parse_vec_color(content: &str) -> Vec<Color> {
-    /*
-    This functioon parses the string [Color, Color] into Vec<Color>
-     */
-    // Remove square brackets and whitespace, then split by `), (`
-    let cleaned = content.trim().trim_matches(|c| c == '[' || c == ']');
-    let colors = cleaned.split(", ");
-
-    // Parse each pair into a tuple
-    let mut result = Vec::new();
-    for color in colors{
-        match color {
-            "W" => result.push(Color::W),
-            "Y" => result.push(Color::Y),
-            "G" => result.push(Color::G),
-            "B" => result.push(Color::B),
-            "R" => result.push(Color::R),
-            "O" => result.push(Color::O),
-            _ => ()
-        } 
-    }
-
-    result
-
-}
-
-fn parse_vec_usize(content: &str) -> Vec<(usize,usize)> {
-    /*
-    This function parses the string [(usize, usize), (usize, usize)] into Vec<(usize, usize)>
-     */
-    // Remove square brackets and whitespace, then split by `), (`
-    let cleaned = content.trim().trim_matches(|c| c == '[' || c == ']');
-    let pairs = cleaned.split("), (");
-
-    // Parse each pair into a tuple
-    let mut result = Vec::new();
-    for pair in pairs {
-        let numbers: Vec<&str> = pair.trim_matches(|c| c == '(' || c == ')').split(',').collect();
-        if numbers.len() == 2 {
-            if let (Ok(x), Ok(y)) = (numbers[0].trim().parse::<usize>(), numbers[1].trim().parse::<usize>()) {
-                result.push((x, y));
-            }
-        }
-    }
-
-    result
-
-}
 fn edge_piece_location(cube: &RubiksCube, edge_1: &Color, edge_2: &Color) -> Vec<(usize, usize)> {
     /*
     This function finds the location for the edge piece

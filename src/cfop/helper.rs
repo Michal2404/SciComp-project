@@ -35,3 +35,52 @@ pub fn find_corner_with_color(cube: &RubiksCube, target: &Color) -> Vec<(usize, 
     }
     return corner
 }
+
+pub fn parse_vec_color(content: &str) -> Vec<Color> {
+    /*
+    This functioon parses the string [Color, Color] into Vec<Color>
+     */
+    // Remove square brackets and whitespace, then split by `), (`
+    let cleaned = content.trim().trim_matches(|c| c == '[' || c == ']');
+    let colors = cleaned.split(", ");
+
+    // Parse each pair into a tuple
+    let mut result = Vec::new();
+    for color in colors{
+        match color {
+            "W" => result.push(Color::W),
+            "Y" => result.push(Color::Y),
+            "G" => result.push(Color::G),
+            "B" => result.push(Color::B),
+            "R" => result.push(Color::R),
+            "O" => result.push(Color::O),
+            _ => ()
+        } 
+    }
+
+    result
+
+}
+
+pub fn parse_vec_usize(content: &str) -> Vec<(usize,usize)> {
+    /*
+    This function parses the string [(usize, usize), (usize, usize)] into Vec<(usize, usize)>
+     */
+    // Remove square brackets and whitespace, then split by `), (`
+    let cleaned = content.trim().trim_matches(|c| c == '[' || c == ']');
+    let pairs = cleaned.split("), (");
+
+    // Parse each pair into a tuple
+    let mut result = Vec::new();
+    for pair in pairs {
+        let numbers: Vec<&str> = pair.trim_matches(|c| c == '(' || c == ')').split(',').collect();
+        if numbers.len() == 2 {
+            if let (Ok(x), Ok(y)) = (numbers[0].trim().parse::<usize>(), numbers[1].trim().parse::<usize>()) {
+                result.push((x, y));
+            }
+        }
+    }
+
+    result
+
+}
