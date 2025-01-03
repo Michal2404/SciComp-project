@@ -68,8 +68,6 @@ fn main() {
     let total_moves = cross_moves.len() + f2l_moves.len() + oll_moves.len() + pll_moves.len();
     println!("{} {} {} {}", cross_moves.join(" "), f2l_moves.join(" "), oll_moves.join(" "), pll_moves.join(" "));
     println!("{}", total_moves);
-    println!("{}", f2l_moves.len());
-
     // Visualize scrambled cube
     cube.clone().visualize();
 

@@ -85,7 +85,9 @@ pub fn solve_f2l(cube: &mut RubiksCube, target: &Color) -> Vec<String> {
     // once all done, we will print out the list
     println!("{}", output_list.join(" "));
 
-    return output_list
+    let moves = output_list.iter().flat_map(|s| s.split_whitespace()).map(|s| s.to_string()).collect();
+
+    return moves
 
     // return cube.clone()
     // // next find the location of the edges corresponding to the colors

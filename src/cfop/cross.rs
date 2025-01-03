@@ -49,7 +49,9 @@ pub fn solve_cross(cube: &mut RubiksCube, target: &Color) -> Vec<String>{
             cube.apply_scramble(solve.as_str());
             
             println!("{}", output_list.join(" "));
-            return output_list
+            let moves = output_list.iter().flat_map(|s| s.split_whitespace()).map(|s| s.to_string()).collect();
+
+            return moves
 
         }
         
