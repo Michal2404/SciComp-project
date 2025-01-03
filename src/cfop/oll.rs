@@ -5,9 +5,8 @@ use crate::cfop::helper::*;
 
 use std::collections::{HashMap, HashSet};
 use std::fs;
-use std::ptr::read;
 
-pub fn solve_oll(cube: &mut RubiksCube, target: &Color) {
+pub fn solve_oll(cube: &mut RubiksCube, target: &Color) -> Vec<String> {
     /*
     This function solves the oll
      */
@@ -28,7 +27,7 @@ pub fn solve_oll(cube: &mut RubiksCube, target: &Color) {
         for (key, algo) in &map {
             // check if the key matches the position
             let key_set: HashSet<(usize, usize)> = key.iter().copied().collect();
-            if position.iter().all(|item| key_set.contains(item)) {
+            if contains_element(key_set, position.clone()) {
                 output_list.push(algo.clone());
                 cube.apply_scramble(algo.as_str());
                 solved = true;
@@ -44,8 +43,7 @@ pub fn solve_oll(cube: &mut RubiksCube, target: &Color) {
 
     // once all done, we will print out the list
     println!("{}", output_list.join(" "));
-
-
+    return output_list
 
 }
 
@@ -79,13 +77,13 @@ fn read_file(filename: &str) -> HashMap<Vec<(usize, usize)>, String> {
 
     // iterate through each line of the file
     for line in contents.lines() {
-        // Skip lines starting with '%'
-        if line.starts_with('%') {
-            continue;
-        }
-
         // Iterate over each substring, split by ;, and attempt to parse as string
         let parts: Vec<&str> = line.split("; ").collect();
+        
+        // Skip lines starting with '%'
+        if line.starts_with('%') || parts.len() != 2 {
+            continue;
+        }
 
         // we will perform different parsing techniques for different parts of the content
         let part0: Vec<(usize, usize)> = parse_vec_usize(parts[0]);

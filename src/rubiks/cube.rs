@@ -52,6 +52,8 @@ impl RubiksCube {
             ("L'", RubiksCube::l_counterclockwise),
             ("R", RubiksCube::r_clockwise),
             ("R'", RubiksCube::r_counterclockwise),
+            ("y", RubiksCube::y_clockwise),
+            ("y'", RubiksCube::y_counterclockwise),
         ]
     }
 
@@ -71,6 +73,7 @@ impl RubiksCube {
                 'B' => Self::b_clockwise,
                 'L' => Self::l_clockwise,
                 'R' => Self::r_clockwise,
+                'y' => Self::y_clockwise,
                 _ => continue, // Skip invalid characters
             };
 
@@ -86,6 +89,7 @@ impl RubiksCube {
                             'B' => Self::b_counterclockwise(self),
                             'L' => Self::l_counterclockwise(self),
                             'R' => Self::r_counterclockwise(self),
+                            'y' => Self::y_counterclockwise(self),
                             _ => {}
                         }
                         continue;
@@ -402,6 +406,22 @@ impl RubiksCube {
         self.faces[3][2] = temp[0][6];
         self.faces[3][5] = temp[0][3];
         self.faces[3][8] = temp[0][0];
+    }
+
+    pub fn y_clockwise(&mut self) {
+        let temp = self.faces.clone();
+        self.faces[2] = temp[4];
+        self.faces[5] = temp[2];
+        self.faces[3] = temp[5];
+        self.faces[4] = temp[3];
+    }
+
+    pub fn y_counterclockwise(&mut self) {
+        let temp = self.faces.clone();
+        self.faces[4] = temp[2];
+        self.faces[3] = temp[4];
+        self.faces[5] = temp[3];
+        self.faces[2] = temp[5];
     }
 
     pub fn visualize(self) {

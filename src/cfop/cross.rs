@@ -7,7 +7,7 @@ use std::collections::BinaryHeap;
 use std::cmp::Reverse;
 
 
-pub fn solve_cross(cube: &mut RubiksCube, target: &Color) {
+pub fn solve_cross(cube: &mut RubiksCube, target: &Color) -> Vec<String>{
 // pub fn solve_cross(cube: &mut RubiksCube, target: &Color) -> RubiksCube {
     /*
     This function solves the cross depending on what color we choose
@@ -27,6 +27,8 @@ pub fn solve_cross(cube: &mut RubiksCube, target: &Color) {
     
     // Step 4: Move the edges to the correct location
     // let mut current: (usize, &RubiksCube, String);
+    // we will append this to a list and print out the list
+    let mut output_list: Vec<String> = Vec::new();
     while !open_set.is_empty() {
         let Some(Reverse(current)) = open_set.pop() else {panic!("something is wrong here")};
         // Clone the Rubik's Cube part of the tuple for reuse
@@ -34,8 +36,6 @@ pub fn solve_cross(cube: &mut RubiksCube, target: &Color) {
         // if we made the cross, we stop and return the moves
         if solved_state(&current_cube, target).0 {
             let mut i: (usize, RubiksCube, String) = current.clone();
-            // we will append this to a list and print out the list
-            let mut output_list: Vec<String> = Vec::new();
             while i.2 != ""{
                 output_list.push(i.2.clone());
                 i = came_from[&i].clone();
@@ -49,8 +49,7 @@ pub fn solve_cross(cube: &mut RubiksCube, target: &Color) {
             cube.apply_scramble(solve.as_str());
             
             println!("{}", output_list.join(" "));
-            // return cube.clone();
-            break
+            return output_list
 
         }
         
@@ -81,6 +80,7 @@ pub fn solve_cross(cube: &mut RubiksCube, target: &Color) {
 
         
     }
+    output_list
     
     // return cube.clone();
 }

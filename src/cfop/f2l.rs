@@ -7,7 +7,7 @@ use std::fs;
 use std::collections::HashMap;
 
 // pub fn solve_f2l(cube: &mut RubiksCube, target: &Color) -> RubiksCube {
-pub fn solve_f2l(cube: &mut RubiksCube, target: &Color) {
+pub fn solve_f2l(cube: &mut RubiksCube, target: &Color) -> Vec<String> {
     /*
     This function solves the f2l
      */
@@ -37,35 +37,45 @@ pub fn solve_f2l(cube: &mut RubiksCube, target: &Color) {
 
     // loop through each color and try to find algorithm that solves f2l
     while !colors.is_empty() {
+        // initialize if any color solved
+        let mut color_solved = false;
         // first loop through each color in the vector
-        for color in colors.clone() {   
+        for color in colors.clone() {
+            // println!("color: {:?}", color);
+            // println!("before: {:?}", colors);
             // find corner and edge piece locations
             let corner = corner_piece_location(cube, &target, &color[0], &color[1]);
             let edge = edge_piece_location(cube, &color[0], &color[1]);
-    
+            
             // check if they are already solved and if it is, we move onto the next color
             if corner == *target_corner_locations.get(&color).unwrap() && edge == *target_edge_locations.get(&color).unwrap() {
                 let index = colors.iter().position(|x| *x == *color).unwrap();
                 colors.remove(index);
+                // println!("went here");
                 continue
             }
-    
+            
             // otherwise, we determine if we can run any other algorithms on it
             for algo in map.get(&color).unwrap() {
                 // if we found the algorithm perform it
+                // println!("corner: {:?}", corner);
+                // println!("edge: {:?}", edge);
                 if algo.corner == corner && algo.edge == edge {
                     output_list.push(algo.moves.clone());
                     cube.apply_scramble(algo.moves.as_str());
                     // remove the color from vector
                     let index = colors.iter().position(|x| *x == *color).unwrap();
                     colors.remove(index);
+                    // println!("after: {:?}", colors);
+                    // we indicate for this loop a color has been solved
+                    color_solved = true;
                     
                 }
             }
             
         }
-        // if the colors is still not empty, that means we have to make a random move and try it again
-        if !colors.is_empty() {
+        // if the colors is still not empty and we haven't solved a color this loop, that means we have to make a random move and try it again
+        if !colors.is_empty() && !color_solved {
             output_list.push("U".to_string());
             cube.apply_scramble("U");
         }
@@ -74,6 +84,8 @@ pub fn solve_f2l(cube: &mut RubiksCube, target: &Color) {
     }
     // once all done, we will print out the list
     println!("{}", output_list.join(" "));
+
+    return output_list
 
     // return cube.clone()
     // // next find the location of the edges corresponding to the colors
@@ -113,14 +125,14 @@ fn read_file(filename: &str) -> HashMap<Vec<Color>, Vec<algorithm>> {
 
     // iterate through each line of the file
     // for (index, line) in contents.lines().enumerate() {
-    for line in contents.lines() {
-        // Skip lines starting with '%'
-        if line.starts_with('%') {
-            continue;
-        }
-
+        for line in contents.lines() {
         // Iterate over each substring, split by ;, and attempt to parse as string
         let parts: Vec<&str> = line.split("; ").collect();
+
+        // Skip lines starting with '%'
+        if line.starts_with('%') || parts.len() != 4 {
+            continue;
+        }
 
         // we will perform different parsing techniques for different parts of the content
         let part1: Vec<(usize, usize)> = parse_vec_usize(parts[1]);

@@ -1,6 +1,7 @@
 // This file contains helper functions for all files used in CFOP
 use crate::rubiks::cube::RubiksCube;
 use crate::rubiks::color::Color;
+use std::collections::HashSet;
 
 pub fn find_edges_with_color(cube: &RubiksCube, target: &Color) -> Vec<(usize, usize)> {
     /*
@@ -57,9 +58,7 @@ pub fn parse_vec_color(content: &str) -> Vec<Color> {
             _ => ()
         } 
     }
-
     result
-
 }
 
 pub fn parse_vec_usize(content: &str) -> Vec<(usize,usize)> {
@@ -80,7 +79,12 @@ pub fn parse_vec_usize(content: &str) -> Vec<(usize,usize)> {
             }
         }
     }
-
     result
+}
 
+pub fn contains_element(key_set: HashSet<(usize, usize)>, position: Vec<(usize, usize)>) -> bool {
+    /*
+    This function determines if key_set and position contains the same elements regardless of order
+     */
+    position.iter().all(|item| key_set.contains(item))
 }
