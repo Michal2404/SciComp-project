@@ -36,8 +36,7 @@ fn f2l_solved() {
     // get the color of the bottom
     let bottom = solved_cube.faces[1][0];
     // Test various moves...
-    // let scramble = "U L U' L'";
-    let scramble = "U F U' F'";
+    let scramble = "U L' U U L U L' U U L";
     tested_cube.apply_scramble(&flip_and_toggle_moves(scramble));
 
     // perform f2l to solve cube

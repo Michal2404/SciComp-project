@@ -30,7 +30,7 @@ pub fn solve_f2l(cube: &mut RubiksCube, target: &Color) -> Vec<String> {
     let mut colors = vec![vec![Color::B, Color::R], vec![Color::G, Color::R], vec![Color::G, Color::O], vec![Color::B, Color::O]];
 
     // now we need to know where the pieces should end up in
-    let map: HashMap<Vec<Color>, Vec<algorithm>> = read_file("src/cfop/f2l_algorithm.txt");
+    let map: HashMap<Vec<Color>, Vec<Algorithm>> = read_file("src/cfop/f2l_algorithm.txt");
 
     // initialize list that contains all the moves
     let mut output_list: Vec<String> = Vec::new();
@@ -108,13 +108,13 @@ pub fn solve_f2l(cube: &mut RubiksCube, target: &Color) -> Vec<String> {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
-struct algorithm {
+struct Algorithm {
     corner: Vec<(usize, usize)>,
     edge: Vec<(usize, usize)>,
     moves: String
 }
 
-fn read_file(filename: &str) -> HashMap<Vec<Color>, Vec<algorithm>> {
+fn read_file(filename: &str) -> HashMap<Vec<Color>, Vec<Algorithm>> {
     /*
     This function reads the file and outputs the contents in a string
      */
@@ -123,7 +123,7 @@ fn read_file(filename: &str) -> HashMap<Vec<Color>, Vec<algorithm>> {
         .expect("Failed to read the file.");
 
     // initialize hashmap that stores this information
-    let mut algorithm_data: HashMap<Vec<Color>, Vec<algorithm>> = HashMap::new();
+    let mut algorithm_data: HashMap<Vec<Color>, Vec<Algorithm>> = HashMap::new();
 
     // iterate through each line of the file
     // for (index, line) in contents.lines().enumerate() {
@@ -144,7 +144,7 @@ fn read_file(filename: &str) -> HashMap<Vec<Color>, Vec<algorithm>> {
         let colors: Vec<Color> = parse_vec_color(parts[0]);
 
         // get the remaining parts into a struct
-        let list = algorithm {
+        let list = Algorithm {
             corner: part1,
             edge: part2,
             moves: parts[3].to_string()
@@ -335,52 +335,52 @@ fn global_to_local(x: usize, y: usize, z: usize) -> Vec<(usize, usize)>{
     local_coordinate
 }
 
-fn ordering(map: HashMap<Vec<Color>, Vec<(usize, usize)>>) -> HashMap<Vec<Color>, Vec<(usize, usize)>>{
-    /*
-    This function makes the ordering of the color consistent
-    */
-    let mut updated_map: HashMap<Vec<Color>, Vec<(usize, usize)>> = HashMap::new();
-    for (key, val) in map.into_iter() {
-        let mut init_key: Vec<usize> = Vec::new();
-        let mut val_final = val.clone();
-        let mut key_final = Vec::new();
-        // assign a number to the color
-        for i in 0..2 {
-            match key[i] {
-                Color::W => init_key.push(0),
-                Color::Y => init_key.push(1),
-                Color::G => init_key.push(2),
-                Color::B => init_key.push(3),
-                Color::R => init_key.push(4),
-                Color::O => init_key.push(5),
-            }
-        }
-        // now we sort this and convert back into color
-        let mut final_key = init_key.clone();
-        final_key.sort();
-        for i in 0..2 {
-            match final_key[i] {
-                0 => key_final.push(Color::W),
-                1 => key_final.push(Color::Y),
-                2 => key_final.push(Color::G),
-                3 => key_final.push(Color::B),
-                4 => key_final.push(Color::R),
-                5 => key_final.push(Color::O),
-                _ => ()
-            }
-        }
+// fn ordering(map: HashMap<Vec<Color>, Vec<(usize, usize)>>) -> HashMap<Vec<Color>, Vec<(usize, usize)>>{
+//     /*
+//     This function makes the ordering of the color consistent
+//     */
+//     let mut updated_map: HashMap<Vec<Color>, Vec<(usize, usize)>> = HashMap::new();
+//     for (key, val) in map.into_iter() {
+//         let mut init_key: Vec<usize> = Vec::new();
+//         let mut val_final = val.clone();
+//         let mut key_final = Vec::new();
+//         // assign a number to the color
+//         for i in 0..2 {
+//             match key[i] {
+//                 Color::W => init_key.push(0),
+//                 Color::Y => init_key.push(1),
+//                 Color::G => init_key.push(2),
+//                 Color::B => init_key.push(3),
+//                 Color::R => init_key.push(4),
+//                 Color::O => init_key.push(5),
+//             }
+//         }
+//         // now we sort this and convert back into color
+//         let mut final_key = init_key.clone();
+//         final_key.sort();
+//         for i in 0..2 {
+//             match final_key[i] {
+//                 0 => key_final.push(Color::W),
+//                 1 => key_final.push(Color::Y),
+//                 2 => key_final.push(Color::G),
+//                 3 => key_final.push(Color::B),
+//                 4 => key_final.push(Color::R),
+//                 5 => key_final.push(Color::O),
+//                 _ => ()
+//             }
+//         }
         
 
-        // if init_key and final_key doesn't match, that means there was a change and we will reverse the values 
-        if init_key != final_key {
-            val_final.reverse()
-        } else {}
+//         // if init_key and final_key doesn't match, that means there was a change and we will reverse the values 
+//         if init_key != final_key {
+//             val_final.reverse()
+//         } else {}
 
-        // insert this into the updated_map
-        updated_map.insert(key_final, val_final);
+//         // insert this into the updated_map
+//         updated_map.insert(key_final, val_final);
 
-    }
+//     }
 
-    updated_map
+//     updated_map
 
-}
+// }

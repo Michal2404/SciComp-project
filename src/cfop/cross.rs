@@ -8,7 +8,6 @@ use std::cmp::Reverse;
 
 
 pub fn solve_cross(cube: &mut RubiksCube, target: &Color) -> Vec<String>{
-// pub fn solve_cross(cube: &mut RubiksCube, target: &Color) -> RubiksCube {
     /*
     This function solves the cross depending on what color we choose
     */
@@ -26,7 +25,6 @@ pub fn solve_cross(cube: &mut RubiksCube, target: &Color) -> Vec<String>{
     let mut f_score: HashMap<RubiksCube, usize> = HashMap::from([(cube.clone(), heuristics(cube, target))]);
     
     // Step 4: Move the edges to the correct location
-    // let mut current: (usize, &RubiksCube, String);
     // we will append this to a list and print out the list
     let mut output_list: Vec<String> = Vec::new();
     while !open_set.is_empty() {
@@ -50,9 +48,7 @@ pub fn solve_cross(cube: &mut RubiksCube, target: &Color) -> Vec<String>{
             
             println!("{}", output_list.join(" "));
             let moves = output_list.iter().flat_map(|s| s.split_whitespace()).map(|s| s.to_string()).collect();
-
             return moves
-
         }
         
         // we generate all possible moves
