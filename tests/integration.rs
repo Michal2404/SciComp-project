@@ -1,5 +1,6 @@
 use SciComp_project::rubiks::cube::RubiksCube;
 use SciComp_project::cfop::f2l::solve_f2l;
+use SciComp_project::cfop::oll::solve_oll;
 
 fn flip_and_toggle_moves(input: &str) -> String {
     input
@@ -30,17 +31,30 @@ fn flip_and_toggle_moves(input: &str) -> String {
 //     assert_eq!(solved_cube, tested_cube);
 // }
 
-fn f2l_solved() {
+// fn f2l_solved() {
+//     let solved_cube = RubiksCube::new();
+//     let mut tested_cube = RubiksCube::new();
+//     // get the color of the bottom
+//     let bottom = solved_cube.faces[1][0];
+//     // Test various moves...
+//     let scramble = "R' U R' U' F' U F R R";
+//     tested_cube.apply_scramble(&flip_and_toggle_moves(scramble));
+
+//     // perform f2l to solve cube
+//     let moves = solve_f2l(&mut tested_cube, &bottom);
+//     assert_eq!((solved_cube, scramble), (tested_cube, moves.join(" ").as_str()));
+// }
+
+fn oll_solved() {
     let solved_cube = RubiksCube::new();
     let mut tested_cube = RubiksCube::new();
     // get the color of the bottom
-    let bottom = solved_cube.faces[1][0];
+    let top = solved_cube.faces[0][0];
     // Test various moves...
-    let scramble = "U L' U U L U L' U U L";
+    let scramble = "U U R U R' U' R' F R F' L' U' L U L F' L' F";
     tested_cube.apply_scramble(&flip_and_toggle_moves(scramble));
 
     // perform f2l to solve cube
-    solve_f2l(&mut tested_cube, &bottom);
-    assert_eq!(solved_cube, tested_cube);
+    let moves = solve_oll(&mut tested_cube, &top);
+    assert_eq!((solved_cube, scramble), (tested_cube, moves.join(" ").as_str()));
 }
- 

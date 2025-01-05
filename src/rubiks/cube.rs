@@ -52,8 +52,8 @@ impl RubiksCube {
             ("L'", RubiksCube::l_counterclockwise),
             ("R", RubiksCube::r_clockwise),
             ("R'", RubiksCube::r_counterclockwise),
-            ("y", RubiksCube::y_clockwise),
-            ("y'", RubiksCube::y_counterclockwise),
+            // ("y", RubiksCube::y_clockwise),
+            // ("y'", RubiksCube::y_counterclockwise),
         ]
     }
 
