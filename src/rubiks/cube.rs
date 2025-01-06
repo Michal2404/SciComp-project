@@ -73,6 +73,7 @@ impl RubiksCube {
                 'B' => Self::b_clockwise,
                 'L' => Self::l_clockwise,
                 'R' => Self::r_clockwise,
+                'M' => Self::m_clockwise,
                 'y' => Self::y_clockwise,
                 _ => continue, // Skip invalid characters
             };
@@ -89,6 +90,7 @@ impl RubiksCube {
                             'B' => Self::b_counterclockwise(self),
                             'L' => Self::l_counterclockwise(self),
                             'R' => Self::r_counterclockwise(self),
+                            'M' => Self::m_counterclockwise(self),
                             'y' => Self::y_counterclockwise(self),
                             _ => {}
                         }
@@ -407,7 +409,7 @@ impl RubiksCube {
         self.faces[3][5] = temp[0][3];
         self.faces[3][8] = temp[0][0];
     }
-
+    
     pub fn y_clockwise(&mut self) {
         let temp = self.faces.clone();
         self.faces[2] = temp[4];
@@ -422,6 +424,38 @@ impl RubiksCube {
         self.faces[3] = temp[4];
         self.faces[5] = temp[3];
         self.faces[2] = temp[5];
+    }
+    
+    pub fn m_clockwise(&mut self) {
+        let temp = self.faces.clone();
+        self.faces[0][1] = temp[2][1];
+        self.faces[0][4] = temp[2][4];
+        self.faces[0][7] = temp[2][7];
+        self.faces[1][1] = temp[3][7];
+        self.faces[1][4] = temp[3][4];
+        self.faces[1][7] = temp[3][1];
+        self.faces[2][1] = temp[1][1];
+        self.faces[2][4] = temp[1][4];
+        self.faces[2][7] = temp[1][7];
+        self.faces[3][1] = temp[0][7];
+        self.faces[3][4] = temp[0][4];
+        self.faces[3][7] = temp[0][1];
+    }
+    
+    pub fn m_counterclockwise(&mut self) {
+        let temp = self.faces.clone();
+        self.faces[0][1] = temp[3][7];
+        self.faces[0][4] = temp[3][4];
+        self.faces[0][7] = temp[3][1];
+        self.faces[1][1] = temp[2][1];
+        self.faces[1][4] = temp[2][4];
+        self.faces[1][7] = temp[2][7];
+        self.faces[2][1] = temp[0][1];
+        self.faces[2][4] = temp[0][4];
+        self.faces[2][7] = temp[0][7];
+        self.faces[3][1] = temp[1][7];
+        self.faces[3][4] = temp[1][4];
+        self.faces[3][7] = temp[1][1];
     }
 
     pub fn visualize(self) {

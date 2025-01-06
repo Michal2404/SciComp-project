@@ -1,6 +1,7 @@
 use SciComp_project::rubiks::cube::RubiksCube;
 use SciComp_project::cfop::f2l::solve_f2l;
 use SciComp_project::cfop::oll::solve_oll;
+use SciComp_project::cfop::pll::solve_pll;
 
 fn flip_and_toggle_moves(input: &str) -> String {
     input
@@ -26,8 +27,9 @@ fn flip_and_toggle_moves(input: &str) -> String {
 //     let solved_cube = RubiksCube::new();
 //     let mut tested_cube = RubiksCube::new();
 //     // Test various moves...
-//     let scramble = "R2 L2 U2 D2 F2 B2 D2 U2 F2 B2 R2 L2";
-//     tested_cube.apply_scramble(scramble);
+//     let scramble = "M M U M' U U M U M M";
+//     // let scramble = "M M";
+//     tested_cube.apply_scramble(&flip_and_toggle_moves(&scramble));
 //     assert_eq!(solved_cube, tested_cube);
 // }
 
@@ -45,16 +47,29 @@ fn flip_and_toggle_moves(input: &str) -> String {
 //     assert_eq!((solved_cube, scramble), (tested_cube, moves.join(" ").as_str()));
 // }
 
-fn oll_solved() {
+// fn oll_solved() {
+//     let solved_cube = RubiksCube::new();
+//     let mut tested_cube = RubiksCube::new();
+//     // get the color of the bottom
+//     let top = solved_cube.faces[0][0];
+//     // Test various moves...
+//     let scramble = "R L' U R' U' L R' F R F'";
+//     tested_cube.apply_scramble(&flip_and_toggle_moves(scramble));
+
+//     // perform f2l to solve cube
+//     let moves = solve_oll(&mut tested_cube, &top);
+//     assert_eq!((solved_cube, scramble), (tested_cube, moves.join(" ").as_str()));
+// }
+
+fn pll_solved() {
     let solved_cube = RubiksCube::new();
     let mut tested_cube = RubiksCube::new();
-    // get the color of the bottom
-    let top = solved_cube.faces[0][0];
     // Test various moves...
-    let scramble = "U U R U R' U' R' F R F' L' U' L U L F' L' F";
+    let scramble = "R U R' U' R' F R R U' R' U' R U R' F'";
     tested_cube.apply_scramble(&flip_and_toggle_moves(scramble));
+    // tested_cube.apply_scramble(scramble);
 
     // perform f2l to solve cube
-    let moves = solve_oll(&mut tested_cube, &top);
+    let moves = solve_pll(&mut tested_cube);
     assert_eq!((solved_cube, scramble), (tested_cube, moves.join(" ").as_str()));
 }

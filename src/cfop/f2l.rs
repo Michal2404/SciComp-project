@@ -34,6 +34,8 @@ pub fn solve_f2l(cube: &mut RubiksCube, target: &Color) -> Vec<String> {
 
     // initialize list that contains all the moves
     let mut output_list: Vec<String> = Vec::new();
+    // initialize number of U moves 
+    let mut count: usize = 0;
 
     // loop through each color and try to find algorithm that solves f2l
     while !colors.is_empty() {
@@ -69,6 +71,8 @@ pub fn solve_f2l(cube: &mut RubiksCube, target: &Color) -> Vec<String> {
                     // println!("after: {:?}", colors);
                     // we indicate for this loop a color has been solved
                     color_solved = true;
+                    // reset count
+                    count = 0;
                     
                 }
             }
@@ -76,11 +80,70 @@ pub fn solve_f2l(cube: &mut RubiksCube, target: &Color) -> Vec<String> {
         }
         // if the colors is still not empty and we haven't solved a color this loop, that means we have to make a random move and try it again
         if !colors.is_empty() && !color_solved {
+            count += 1;
             output_list.push("U".to_string());
             cube.apply_scramble("U");
         }
-
+        
         // TODO: for niche situations where none of this works, we need to locate this troubled piece and convert it into a state where we can perform algorithm
+        // if count is 4, that means we did a full loop without finding algorithm, therefore we must take trouble piece out of slot
+        if count == 4 {
+            // locate troubled piece
+            let corner = corner_piece_location(cube, &target, &colors[0][0], &colors[0][1]);
+            let edge = edge_piece_location(cube, &colors[0][0], &colors[0][1]);
+            
+            // convert local to global
+            let (x_corner, y_corner, z_corner) = local_to_global(corner[0].0, corner[0].1);
+            let (x_edge, y_edge, z_edge) = local_to_global(edge[0].0, edge[0].1);
+
+            // check location of both corner and edge
+            // slot 1
+            if (x_corner == 2 && y_corner == 0 && z_corner == 0) || (x_edge == 2 && y_edge == 0 && z_edge == 1) {
+                // we perform U action if either corner or edge piece is in replacement spot
+                if (x_corner == 0 && y_corner == 2 && z_corner == 2) || (x_edge == 1 && y_edge == 2 && z_edge == 2) {
+                    output_list.push("U".to_string());
+                    cube.apply_scramble("U");
+                }
+                // now we can safely take out the troubled piece
+                output_list.push("R U R'".to_string());
+                cube.apply_scramble("R U R'");
+            }
+            // slot 2
+            if (x_corner == 0 && y_corner == 0 && z_corner == 0) || (x_edge == 0 && y_edge == 0 && z_edge == 1) {
+                // we perform U action if either corner or edge piece is in replacement spot
+                if (x_corner == 2 && y_corner == 2 && z_corner == 2) || (x_edge == 1 && y_edge == 2 && z_edge == 2) {
+                    output_list.push("U".to_string());
+                    cube.apply_scramble("U");
+                }
+                // now we can safely take out the troubled piece
+                output_list.push("L' U' L".to_string());
+                cube.apply_scramble("L' U' L");
+            }
+            // slot 3
+            if (x_corner == 0 && y_corner == 2 && z_corner == 0) || (x_edge == 0 && y_edge == 2 && z_edge == 1) {
+                // we perform U action if either corner or edge piece is in replacement spot
+                if (x_corner == 2 && y_corner == 2 && z_corner == 2) || (x_edge == 1 && y_edge == 2 && z_edge == 2) {
+                    output_list.push("U".to_string());
+                    cube.apply_scramble("U");
+                }
+                // now we can safely take out the troubled piece
+                output_list.push("L U' L'".to_string());
+                cube.apply_scramble("L U' L'");
+            }
+            // slot 4
+            if (x_corner == 2 && y_corner == 2 && z_corner == 0) || (x_edge == 2 && y_edge == 2 && z_edge == 1) {
+                // we perform U action if either corner or edge piece is in replacement spot
+                if (x_corner == 0 && y_corner == 2 && z_corner == 2) || (x_edge == 1 && y_edge == 2 && z_edge == 2) {
+                    output_list.push("U".to_string());
+                    cube.apply_scramble("U");
+                }
+                // now we can safely take out the troubled piece
+                output_list.push("R' U R".to_string());
+                cube.apply_scramble("R' U R");
+            }
+            // update count
+            count = 0;
+        }
     }
     // once all done, we will print out the list
     println!("{}", output_list.join(" "));

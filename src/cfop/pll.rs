@@ -21,10 +21,10 @@ pub fn solve_pll(cube: &mut RubiksCube) -> Vec<String>{
     let mut solved = false;
     while !solved {
         // First look at the position of the target color
-        let position2: Vec<(usize, usize)> = piece_location(cube, &cube.faces[2][4]);
-        let position3: Vec<(usize, usize)> = piece_location(cube, &cube.faces[3][4]);
-        let position4: Vec<(usize, usize)> = piece_location(cube, &cube.faces[4][4]);
-        let position5: Vec<(usize, usize)> = piece_location(cube, &cube.faces[5][4]);
+        let position2: Vec<(usize, usize)> = piece_location(cube, &cube.faces[2][1]);
+        let position3: Vec<(usize, usize)> = piece_location(cube, &cube.faces[3][1]);
+        let position4: Vec<(usize, usize)> = piece_location(cube, &cube.faces[4][1]);
+        let position5: Vec<(usize, usize)> = piece_location(cube, &cube.faces[5][1]);
 
         // now loop through the keys and items in the hashmap
         for (algo, key) in &map {
@@ -47,19 +47,30 @@ pub fn solve_pll(cube: &mut RubiksCube) -> Vec<String>{
                 solved = true;
             }
         }
-        // if solved is still false and cube hasn't made a full rotation yet, that means we must rotate the whole cube and try again
-        if !solved && y_list.len() < 4 {
-            y_list.push("y".to_string());
-            cube.apply_scramble("y");
-        }
         // if solved is still false and the cube has made a full rotation, we turn the top of cube and reset y_list
-        else if !solved && y_list.len() == 4 {
+        if !solved{
             output_list.push("U".to_string());
             cube.apply_scramble("U");
-            y_list = Vec::new();
-
         }
+        // // if solved is still false and cube hasn't made a full rotation yet, that means we must rotate the whole cube and try again
+        // if !solved && y_list.len() < 4 {
+        //     y_list.push("y".to_string());
+        //     cube.apply_scramble("y");
+        // }
+        // // if solved is still false and the cube has made a full rotation, we turn the top of cube and reset y_list
+        // else if !solved && y_list.len() == 4 {
+        //     output_list.push("U".to_string());
+        //     cube.apply_scramble("U");
+        //     y_list = Vec::new();
 
+        // }
+
+    }
+
+    // lastly, we turn the cube until completely solved
+    while !cube.is_solved() {
+        output_list.push("U".to_string());
+        cube.apply_scramble("U");
     }
     // once all done, we will print out the list
     println!("{}", output_list.join(" "));
