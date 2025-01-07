@@ -27,10 +27,8 @@
 /// R3, R4, R5, R6, R7, R8, R9, F1, F2, F3, F4, F5, F6, F7, F8, F9, D1, D2, D3, D4, D5, D6, D7, D8, D9, L1, L2, L3, L4,
 /// L5, L6, L7, L8, L9, B1, B2, B3, B4, B5, B6, B7, B8, B9 of the enum constants.
 use eframe::egui;
-use eframe::egui::{Painter, Pos2, Rect, Vec2};
 
 // Enumerations to improve readability of the cube-solving code
-
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum Facelet {
     // The facelet positions of the cube
@@ -112,19 +110,36 @@ impl Color {
             Color::B => egui::Color32::BLUE,
         }
     }
+    pub fn iter() -> &'static [Color] {
+        &[Color::U, Color::R, Color::F, Color::D, Color::L, Color::B]
+    }
 }
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Clone, Copy)]
 pub enum Corner {
     // The corner positions of the cube
-    URF, // Up-Right-Front
-    UFL, // Up-Front-Left
-    ULB, // Up-Left-Back
-    UBR, // Up-Back-Right
-    DFR, // Down-Front-Right
-    DLF, // Down-Left-Front
-    DBL, // Down-Back-Left
-    DRB, // Down-Right-Back
+    URF = 0, // Up-Right-Front
+    UFL = 1, // Up-Front-Left
+    ULB = 2, // Up-Left-Back
+    UBR = 3, // Up-Back-Right
+    DFR = 4, // Down-Front-Right
+    DLF = 5, // Down-Left-Front
+    DBL = 6, // Down-Back-Left
+    DRB = 7, // Down-Right-Back
+}
+
+impl Corner {
+    /// A constant array of all enum variants
+    pub const ALL: [Corner; 8] = [
+        Corner::URF,
+        Corner::UFL,
+        Corner::ULB,
+        Corner::UBR,
+        Corner::DFR,
+        Corner::DLF,
+        Corner::DBL,
+        Corner::DRB,
+    ];
 }
 
 #[derive(Debug, PartialEq, PartialOrd, Eq, Clone, Copy)]
@@ -163,6 +178,26 @@ impl Edge {
         ]
         .iter()
         .copied()
+    }
+}
+
+impl Edge {
+    pub fn from_index(index: usize) -> Edge {
+        match index {
+            0 => Edge::UR,
+            1 => Edge::UF,
+            2 => Edge::UL,
+            3 => Edge::UB,
+            4 => Edge::DR,
+            5 => Edge::DF,
+            6 => Edge::DL,
+            7 => Edge::DB,
+            8 => Edge::FR,
+            9 => Edge::FL,
+            10 => Edge::BL,
+            11 => Edge::BR,
+            _ => panic!("Invalid edge index!"),
+        }
     }
 }
 

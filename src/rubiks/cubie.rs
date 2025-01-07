@@ -1,219 +1,14 @@
 /// The cube on the cubie level is described by the permutation and orientations of corners and edges
-use super::defs::{CORNER_COLOR, CORNER_FACELET, EDGE_COLOR, EDGE_FACELET, N_SYM};
+use super::defs::{CORNER_COLOR, CORNER_FACELET, EDGE_COLOR, EDGE_FACELET};
+use super::defs::{CO_B, CO_D, CO_F, CO_L, CO_R, CO_U, CP_B, CP_D, CP_F, CP_L, CP_R, CP_U};
+use super::defs::{EO_B, EO_D, EO_F, EO_L, EO_R, EO_U, EP_B, EP_D, EP_F, EP_L, EP_R, EP_U};
+use super::defs::{TURN_B, TURN_D, TURN_F, TURN_L, TURN_R, TURN_U};
 use super::enums::{Color, Corner as Co, Edge as Ed};
-use super::face::{self, FaceCube};
+use super::face::FaceCube;
 use super::misc::{c_nk, rotate_left, rotate_right};
-use eframe::egui::accesskit::Invalid;
-use rand::Rng;
 
-// Basic six cube moves described by permutations and changes in orientation
-// Up-move
-pub const CP_U: [Co; 8] = [
-    Co::UBR,
-    Co::URF,
-    Co::UFL,
-    Co::ULB,
-    Co::DFR,
-    Co::DLF,
-    Co::DBL,
-    Co::DRB,
-];
-pub const CO_U: [u8; 8] = [0, 0, 0, 0, 0, 0, 0, 0];
-pub const EP_U: [Ed; 12] = [
-    Ed::UB,
-    Ed::UR,
-    Ed::UF,
-    Ed::UL,
-    Ed::DR,
-    Ed::DF,
-    Ed::DL,
-    Ed::DB,
-    Ed::FR,
-    Ed::FL,
-    Ed::BL,
-    Ed::BR,
-];
-pub const EO_U: [u8; 12] = [0; 12];
-pub const TURN_U: CubieCube = CubieCube {
-    cp: CP_U,
-    co: CO_U,
-    ep: EP_U,
-    eo: EO_U,
-};
-
-// Right-move
-pub const CP_R: [Co; 8] = [
-    Co::DFR,
-    Co::UFL,
-    Co::ULB,
-    Co::URF,
-    Co::DRB,
-    Co::DLF,
-    Co::DBL,
-    Co::UBR,
-];
-pub const CO_R: [u8; 8] = [2, 0, 0, 1, 1, 0, 0, 2];
-pub const EP_R: [Ed; 12] = [
-    Ed::FR,
-    Ed::UF,
-    Ed::UL,
-    Ed::UB,
-    Ed::BR,
-    Ed::DF,
-    Ed::DL,
-    Ed::DB,
-    Ed::DR,
-    Ed::FL,
-    Ed::BL,
-    Ed::UR,
-];
-pub const EO_R: [u8; 12] = [0; 12];
-pub const TURN_R: CubieCube = CubieCube {
-    cp: CP_R,
-    co: CO_R,
-    ep: EP_R,
-    eo: EO_R,
-};
-
-// Front-move
-pub const CP_F: [Co; 8] = [
-    Co::UFL,
-    Co::DLF,
-    Co::ULB,
-    Co::UBR,
-    Co::URF,
-    Co::DFR,
-    Co::DBL,
-    Co::DRB,
-];
-pub const CO_F: [u8; 8] = [1, 2, 0, 0, 2, 1, 0, 0];
-pub const EP_F: [Ed; 12] = [
-    Ed::UR,
-    Ed::FL,
-    Ed::UL,
-    Ed::UB,
-    Ed::DR,
-    Ed::FR,
-    Ed::DL,
-    Ed::DB,
-    Ed::UF,
-    Ed::DF,
-    Ed::BL,
-    Ed::BR,
-];
-pub const EO_F: [u8; 12] = [0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0];
-pub const TURN_F: CubieCube = CubieCube {
-    cp: CP_F,
-    co: CO_F,
-    ep: EP_F,
-    eo: EO_F,
-};
-
-// Down-move
-pub const CP_D: [Co; 8] = [
-    Co::URF,
-    Co::UFL,
-    Co::ULB,
-    Co::UBR,
-    Co::DLF,
-    Co::DBL,
-    Co::DRB,
-    Co::DFR,
-];
-pub const CO_D: [u8; 8] = [0; 8];
-pub const EP_D: [Ed; 12] = [
-    Ed::UR,
-    Ed::UF,
-    Ed::UL,
-    Ed::UB,
-    Ed::DF,
-    Ed::DL,
-    Ed::DB,
-    Ed::DR,
-    Ed::FR,
-    Ed::FL,
-    Ed::BL,
-    Ed::BR,
-];
-pub const EO_D: [u8; 12] = [0; 12];
-pub const TURN_D: CubieCube = CubieCube {
-    cp: CP_D,
-    co: CO_D,
-    ep: EP_D,
-    eo: EO_D,
-};
-
-// Left-move
-pub const CP_L: [Co; 8] = [
-    Co::URF,
-    Co::ULB,
-    Co::DBL,
-    Co::UBR,
-    Co::DFR,
-    Co::UFL,
-    Co::DLF,
-    Co::DRB,
-];
-pub const CO_L: [u8; 8] = [0, 1, 2, 0, 0, 2, 1, 0];
-pub const EP_L: [Ed; 12] = [
-    Ed::UR,
-    Ed::UF,
-    Ed::BL,
-    Ed::UB,
-    Ed::DR,
-    Ed::DF,
-    Ed::FL,
-    Ed::DB,
-    Ed::FR,
-    Ed::UL,
-    Ed::DL,
-    Ed::BR,
-];
-pub const EO_L: [u8; 12] = [0; 12];
-pub const TURN_L: CubieCube = CubieCube {
-    cp: CP_L,
-    co: CO_L,
-    ep: EP_L,
-    eo: EO_L,
-};
-
-// Back-move
-pub const CP_B: [Co; 8] = [
-    Co::URF,
-    Co::UFL,
-    Co::UBR,
-    Co::DRB,
-    Co::DFR,
-    Co::DLF,
-    Co::ULB,
-    Co::DBL,
-];
-pub const CO_B: [u8; 8] = [0, 0, 1, 2, 0, 0, 2, 1];
-pub const EP_B: [Ed; 12] = [
-    Ed::UR,
-    Ed::UF,
-    Ed::UL,
-    Ed::BR,
-    Ed::DR,
-    Ed::DF,
-    Ed::DL,
-    Ed::BL,
-    Ed::FR,
-    Ed::FL,
-    Ed::UB,
-    Ed::DB,
-];
-pub const EO_B: [u8; 12] = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1];
-pub const TURN_B: CubieCube = CubieCube {
-    cp: CP_B,
-    co: CO_B,
-    ep: EP_B,
-    eo: EO_B,
-};
-
-pub const CUBE_OK: bool = true;
-
-#[derive(Debug, Clone)]
+// Struct defining the Cube on the Cubie Level
+#[derive(Debug, Clone, Copy)]
 pub struct CubieCube {
     pub cp: [Co; 8],  // Corner permutation
     pub co: [u8; 8],  // Corner orientation
@@ -248,6 +43,8 @@ impl CubieCube {
         }
     }
 
+    // Create an instance of the CubieCube from the standard Scramble-notation, e.g
+    // "R F2 D' U2 B2 L D'..."
     pub fn from_scramble(scramble: &str) -> Self {
         let mut cube = CubieCube::new(None, None, None, None);
 
@@ -333,12 +130,13 @@ impl CubieCube {
         s
     }
 
+    // Applying a permutation to the Cube can be seen as multiplication with a different permutation
     pub fn multiply(&mut self, b: &CubieCube) {
         self.corner_multiply(b);
         self.edge_multiply(b);
     }
 
-    fn corner_multiply(&mut self, b: &CubieCube) {
+    pub fn corner_multiply(&mut self, b: &CubieCube) {
         let mut c_perm = [Co::URF; 8];
         let mut c_ori = [0; 8];
 
@@ -365,7 +163,7 @@ impl CubieCube {
         self.co.copy_from_slice(&c_ori);
     }
 
-    fn edge_multiply(&mut self, b: &CubieCube) {
+    pub fn edge_multiply(&mut self, b: &CubieCube) {
         let mut e_perm = [Ed::UR; 12];
         let mut e_ori = [0; 12];
 
@@ -379,6 +177,7 @@ impl CubieCube {
         self.eo.copy_from_slice(&e_ori);
     }
 
+    // Transform to the Facelet level
     pub fn to_facelet_cube(&self) -> FaceCube {
         let mut fc = FaceCube::new();
 
@@ -403,6 +202,10 @@ impl CubieCube {
         fc
     }
 
+    // Let A be some scrambled Cube and B its inverse, then A * B = I (solved cube)
+    // If we are looking for a solution of some scrambled cube, we are in fact looking
+    // for its inverse permutation composed as a product of the permutations
+    // corresponding to the elementary moves.
     pub fn inv_cubie_cube(&self, d: &mut CubieCube) {
         // Invert edge permutation and orientation
         for e in 0..12 {
@@ -450,7 +253,7 @@ impl CubieCube {
         s % 2
     }
 
-    // coordinates for phase 1 and 2
+    // Methods for getting the coordinates from the Cube to represent it on a coordinate level
 
     // Get the twist of the 8 corners. 0 <= twist <= 2187 in phase 1, twist = 0 in phase 2
     pub fn get_twist(&self) -> u16 {
@@ -807,6 +610,67 @@ impl CubieCube {
             rotate_left(&mut self.ep, 0, 11); // Rotate the edges back to the original position
         }
     }
+
+    /// Get the permutation of the 8 corners.
+    /// 0 <= corners < 40320 defined but unused in phase 1, 0 <= corners < 40320 in phase 2,
+    /// corners = 0 for solved cube
+    pub fn get_corners(&self) -> usize {
+        let mut perm = self.cp.clone();
+        let mut b = 0;
+        for j in (Co::UFL as usize..=Co::DRB as usize).rev() {
+            let mut k = 0;
+
+            for i in (Co::URF as usize..j).rev() {
+                if self.cp[i] > self.cp[j] {
+                    k += 1;
+                }
+            }
+            b = (b + k) * j as usize;
+        }
+        b
+    }
+
+    pub fn set_corners(&mut self, mut idx: usize) {
+        for i in Co::URF as usize..=Co::DRB as usize {
+            self.cp[i] = Co::from_usize(i).expect("Invalid edge index");
+        }
+        for j in 0..=7 {
+            let mut k = idx % (j + 1);
+            idx /= j + 1;
+            while k > 0 {
+                rotate_right(&mut self.cp, 0, j);
+                k -= 1;
+            }
+        }
+    }
+
+    /// Get the permutation of the 8 U and D edges.
+    pub fn get_ud_edges(&self) -> usize {
+        let mut b = 0;
+        for j in (Ed::UF as usize..=Ed::DB as usize).rev() {
+            let mut k = 0;
+            for i in (Ed::UR as usize..j).rev() {
+                if self.ep[i] > self.ep[j] {
+                    k += 1;
+                }
+            }
+            b = (b + k) * j as usize;
+        }
+        b
+    }
+
+    // This doesn't work properly yet!
+    pub fn set_ud_edges(&mut self, mut idx: usize) {
+        let mut idx = idx;
+        for j in 0..8 {
+            let mut k = idx % (j + 1);
+            idx /= j + 1;
+            while k > 0 {
+                rotate_right(&mut self.ep, 0, j);
+                k -= 1;
+            }
+        }
+    }
 }
 
 impl std::fmt::Display for CubieCube {
@@ -863,14 +727,70 @@ impl FromUsize for Ed {
         }
     }
 }
+const NUM_MOVES: usize = 18;
+
+lazy_static::lazy_static! {
+    pub static ref BASIC_MOVE_CUBE: [CubieCube; 6] = {
+        let mut cubes = [CubieCube::new(None, None, None, None); 6];
+        cubes[Color::U as usize] = CubieCube::new(Some(CP_U), Some(CO_U), Some(EP_U), Some(EO_U));
+        cubes[Color::R as usize] = CubieCube::new(Some(CP_R), Some(CO_R), Some(EP_R), Some(EO_R));
+        cubes[Color::F as usize] = CubieCube::new(Some(CP_F), Some(CO_F), Some(EP_F), Some(EO_F));
+        cubes[Color::D as usize] = CubieCube::new(Some(CP_D), Some(CO_D), Some(EP_D), Some(EO_D));
+        cubes[Color::L as usize] = CubieCube::new(Some(CP_L), Some(CO_L), Some(EP_L), Some(EO_L));
+        cubes[Color::B as usize] = CubieCube::new(Some(CP_B), Some(CO_B), Some(EP_B), Some(EO_B));
+        cubes
+    };
+}
+
+lazy_static::lazy_static! {
+    pub static ref MOVE_CUBE: [CubieCube; NUM_MOVES] = {
+        let mut move_cube = [CubieCube::new(None, None, None, None); NUM_MOVES];
+
+        for &c1 in Color::iter() {
+            let mut cc = CubieCube::new(None, None, None, None);
+            for k1 in 0..3 {
+                cc.multiply(&BASIC_MOVE_CUBE[c1 as usize]); // Assuming `multiply` mutates the object
+                move_cube[3 * c1 as usize + k1] = CubieCube::new(
+                    Some(cc.cp),
+                    Some(cc.co),
+                    Some(cc.ep),
+                    Some(cc.eo),
+                );
+            }
+        }
+
+        move_cube
+    };
+}
 
 #[cfg(test)]
 mod tests {
 
     use super::*;
+    #[test]
+    fn test_twist() {
+        // test get_twist
+        let cube = CubieCube::new(None, None, None, None);
+        assert_eq!(cube.get_twist(), 0);
+        let cube = CubieCube::from_scramble("R");
+        assert_eq!(cube.get_twist(), 1494);
+        let cube = CubieCube::from_scramble("R F2 U B L");
+        assert_eq!(cube.get_twist(), 1410);
+        let cube =
+            CubieCube::from_scramble("R U R' U' R U R' U' R U R' U' R U R' U' R U R' U' R U R' U'");
+        assert_eq!(cube.get_twist(), 0);
+        // test set twist
+        let mut cube = CubieCube::new(None, None, None, None);
+        cube.set_twist(324);
+        assert_eq!(cube.get_twist(), 324);
+        let mut cube = CubieCube::new(None, None, None, None);
+        cube.set_twist(2180);
+        assert_eq!(cube.get_twist(), 2180);
+    }
 
     #[test]
-    fn test_get_flip() {
+    fn test_flip() {
+        // test get_flip
         let cube = CubieCube::from_scramble("R");
         assert_eq!(cube.get_flip(), 0);
         let cube = CubieCube::from_scramble("F");
@@ -879,24 +799,13 @@ mod tests {
         assert_eq!(cube.get_flip(), 550);
         let cube = CubieCube::from_scramble("B' U F D L2 F'");
         assert_eq!(cube.get_flip(), 1349);
-    }
-
-    #[test]
-    fn test_set_flip() {
-        let mut flip = 10;
+        // test set_flip
         let mut cube = CubieCube::new(None, None, None, None);
-        cube.set_flip(flip);
-        assert_eq!(cube.eo[7], 1);
-        assert_eq!(cube.eo[9], 1);
-        assert_eq!(cube.eo[0], 0);
-        assert_eq!(cube.eo[1], 0);
-        assert_eq!(cube.eo[2], 0);
-        assert_eq!(cube.eo[3], 0);
-        assert_eq!(cube.eo[4], 0);
-        assert_eq!(cube.eo[5], 0);
-        assert_eq!(cube.eo[6], 0);
-        assert_eq!(cube.eo[8], 0);
-        assert_eq!(cube.eo[10], 0);
+        cube.set_flip(1000);
+        assert_eq!(cube.get_flip(), 1000);
+        let mut cube = CubieCube::new(None, None, None, None);
+        cube.set_flip(691);
+        assert_eq!(cube.get_flip(), 691);
     }
 
     #[test]
@@ -993,5 +902,28 @@ mod tests {
             // Assert that the calculated index matches the original
             assert_eq!(calculated_idx, idx, "Failed on test case: {}", description);
         }
+    }
+
+    #[test]
+    fn test_corners() {
+        let mut cube = CubieCube::from_scramble("R");
+        assert_eq!(cube.get_corners(), 21021);
+        let mut cube = CubieCube::from_scramble("R F");
+        assert_eq!(cube.get_corners(), 20924);
+        let mut cube = CubieCube::from_scramble("R R'");
+        assert_eq!(cube.get_corners(), 0);
+
+        let mut cube2 = CubieCube::new(None, None, None, None);
+        cube2.set_corners(21021);
+        assert_eq!(cube2.get_corners(), 21021);
+    }
+
+    #[test]
+    fn ud_edges() {
+        let cube = CubieCube::from_scramble("R2 U L2");
+        assert_eq!(cube.get_ud_edges(), 3834);
+        let mut cube2 = CubieCube::from_scramble("");
+        cube2.set_ud_edges(105);
+        assert_eq!(cube2.get_ud_edges(), 3834);
     }
 }

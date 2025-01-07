@@ -1,6 +1,8 @@
+// Defining the cube on the Facelet Level with positions of the stickers.
+
 use super::cubie::CubieCube;
-use super::defs::{CORNER_COLOR, CORNER_FACELET, EDGE_COLOR, EDGE_FACELET, N_SYM};
-use super::enums::{Color, Corner as Co, Edge as Ed, Facelet};
+use super::defs::{CORNER_COLOR, CORNER_FACELET, EDGE_COLOR, EDGE_FACELET};
+use super::enums::{Color, Corner as Co, Edge as Ed};
 use crate::rubiks::cubie::FromUsize;
 
 #[derive(Debug)]

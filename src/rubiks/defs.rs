@@ -1,6 +1,7 @@
 // Constants and definitions for the cube
 
-use super::enums::{Color as Cl, Facelet as Fc};
+use super::cubie::CubieCube;
+use super::enums::{Color as Cl, Corner as Co, Edge as Ed, Facelet as Fc};
 
 // Map the corner positions to facelet positions
 pub const CORNER_FACELET: [[Fc; 3]; 8] = [
@@ -58,6 +59,213 @@ pub const EDGE_COLOR: [[Cl; 2]; 12] = [
     [Cl::B, Cl::R],
 ];
 
+// Basic six cube moves described by permutations and changes in orientation
+// Up-move
+pub const CP_U: [Co; 8] = [
+    Co::UBR,
+    Co::URF,
+    Co::UFL,
+    Co::ULB,
+    Co::DFR,
+    Co::DLF,
+    Co::DBL,
+    Co::DRB,
+];
+pub const CO_U: [u8; 8] = [0, 0, 0, 0, 0, 0, 0, 0];
+pub const EP_U: [Ed; 12] = [
+    Ed::UB,
+    Ed::UR,
+    Ed::UF,
+    Ed::UL,
+    Ed::DR,
+    Ed::DF,
+    Ed::DL,
+    Ed::DB,
+    Ed::FR,
+    Ed::FL,
+    Ed::BL,
+    Ed::BR,
+];
+pub const EO_U: [u8; 12] = [0; 12];
+pub const TURN_U: CubieCube = CubieCube {
+    cp: CP_U,
+    co: CO_U,
+    ep: EP_U,
+    eo: EO_U,
+};
+
+// Right-move
+pub const CP_R: [Co; 8] = [
+    Co::DFR,
+    Co::UFL,
+    Co::ULB,
+    Co::URF,
+    Co::DRB,
+    Co::DLF,
+    Co::DBL,
+    Co::UBR,
+];
+pub const CO_R: [u8; 8] = [2, 0, 0, 1, 1, 0, 0, 2];
+pub const EP_R: [Ed; 12] = [
+    Ed::FR,
+    Ed::UF,
+    Ed::UL,
+    Ed::UB,
+    Ed::BR,
+    Ed::DF,
+    Ed::DL,
+    Ed::DB,
+    Ed::DR,
+    Ed::FL,
+    Ed::BL,
+    Ed::UR,
+];
+pub const EO_R: [u8; 12] = [0; 12];
+pub const TURN_R: CubieCube = CubieCube {
+    cp: CP_R,
+    co: CO_R,
+    ep: EP_R,
+    eo: EO_R,
+};
+
+// Front-move
+pub const CP_F: [Co; 8] = [
+    Co::UFL,
+    Co::DLF,
+    Co::ULB,
+    Co::UBR,
+    Co::URF,
+    Co::DFR,
+    Co::DBL,
+    Co::DRB,
+];
+pub const CO_F: [u8; 8] = [1, 2, 0, 0, 2, 1, 0, 0];
+pub const EP_F: [Ed; 12] = [
+    Ed::UR,
+    Ed::FL,
+    Ed::UL,
+    Ed::UB,
+    Ed::DR,
+    Ed::FR,
+    Ed::DL,
+    Ed::DB,
+    Ed::UF,
+    Ed::DF,
+    Ed::BL,
+    Ed::BR,
+];
+pub const EO_F: [u8; 12] = [0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0];
+pub const TURN_F: CubieCube = CubieCube {
+    cp: CP_F,
+    co: CO_F,
+    ep: EP_F,
+    eo: EO_F,
+};
+
+// Down-move
+pub const CP_D: [Co; 8] = [
+    Co::URF,
+    Co::UFL,
+    Co::ULB,
+    Co::UBR,
+    Co::DLF,
+    Co::DBL,
+    Co::DRB,
+    Co::DFR,
+];
+pub const CO_D: [u8; 8] = [0; 8];
+pub const EP_D: [Ed; 12] = [
+    Ed::UR,
+    Ed::UF,
+    Ed::UL,
+    Ed::UB,
+    Ed::DF,
+    Ed::DL,
+    Ed::DB,
+    Ed::DR,
+    Ed::FR,
+    Ed::FL,
+    Ed::BL,
+    Ed::BR,
+];
+pub const EO_D: [u8; 12] = [0; 12];
+pub const TURN_D: CubieCube = CubieCube {
+    cp: CP_D,
+    co: CO_D,
+    ep: EP_D,
+    eo: EO_D,
+};
+
+// Left-move
+pub const CP_L: [Co; 8] = [
+    Co::URF,
+    Co::ULB,
+    Co::DBL,
+    Co::UBR,
+    Co::DFR,
+    Co::UFL,
+    Co::DLF,
+    Co::DRB,
+];
+pub const CO_L: [u8; 8] = [0, 1, 2, 0, 0, 2, 1, 0];
+pub const EP_L: [Ed; 12] = [
+    Ed::UR,
+    Ed::UF,
+    Ed::BL,
+    Ed::UB,
+    Ed::DR,
+    Ed::DF,
+    Ed::FL,
+    Ed::DB,
+    Ed::FR,
+    Ed::UL,
+    Ed::DL,
+    Ed::BR,
+];
+pub const EO_L: [u8; 12] = [0; 12];
+pub const TURN_L: CubieCube = CubieCube {
+    cp: CP_L,
+    co: CO_L,
+    ep: EP_L,
+    eo: EO_L,
+};
+
+// Back-move
+pub const CP_B: [Co; 8] = [
+    Co::URF,
+    Co::UFL,
+    Co::UBR,
+    Co::DRB,
+    Co::DFR,
+    Co::DLF,
+    Co::ULB,
+    Co::DBL,
+];
+pub const CO_B: [u8; 8] = [0, 0, 1, 2, 0, 0, 2, 1];
+pub const EP_B: [Ed; 12] = [
+    Ed::UR,
+    Ed::UF,
+    Ed::UL,
+    Ed::BR,
+    Ed::DR,
+    Ed::DF,
+    Ed::DL,
+    Ed::BL,
+    Ed::FR,
+    Ed::FL,
+    Ed::UB,
+    Ed::DB,
+];
+pub const EO_B: [u8; 12] = [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1];
+pub const TURN_B: CubieCube = CubieCube {
+    cp: CP_B,
+    co: CO_B,
+    ep: EP_B,
+    eo: EO_B,
+};
+
+pub const CUBE_OK: bool = true;
+
 // Constants
 pub const N_PERM_4: usize = 24;
 pub const N_CHOOSE_8_4: usize = 70;
@@ -77,4 +285,4 @@ pub const N_UD_EDGES: usize = 40320; // 8! U-face and D-face edge permutations i
 
 pub const N_SYM: usize = 48; // Cube symmetries of group Oh
 pub const N_SYM_D4H: usize = 16; // Subgroup D4h symmetries
-pub const FOLDER: &str = "twophase"; // Folder for generated tables
+pub const FOLDER: &str = "./"; // Folder for generated tables

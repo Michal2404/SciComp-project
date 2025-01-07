@@ -1,14 +1,10 @@
-use eframe::egui::Options;
 use two_phase::gui::app::CubeVisualizer;
-use two_phase::rubiks::cubie::{self, CO_R, EP_R};
-use two_phase::rubiks::cubie::{CP_R, EO_R};
-use two_phase::rubiks::defs;
-use two_phase::rubiks::enums::{Corner as Co, Edge as Ed};
-use two_phase::rubiks::face;
+use two_phase::rubiks::cubie::{self, CubieCube};
+use two_phase::rubiks::moves;
 fn main() {
     // Create scrambled Cube
-    let scramble = "R U R' U'";
-    let mut scrambled = cubie::CubieCube::from_scramble(&scramble);
+    let scramble = "R";
+    let scrambled = cubie::CubieCube::from_scramble(&scramble);
     println!("Scrambled cube in Cubie notation:");
     println!("{:?}\n", scrambled);
 
@@ -55,6 +51,20 @@ fn main() {
     //let mut parity_cube = cubie::CubieCube::new(None, None, None, None);
     //let mut twist: u16 = 27;
     //parity_cube.set_twist(twist);
+
+    // get corner permutation coords
+    let cube = CubieCube::from_scramble("R");
+    let corner_perm_coord = cube.get_corners();
+    println!("Corner permutation coords: {}", corner_perm_coord);
+
+    // set corner permutation coords
+    let cube = CubieCube::new(None, None, None, None);
+    println!("{}", cube.get_corners());
+    // cube.set_corners(21021);
+    // println!("{}", cube.get_corners());
+
+    /// Generate move table
+    moves::generate_move_table();
 
     // Visualize the scramble
     let app = CubeVisualizer::new(scrambled.to_facelet_cube());
