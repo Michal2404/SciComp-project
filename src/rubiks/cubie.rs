@@ -809,30 +809,20 @@ mod tests {
     }
 
     #[test]
-    fn test_get_slice() {
+    fn test_slice() {
+        // test get_slice
         let cube = CubieCube::from_scramble("R U L' R2 U' L2");
-        let ud_slice = cube.get_slice();
-        assert_eq!(ud_slice, 494);
+        assert_eq!(cube.get_slice(), 494);
         let cube = CubieCube::from_scramble("R' D R");
-        let ud_slice = cube.get_slice();
-        assert_eq!(ud_slice, 1);
-    }
+        assert_eq!(cube.get_slice(), 1);
 
-    #[test]
-    fn test_set_slice() {
+        // test set_slice
         let mut cube = CubieCube::new(None, None, None, None); // Assuming default initializes a solved cube
         cube.set_slice(494);
-
-        // Verify that `get_slice` returns the same value as was set
-        let ud_slice = cube.get_slice();
-        assert_eq!(ud_slice, 494);
-
+        assert_eq!(cube.get_slice(), 494);
         let mut cube = CubieCube::new(None, None, None, None);
         cube.set_slice(1);
-
-        // Verify that `get_slice` returns the same value as was set
-        let ud_slice = cube.get_slice();
-        assert_eq!(ud_slice, 1);
+        assert_eq!(cube.get_slice(), 1);
     }
 
     #[test]
@@ -906,16 +896,19 @@ mod tests {
 
     #[test]
     fn test_corners() {
-        let mut cube = CubieCube::from_scramble("R");
+        // test get_corners
+        let cube = CubieCube::from_scramble("R");
         assert_eq!(cube.get_corners(), 21021);
-        let mut cube = CubieCube::from_scramble("R F");
+        let cube = CubieCube::from_scramble("R F");
         assert_eq!(cube.get_corners(), 20924);
-        let mut cube = CubieCube::from_scramble("R R'");
+        let cube = CubieCube::from_scramble("R R'");
         assert_eq!(cube.get_corners(), 0);
-
-        let mut cube2 = CubieCube::new(None, None, None, None);
-        cube2.set_corners(21021);
-        assert_eq!(cube2.get_corners(), 21021);
+        let cube = CubieCube::from_scramble("R2 B' L U2 D' R' F2 D");
+        assert_eq!(cube.get_corners(), 27871);
+        // test set_corners
+        let mut cube = CubieCube::new(None, None, None, None);
+        cube.set_corners(21021);
+        assert_eq!(cube.get_corners(), 21021);
     }
 
     #[test]

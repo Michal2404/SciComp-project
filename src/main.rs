@@ -3,7 +3,7 @@ use two_phase::rubiks::cubie::{self, CubieCube};
 use two_phase::rubiks::moves;
 fn main() {
     // Create scrambled Cube
-    let scramble = "R";
+    let scramble = "R U";
     let scrambled = cubie::CubieCube::from_scramble(&scramble);
     println!("Scrambled cube in Cubie notation:");
     println!("{:?}\n", scrambled);
