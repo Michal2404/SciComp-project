@@ -34,6 +34,10 @@ pub fn c_nk(n: usize, k: usize) -> usize {
     s
 }
 
+pub fn factorial(x: usize) -> usize {
+    (1..=x).product()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -60,5 +64,15 @@ mod tests {
         assert_eq!(c_nk(6, 0), 1);
         assert_eq!(c_nk(6, 6), 1);
         assert_eq!(c_nk(6, 7), 0);
+    }
+
+    #[test]
+    fn test_factorial() {
+        assert_eq!(factorial(2), 2);
+        assert_eq!(factorial(3), 6);
+        assert_eq!(factorial(4), 24);
+        assert_eq!(factorial(5), 120);
+        assert_eq!(factorial(6), 720);
+        assert_eq!(factorial(7), 5040);
     }
 }

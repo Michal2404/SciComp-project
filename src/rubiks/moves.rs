@@ -1,12 +1,9 @@
-use crate::rubiks::defs::N_SLICE;
-
 /// Movetables describe the transformation of the coordinates by cube moves
 use super::cubie as cb;
 use super::defs::{FOLDER, N_CORNERS, N_FLIP, N_MOVE, N_SLICE_SORTED, N_TWIST, N_UD_EDGES};
 use super::enums;
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
-use std::fs::{File, OpenOptions};
-use std::io::{Read, Write};
+use std::fs::File;
 use std::path::Path;
 
 pub fn generate_move_table() {

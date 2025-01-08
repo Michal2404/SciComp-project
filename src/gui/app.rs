@@ -1,5 +1,3 @@
-use crate::rubiks::cubie::CubieCube;
-use crate::rubiks::enums::Color;
 use crate::rubiks::face::FaceCube;
 use eframe::egui;
 use eframe::egui::{Painter, Pos2, Rect, Vec2};

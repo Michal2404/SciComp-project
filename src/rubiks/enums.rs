@@ -115,7 +115,7 @@ impl Color {
     }
 }
 
-#[derive(Debug, PartialEq, Eq, PartialOrd, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Clone, Copy, Ord)]
 pub enum Corner {
     // The corner positions of the cube
     URF = 0, // Up-Right-Front
@@ -142,21 +142,21 @@ impl Corner {
     ];
 }
 
-#[derive(Debug, PartialEq, PartialOrd, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, PartialOrd, Eq, Clone, Copy, Ord)]
 pub enum Edge {
     // The edge positions of the cube
-    UR, // Up-Right
-    UF, // Up-Front
-    UL, // Up-Left
-    UB, // Up-Back
-    DR, // Down-Right
-    DF, // Down-Front
-    DL, // Down-Left
-    DB, // Down-Back
-    FR, // Front-Right
-    FL, // Front-Left
-    BL, // Back-Left
-    BR, // Back-Right
+    UR = 0,  // Up-Right
+    UF = 1,  // Up-Front
+    UL = 2,  // Up-Left
+    UB = 3,  // Up-Back
+    DR = 4,  // Down-Right
+    DF = 5,  // Down-Front
+    DL = 6,  // Down-Left
+    DB = 7,  // Down-Back
+    FR = 8,  // Front-Right
+    FL = 9,  // Front-Left
+    BL = 10, // Back-Left
+    BR = 11, // Back-Right
     Invalid,
 }
 

@@ -59,7 +59,7 @@ pub const EDGE_COLOR: [[Cl; 2]; 12] = [
     [Cl::B, Cl::R],
 ];
 
-// Basic six cube moves described by permutations and changes in orientation
+// Basic six cube moves described by permutations and changes in orientation on the Cubie Level
 // Up-move
 pub const CP_U: [Co; 8] = [
     Co::UBR,

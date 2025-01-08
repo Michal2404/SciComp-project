@@ -5,7 +5,7 @@ use super::defs::{EO_B, EO_D, EO_F, EO_L, EO_R, EO_U, EP_B, EP_D, EP_F, EP_L, EP
 use super::defs::{TURN_B, TURN_D, TURN_F, TURN_L, TURN_R, TURN_U};
 use super::enums::{Color, Corner as Co, Edge as Ed};
 use super::face::FaceCube;
-use super::misc::{c_nk, rotate_left, rotate_right};
+use super::misc::{c_nk, factorial, rotate_left, rotate_right};
 
 // Struct defining the Cube on the Cubie Level
 #[derive(Debug, Clone, Copy)]
@@ -615,7 +615,6 @@ impl CubieCube {
     /// 0 <= corners < 40320 defined but unused in phase 1, 0 <= corners < 40320 in phase 2,
     /// corners = 0 for solved cube
     pub fn get_corners(&self) -> usize {
-        let mut perm = self.cp.clone();
         let mut b = 0;
         for j in (Co::UFL as usize..=Co::DRB as usize).rev() {
             let mut k = 0;
@@ -631,16 +630,45 @@ impl CubieCube {
     }
 
     pub fn set_corners(&mut self, mut idx: usize) {
-        for i in Co::URF as usize..=Co::DRB as usize {
-            self.cp[i] = Co::from_usize(i).expect("Invalid edge index");
+        // This method is divided in 2 steps. In step one we get the corresponding k
+        // indices.
+        // Set the initial values
+        self.cp = Co::ALL;
+        // Create a placeholder for values k
+        let mut array_k = Vec::new();
+        // Compute the values k
+        for j in (1..=7).rev() {
+            let k = idx / (factorial(j));
+            array_k.push(k);
+            idx %= factorial(j);
         }
-        for j in 0..=7 {
-            let mut k = idx % (j + 1);
-            idx /= j + 1;
-            while k > 0 {
-                rotate_right(&mut self.cp, 0, j);
-                k -= 1;
+        // Rotate with corresponding indices
+        // create placeholder for the result
+        let mut result = Vec::new();
+        // Clone the original array of Corners to the Vector of Corners for
+        // easier computation
+        let mut array = Vec::new();
+        for i in 0..self.cp.len() {
+            array.push(self.cp[i]);
+        }
+        for j in array_k {
+            let array_len = array.len();
+            // Bring the right index to the end of the array
+            for _ in 0..j {
+                rotate_right(&mut array, 0, array_len - 1);
             }
+            // Insert the last index to the first element of the result array
+            result.insert(0, array[array.len() - 1]);
+            // Remove the last index from the help-array and sort it
+            array.pop();
+            array.sort();
+        }
+        // Insert the last index to the first place
+        result.insert(0, array.pop().unwrap());
+
+        // Assign the result to the attribute
+        for i in 0..=7 {
+            self.cp[i] = result[i];
         }
     }
 
@@ -659,16 +687,41 @@ impl CubieCube {
         b
     }
 
-    // This doesn't work properly yet!
     pub fn set_ud_edges(&mut self, mut idx: usize) {
-        let mut idx = idx;
-        for j in 0..8 {
-            let mut k = idx % (j + 1);
-            idx /= j + 1;
-            while k > 0 {
-                rotate_right(&mut self.ep, 0, j);
-                k -= 1;
+        // Create a placeholder for k values
+        let mut array_k = Vec::new();
+        // Compute k values
+        for j in (1..=7).rev() {
+            let k = idx / factorial(j);
+            array_k.push(k);
+            idx %= factorial(j);
+        }
+
+        // Rotate using the k indices
+        let mut result = Vec::new();
+        let mut array = Vec::new();
+        // Clone the original ep array to a vector for easier manipulation
+        for i in 0..self.ep.len() {
+            array.push(self.ep[i]);
+        }
+        for j in array_k {
+            let array_len = array.len();
+            // Rotate to bring the correct index to the end of the array
+            for _ in 0..j {
+                rotate_right(&mut array, 0, array_len - 1);
             }
+            // Insert the last element of the array into the result
+            result.insert(0, array[array.len() - 1]);
+            // Remove the last element and sort the remaining array
+            array.pop();
+            array.sort();
+        }
+        // Insert the final element into the result
+        result.insert(0, array.pop().unwrap());
+
+        // Assign the result to the ep attribute
+        for i in 0..=7 {
+            self.ep[i] = result[i];
         }
     }
 }
@@ -909,14 +962,31 @@ mod tests {
         let mut cube = CubieCube::new(None, None, None, None);
         cube.set_corners(21021);
         assert_eq!(cube.get_corners(), 21021);
+        let mut cube = CubieCube::new(None, None, None, None);
+        cube.set_corners(20924);
+        assert_eq!(cube.get_corners(), 20924);
+        let mut cube = CubieCube::new(None, None, None, None);
+        cube.set_corners(0);
+        assert_eq!(cube.get_corners(), 0);
+        let mut cube = CubieCube::new(None, None, None, None);
+        cube.set_corners(27870);
+        assert_eq!(cube.get_corners(), 27870);
     }
 
     #[test]
-    fn ud_edges() {
+    fn test_ud_edges() {
         let cube = CubieCube::from_scramble("R2 U L2");
         assert_eq!(cube.get_ud_edges(), 3834);
-        let mut cube2 = CubieCube::from_scramble("");
-        cube2.set_ud_edges(105);
-        assert_eq!(cube2.get_ud_edges(), 3834);
+        let cube = CubieCube::from_scramble("U F2 D' B2 L2 D2 U'");
+        assert_eq!(cube.get_ud_edges(), 15565);
+        let mut cube = CubieCube::new(None, None, None, None);
+        cube.set_ud_edges(21021);
+        assert_eq!(cube.get_ud_edges(), 21021);
+        let mut cube = CubieCube::new(None, None, None, None);
+        cube.set_ud_edges(3834);
+        assert_eq!(cube.get_ud_edges(), 3834);
+        let mut cube = CubieCube::new(None, None, None, None);
+        cube.set_ud_edges(15565);
+        assert_eq!(cube.get_ud_edges(), 15565);
     }
 }
