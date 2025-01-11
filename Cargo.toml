@@ -6,3 +6,4 @@ edition = "2021"
 [dependencies]
 eframe = "0.29.1"
 bevy = "0.11.0"
+umya-spreadsheet = "0.6"

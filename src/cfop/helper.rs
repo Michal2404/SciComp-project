@@ -1,7 +1,7 @@
 // This file contains helper functions for all files used in CFOP
 use crate::rubiks::cube::RubiksCube;
 use crate::rubiks::color::Color;
-use std::collections::HashSet;
+use std::{collections::HashSet, time::Duration};
 
 pub fn find_edges_with_color(cube: &RubiksCube, target: &Color) -> Vec<(usize, usize)> {
     /*
@@ -151,4 +151,84 @@ pub fn cleanup_moves(output_list: Vec<String>) -> Vec<String>{
 
     simplified_output_list
 
+}
+
+// for outputting data into excel
+use umya_spreadsheet::*;
+
+pub fn output_data(scramble: (&str, usize), 
+                    cross_data: (Vec<String>, usize, Duration), 
+                    f2l_data: (Vec<String>, usize, Duration), 
+                    oll_data: (Vec<String>, usize, Duration), 
+                    pll_data: (Vec<String>, usize, Duration),
+                    total_data: (Vec<String>, usize, Duration)) -> Result<(), Box<dyn std::error::Error>> {
+
+    /*
+    This function outputs data into a excel file
+        */
+    // Open the Excel file
+    let path = "src/cfop/analysis.xlsx";
+    let mut workbook = reader::xlsx::read(std::path::Path::new(path)).unwrap();
+
+    // Specify the sheet name to read
+    // Step 2: Access a specific worksheet
+    let sheet = workbook.get_sheet_by_name_mut("raw data").unwrap();
+
+    // Iterate over rows and check for non-empty rows
+    // for (index, row) in sheet.get_row_collection().enumerate() {
+    for row_num in 1..=u32::MAX {
+        let default = Cell::default();
+        let first_cell = sheet.get_cell_by_column_and_row(1, row_num).unwrap_or(&default);
+        // Get the first cell of the row (column A)
+        // Check if the cell's value matches the target string
+        if first_cell.get_value() == scramble.0 {
+            return Ok(())
+        }
+        if !first_cell.get_value().is_empty() {
+            continue
+        }
+        // If it doesn't exist, that means we add values to it
+        else {
+            // now we add the values into the excel sheet
+            // Define the cells and their new values (row, column, value)
+            let updates = vec![
+                (row_num, 1, scramble.0.to_string()),   // Row _, Column 1
+                (row_num, 2, scramble.1.to_string()),    // Row _, Column 2
+                (row_num, 3, cross_data.0.join(" ")),// Row _, Column 3
+                (row_num, 4, cross_data.1.to_string()),// Row _, Column 4
+                (row_num, 5, cross_data.2.as_millis().to_string()),// Row _, Column 5
+                (row_num, 6, f2l_data.0.join(" ")),// Row _, Column 6
+                (row_num, 7, f2l_data.1.to_string()),// Row _, Column 7
+                (row_num, 8, f2l_data.2.as_millis().to_string()),// Row _, Column 8
+                (row_num, 9, oll_data.0.join(" ")),// Row _, Column 9
+                (row_num, 10, oll_data.1.to_string()),// Row _, Column 10
+                (row_num, 11, oll_data.2.as_millis().to_string()),// Row _, Column 11
+                (row_num, 12, pll_data.0.join(" ")),// Row _, Column 12
+                (row_num, 13, pll_data.1.to_string()),// Row _, Column 13
+                (row_num, 14, pll_data.2.as_millis().to_string()),// Row _, Column 14
+                (row_num, 15, total_data.0.join(" ")),// Row _, Column 15
+                (row_num, 16, total_data.1.to_string()),// Row _, Column 16
+                (row_num, 17, total_data.2.as_millis().to_string()),// Row _, Column 17
+            ];
+        
+            // Loop through each update and apply it
+            for (row, col, value) in updates {
+                sheet.get_cell_by_column_and_row_mut(col, row).set_value(value);
+            }
+            
+            // // Open the same file and overwrite the original content
+            let _ = writer::xlsx::write(&workbook, std::path::Path::new(path));
+            // finally return
+            return Ok(())
+
+        }
+            
+        
+
+    }
+
+
+    Ok(())
+
+                    
 }
