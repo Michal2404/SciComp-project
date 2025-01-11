@@ -88,3 +88,67 @@ pub fn contains_element(key_set: HashSet<(usize, usize)>, position: Vec<(usize, 
      */
     position.iter().all(|item| key_set.contains(item))
 }
+
+pub fn cleanup_moves(output_list: Vec<String>) -> Vec<String>{
+    /*
+    This function iterates through the moves and cleans up repeating and unnecessary moves
+     */
+    let mut simplified_output_list = Vec::new();
+    let mut i = 0;
+
+    while i < output_list.len() {
+        let move_type = &output_list[i];
+        let mut count = 0;
+        let mut move_notation = &move_type[0..1]; 
+
+        if move_type.ends_with("'") {
+            count -= 1
+        }
+        else if move_type.ends_with("2") {
+            count += 2
+        }
+        else {
+            count += 1
+        }
+
+        // Count consecutive identical moves (ignore direction)
+        while i + 1 < output_list.len() && output_list[i + 1][0..1] == move_type[0..1] {
+            // we will assume clockwise is +ve and counterclockwise is -ve
+            // for counterclockwise, subtract 1
+            if output_list[i + 1].ends_with("'"){
+                count -= 1
+            }
+            // for double moves, we add 2
+            else if output_list[i + 1].ends_with("2"){
+                count += 2
+            } 
+            // for clockwise, add 1
+            else {
+                count += 1
+            }
+            i += 1;
+        }
+
+        // Simplify based on the count modulo 4
+        match i32::abs(count % 4) {
+            1 => {
+                if count < 0 { simplified_output_list.push(format!("{}'", move_notation)) } else { simplified_output_list.push(format!("{}", move_notation)) }
+                
+            }, // Single move
+            2 => {
+                simplified_output_list.push(format!("{}2", move_notation)); // Double move
+                
+            }
+            3 => {
+                // Everything becomes the opposite
+                if count < 0 { simplified_output_list.push(format!("{}", move_notation)) } else { simplified_output_list.push(format!("{}'", move_notation)) }
+            }
+            _ => {} // Do nothing for a multiple of 4
+        }
+
+        i += 1;
+    }
+
+    simplified_output_list
+
+}

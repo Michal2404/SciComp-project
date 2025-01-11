@@ -41,11 +41,11 @@ pub fn solve_oll(cube: &mut RubiksCube, target: &Color) -> Vec<String> {
 
     }
 
-    // once all done, we will print out the list
-    println!("{}", output_list.join(" "));
+    // once all done, we will return out the list
+    // println!("{}", output_list.join(" "));
     let moves = output_list.iter().flat_map(|s| s.split_whitespace()).map(|s| s.to_string()).collect();
 
-    return moves
+    return cleanup_moves(moves)
 
 }
 

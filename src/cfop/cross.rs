@@ -46,9 +46,9 @@ pub fn solve_cross(cube: &mut RubiksCube, target: &Color) -> Vec<String>{
             let solve = output_list.join(" ");
             cube.apply_scramble(solve.as_str());
             
-            println!("{}", output_list.join(" "));
+            // println!("{}", output_list.join(" "));
             let moves = output_list.iter().flat_map(|s| s.split_whitespace()).map(|s| s.to_string()).collect();
-            return moves
+            return cleanup_moves(moves)
         }
         
         // we generate all possible moves
@@ -78,7 +78,8 @@ pub fn solve_cross(cube: &mut RubiksCube, target: &Color) -> Vec<String>{
 
         
     }
-    output_list
+
+    return output_list
     
     // return cube.clone();
 }
@@ -134,7 +135,6 @@ fn heuristics(cube: &RubiksCube, target:&Color) -> usize {
     /*
     This function calculates the priority given a heuristics algorithm
      */
-
     // we will calculate heuristics based on number of misplaced edges
     let (_, misplaced) = solved_state(cube, target);
     misplaced

@@ -52,18 +52,6 @@ pub fn solve_pll(cube: &mut RubiksCube) -> Vec<String>{
             output_list.push("U".to_string());
             cube.apply_scramble("U");
         }
-        // // if solved is still false and cube hasn't made a full rotation yet, that means we must rotate the whole cube and try again
-        // if !solved && y_list.len() < 4 {
-        //     y_list.push("y".to_string());
-        //     cube.apply_scramble("y");
-        // }
-        // // if solved is still false and the cube has made a full rotation, we turn the top of cube and reset y_list
-        // else if !solved && y_list.len() == 4 {
-        //     output_list.push("U".to_string());
-        //     cube.apply_scramble("U");
-        //     y_list = Vec::new();
-
-        // }
 
     }
 
@@ -73,10 +61,10 @@ pub fn solve_pll(cube: &mut RubiksCube) -> Vec<String>{
         cube.apply_scramble("U");
     }
     // once all done, we will print out the list
-    println!("{}", output_list.join(" "));
+    // println!("{}", output_list.join(" "));
     let moves = output_list.iter().flat_map(|s| s.split_whitespace()).map(|s| s.to_string()).collect();
 
-    return moves
+    return cleanup_moves(moves)
 }
 
 
