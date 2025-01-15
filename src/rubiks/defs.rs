@@ -285,4 +285,4 @@ pub const N_UD_EDGES: usize = 40320; // 8! U-face and D-face edge permutations i
 
 pub const N_SYM: usize = 48; // Cube symmetries of group Oh
 pub const N_SYM_D4H: usize = 16; // Subgroup D4h symmetries
-pub const FOLDER: &str = "./"; // Folder for generated tables
+pub const FOLDER: &str = "rubiks/twophase"; // Folder for generated tables

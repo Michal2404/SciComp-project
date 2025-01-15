@@ -6,3 +6,5 @@ pub mod face;
 pub mod misc;
 pub mod moves;
 pub mod pruning;
+pub mod solver;
+pub mod symmetries;

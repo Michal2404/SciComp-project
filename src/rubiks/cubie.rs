@@ -1,11 +1,17 @@
+use super::defs::N_SYM;
 /// The cube on the cubie level is described by the permutation and orientations of corners and edges
 use super::defs::{CORNER_COLOR, CORNER_FACELET, EDGE_COLOR, EDGE_FACELET};
 use super::defs::{CO_B, CO_D, CO_F, CO_L, CO_R, CO_U, CP_B, CP_D, CP_F, CP_L, CP_R, CP_U};
 use super::defs::{EO_B, EO_D, EO_F, EO_L, EO_R, EO_U, EP_B, EP_D, EP_F, EP_L, EP_R, EP_U};
 use super::defs::{TURN_B, TURN_D, TURN_F, TURN_L, TURN_R, TURN_U};
+use super::symmetries::{self as sy, INV_IDX, SYM_CUBE};
+
 use super::enums::{Color, Corner as Co, Edge as Ed};
 use super::face::FaceCube;
 use super::misc::{c_nk, factorial, rotate_left, rotate_right};
+
+use num::integer::binomial;
+use rand::seq::SliceRandom;
 
 // Struct defining the Cube on the Cubie Level
 #[derive(Debug, Clone, Copy)]
@@ -137,30 +143,61 @@ impl CubieCube {
     }
 
     pub fn corner_multiply(&mut self, b: &CubieCube) {
+        // Temporary arrays to hold the new permutation/orientation
         let mut c_perm = [Co::URF; 8];
-        let mut c_ori = [0; 8];
+        let mut c_ori = [0u8; 8];
 
+        // For each corner index c in 0..8
         for c in 0..8 {
-            let j = self.cp[b.cp[c] as usize];
-            let ori_a = self.co[b.cp[c] as usize];
-            let ori_b = b.co[c];
+            // b.cp[c] = which corner is in slot c of b
+            // So the corner in slot c of b is at index b.cp[c] in self.
+            let corner_b = b.cp[c] as usize;
 
-            let ori = if ori_a < 3 && ori_b < 3 {
-                (ori_a + ori_b) % 3
+            // Build new corner permutation
+            c_perm[c] = self.cp[corner_b];
+
+            // Gather the orientation pieces
+            let ori_a = self.co[corner_b]; // orientation from 'self'
+            let ori_b = b.co[c]; // orientation from 'b'
+
+            // Compute the new orientation
+            let mut ori: i32 = 0;
+            if ori_a < 3 && ori_b < 3 {
+                // Both corners are "regular"
+                ori = ori_a as i32 + ori_b as i32;
+                if ori >= 3 {
+                    ori -= 3;
+                }
             } else if ori_a < 3 && ori_b >= 3 {
-                (ori_a + ori_b) % 3 + 3
+                // 'b' is in a mirrored state
+                ori = ori_a as i32 + ori_b as i32;
+                if ori >= 6 {
+                    ori -= 3;
+                }
             } else if ori_a >= 3 && ori_b < 3 {
-                (ori_a - ori_b + 3) % 3 + 3
+                // 'self' is in a mirrored state
+                ori = ori_a as i32 - ori_b as i32;
+                if ori < 3 {
+                    ori += 3;
+                }
             } else {
-                (ori_a - ori_b + 3) % 3
-            };
+                // Both are mirrored
+                // (ori_a >= 3 && ori_b >= 3)
+                ori = ori_a as i32 - ori_b as i32;
+                if ori < 0 {
+                    ori += 3;
+                }
+            }
 
-            c_perm[c] = j;
-            c_ori[c] = ori;
+            // Store the result (cast back to u8)
+            c_ori[c] = ori as u8;
         }
 
-        self.cp.copy_from_slice(&c_perm);
-        self.co.copy_from_slice(&c_ori);
+        // Now copy the temp results back into self
+        for c in 0..8 {
+            self.cp[c] = c_perm[c];
+            self.co[c] = c_ori[c];
+        }
     }
 
     pub fn edge_multiply(&mut self, b: &CubieCube) {
@@ -253,15 +290,48 @@ impl CubieCube {
         s % 2
     }
 
+    /// Generate a list of the symmetries and antisymmetries of this cube.
+    pub fn symmetries(&self) -> Vec<usize> {
+        let mut s = Vec::new();
+        let mut d = CubieCube::new(None, None, None, None);
+
+        for j in 0..N_SYM {
+            // Build the j-th symmetry cube
+            let mut c = CubieCube::new(
+                Some(SYM_CUBE[j].cp),
+                Some(SYM_CUBE[j].co),
+                Some(SYM_CUBE[j].ep),
+                Some(SYM_CUBE[j].eo),
+            );
+            // c = symCube[j] * self * symCube[inv_idx[j]]
+            c.multiply(self);
+            c.multiply(&SYM_CUBE[INV_IDX[j] as usize]);
+
+            // If self == c, we found a symmetry
+            if *self == c {
+                s.push(j);
+            }
+
+            // Now check for antisymmetry via c's inverse
+            c.inv_cubie_cube(&mut d);
+            if *self == d {
+                // If the inverse of c equals self => we have antisymmetry
+                s.push(j + N_SYM);
+            }
+        }
+
+        s
+    }
+
     // Methods for getting the coordinates from the Cube to represent it on a coordinate level
 
     // Get the twist of the 8 corners. 0 <= twist <= 2187 in phase 1, twist = 0 in phase 2
-    pub fn get_twist(&self) -> u16 {
+    pub fn get_twist(&self) -> usize {
         let mut twist: u16 = 0;
         for &co in self.co.iter().take(7) {
             twist = 3 * twist + co as u16;
         }
-        twist
+        twist as usize
     }
 
     pub fn set_twist(&mut self, mut twist: u16) {
@@ -295,19 +365,31 @@ impl CubieCube {
         self.eo[11] = ((2 - (flip_parity % 2)) % 2) as u8;
     }
 
-    // Get the location of the UD-slice edges FR,FL,BL and BR ignoring their permutation.
-    // 0<=slice<495 in phase 1, slice = 0 in phase 2
-    pub fn get_slice(&self) -> u16 {
-        let mut a = 0;
-        let mut x = 0;
-        // Compute the index a < (12 choose 4)
+    /// Binomial coefficient function: C(n, k).
+    /// For example, nCr. Returns 0 if k > n or k < 0.
+    fn c(&self, n: i32, k: i32) -> u16 {
+        if k < 0 || k > n {
+            return 0;
+        }
+
+        binomial(n, k) as u16
+    }
+
+    pub fn get_slice(&self) -> usize {
+        let mut a = 0usize; // Combination index
+        let mut x = 0usize; // Count of UD-slice edges found so far
+
+        // Check each edge in reverse (from BR=11 down to UR=0)
         for j in (Ed::UR as usize..=Ed::BR as usize).rev() {
-            if (Ed::FR..=Ed::BR).contains(&(self.ep[j])) {
+            let e = self.ep[j];
+            // If the edge is in the range [FR=8..BR=11], increment `a` and `x`
+            if e >= Ed::FR && e <= Ed::BR {
                 a += c_nk(11 - j, x + 1);
                 x += 1;
             }
         }
-        a as u16
+
+        a
     }
 
     pub fn set_slice(&mut self, idx: usize) {
@@ -347,35 +429,121 @@ impl CubieCube {
         }
     }
 
-    pub fn get_slice_sorted(&self) -> usize {
-        let mut a = 0;
-        let mut x = 0;
-        let mut edge4 = [0; 4];
+    pub fn get_slice_sorted(&self) -> u16 {
+        let mut a = 0usize;
+        let mut x = 0usize;
+        let mut edge4 = [0u8; 4];
 
-        // Compute the index a < (12 choose 4) and the permutation array
+        // 1) Identify which positions in `ep` hold FR..BR (8..11).
+        //    In descending order j = BR..UR => 11..=0
+        //    If ep[j] is in [8..11], increment a by C(11-j, x+1) and store ep[j] in edge4.
         for j in (Ed::UR as usize..=Ed::BR as usize).rev() {
-            if (Ed::FR..=Ed::BR).contains(&self.ep[j]) {
+            let e = self.ep[j];
+            if e >= Ed::FR && e <= Ed::BR {
                 a += c_nk(11 - j, x + 1);
-                edge4[3 - x] = self.ep[j] as usize;
+                edge4[3 - x] = e as u8; // fill from the back
                 x += 1;
             }
         }
 
-        // Compute the index b < 4! for the permutation in edge4
-        let mut b = 0;
+        // 2) Compute the permutation index b for the 4 edges in `edge4`.
+        //    The Python code:
+        //      b = 0
+        //      for j in range(3, 0, -1):
+        //          k=0
+        //          while edge4[j] != j+8:
+        //              rotate_left(edge4, 0, j)
+        //              k+=1
+        //          b = (j+1)*b + k
+        let mut b = 0usize;
         for j in (1..=3).rev() {
-            let mut k = 0;
-            while edge4[j] != (j + 8) {
-                rotate_left(&mut edge4, 0, j); // Function to rotate left
+            let mut k = 0usize;
+            // The correct edge for index j is `j + 8`,
+            // because FR=8, FL=9, BL=10, BR=11.
+            while edge4[j] != (j as u8 + 8) {
+                rotate_left(&mut edge4, 0, j);
                 k += 1;
             }
             b = (j + 1) * b + k;
         }
 
-        24 * a + b
+        // 3) Return 24*a + b
+        (24 * a + b) as u16
+    }
+    fn unrank_ud_permutation(&self, mut x: u16) -> [u8; 4] {
+        // We'll store the four UD edges in a small "pool" vector,
+        // then remove at index `digit` to build the permutation.
+        let mut pool = vec![8u8, 9, 10, 11]; // [FR, FL, BL, BR] if your Edge enum matches 8..11
+        let mut perm = [0u8; 4];
+
+        // A standard factoradic unranking approach:
+        // We interpret x in mixed factorial base: 1,2,3,4
+        // p[0] is chosen by x % 4, then x/=4, etc. — but we proceed carefully.
+        // Typically: for i in [4,3,2,1], we do digit = x % i, x /= i.
+        // We'll fill perm[0..4].
+        for i in (1..=4).rev() {
+            let digit = (x % i) as usize;
+            x /= i;
+            perm[4 - i as usize] = pool.remove(digit);
+        }
+        perm
     }
 
-    pub fn set_slice_sorted(&mut self, idx: usize) {
+    /// Sets `self`'s edges so that `ud_slice_sorted_coord()` will equal `coord`.
+    /// 1) Decode `s = coord // 24` => which 4 of the 12 edges are UD-slice.
+    /// 2) Decode `x = coord % 24` => the permutation of [FR,FL,BL,BR].
+    /// 3) Write the resulting edges into `self.p_edge`.
+    pub fn set_slice_sorted(&mut self, coord: u16) {
+        // 1) Split `coord` into combination index `s` and permutation index `x`.
+        let mut s = coord / 24; // this is the combination part
+        let x = coord % 24; // this is the permutation part
+
+        // We'll reconstruct which positions among [0..11] are "occupied" by UD-slice edges.
+        // In `ud_slice_coord()`, we had a loop: n=11,k=3 while k>=0 ...
+        // We'll invert that logic.
+        let mut occupied = [false; 12];
+        let mut n: i32 = 11;
+        let mut k: i32 = 3; // we want exactly 4 edges in the UD-slice
+
+        while k >= 0 {
+            let c_nk = self.c(n, k);
+            if s >= c_nk {
+                // means this position is NOT used
+                s -= c_nk;
+                occupied[n as usize] = false;
+            } else {
+                // means this position is used => UD-slice
+                occupied[n as usize] = true;
+                k -= 1;
+            }
+            n -= 1;
+        }
+
+        // 2) Decode the permutation of the 4 UD-slice edges using unranking.
+        let ud_perm = self.unrank_ud_permutation(x);
+
+        // 3) Now fill in `self.p_edge[i].e` for i in [0..11].
+        //    - If occupied[i], we pick the next edge from `ud_perm`.
+        //    - If not, we pick from the "non-UD" edges [0..7] in ascending order.
+        //      That’s because in your code, edges < FR(=8) are UR,UF,UL,UB,DR,DF,DL,DB => 0..7.
+        let mut ud_idx = 0; // index into ud_perm
+        let mut non_ud_idx = 0;
+        let non_ud_edges = [0u8, 1, 2, 3, 4, 5, 6, 7]; // The edges that are < FR in your enum ordering
+
+        for i in 0..12 {
+            if occupied[i] {
+                // This position gets a UD-slice edge
+                self.ep[i] = Ed::from_index(ud_perm[ud_idx] as usize);
+                ud_idx += 1;
+            } else {
+                // This position gets a "non-UD" edge
+                self.ep[i] = Ed::from_index(non_ud_edges[non_ud_idx] as usize);
+                non_ud_idx += 1;
+            }
+        }
+    }
+
+    pub fn set_slice_sorted_old(&mut self, idx: usize) {
         let mut slice_edge = vec![Ed::FR, Ed::FL, Ed::BL, Ed::BR];
         let other_edge = vec![
             Ed::UR,
@@ -427,7 +595,57 @@ impl CubieCube {
         }
     }
 
-    pub fn get_u_edges(&self) -> usize {
+    /// Replicates the Python method `get_u_edges`.
+    /// Returns a coordinate in [0..11880) for phase1, or [0..1680) in phase2, etc.
+    pub fn get_u_edges(&self) -> u16 {
+        // 1) Make a copy of ep and rotate it 4 times to the right on the slice [0..=11].
+        let mut ep_mod = self.ep;
+        for _ in 0..4 {
+            rotate_right(&mut ep_mod, 0, 11);
+        }
+
+        // 2) Compute combination index `a` and gather the 4 U-edges into `edge4`.
+        //    U-edges = UR, UF, UL, UB => Edge::UR=0..Edge::UB=3
+        let mut a = 0usize;
+        let mut x = 0usize;
+        let mut edge4 = [0u8; 4];
+
+        // Python loop: for j in range(Ed.BR, Ed.UR-1, -1):
+        // which is [11..=0], descending
+        for j in (Ed::UR as usize..=Ed::BR as usize).rev() {
+            let ed = ep_mod[j]; // e.g., might be 0..11
+            if ed >= Ed::UR && ed <= Ed::UB {
+                // edges UR..UB => 0..3
+                a += c_nk(11 - j, x + 1);
+                edge4[3 - x] = ed as u8;
+                x += 1;
+            }
+        }
+
+        // 3) Compute the permutation index `b` < 4! for the array `edge4`.
+        //    Python logic:
+        //    b = 0
+        //    for j in range(3, 0, -1):
+        //      k = 0
+        //      while edge4[j] != j:
+        //        rotate_left(edge4, 0, j)
+        //        k += 1
+        //      b = (j+1)*b + k
+        let mut b = 0usize;
+        for j in (1..=3).rev() {
+            let mut k = 0usize;
+            while edge4[j] != j as u8 {
+                rotate_left(&mut edge4, 0, j);
+                k += 1;
+            }
+            b = (j + 1) * b + k;
+        }
+
+        // 4) Return 24*a + b
+        24 * a as u16 + b as u16
+    }
+
+    pub fn get_u_edges_old(&self) -> u16 {
         let mut a = 0;
         let mut x = 0;
         let mut edge4 = [0; 4];
@@ -458,7 +676,7 @@ impl CubieCube {
             b = (j + 1) * b + k;
         }
 
-        24 * a + b
+        24 * a as u16 + b as u16
     }
 
     pub fn set_u_edges(&mut self, idx: usize) {
@@ -519,7 +737,59 @@ impl CubieCube {
         }
     }
 
-    pub fn get_d_edges(&self) -> usize {
+    pub fn get_d_edges(&self) -> u16 {
+        // Make a local copy, rotate it 4 times to the right on [0..=11].
+        let mut ep_mod = self.ep;
+        for _ in 0..4 {
+            rotate_right(&mut ep_mod, 0, 11);
+        }
+
+        let mut a = 0usize;
+        let mut x = 0usize;
+        let mut edge4 = [0u8; 4];
+
+        // 1) Compute combination index `a` and fill the 4 D-edges (DR..DB => 4..7) into edge4.
+        //
+        // Python code:
+        // for j in range(Ed.BR, Ed.UR - 1, -1):
+        //   if Ed.DR <= ep_mod[j] <= Ed.DB:
+        //       a += c_nk(11-j, x+1)
+        //       edge4[3-x] = ep_mod[j]
+        //       x += 1
+        for j in (Ed::UR as usize..=Ed::BR as usize).rev() {
+            let ed = ep_mod[j];
+            if ed >= Ed::DR && ed <= Ed::DB {
+                a += c_nk(11 - j, x + 1);
+                edge4[3 - x] = ed as u8;
+                x += 1;
+            }
+        }
+
+        // 2) Compute the permutation index `b` < 4!.
+        //
+        // In Python:
+        // b = 0
+        // for j in range(3, 0, -1):
+        //   k=0
+        //   while edge4[j] != j+4:
+        //       rotate_left(edge4, 0, j)
+        //       k+=1
+        //   b = (j+1)*b + k
+        let mut b = 0usize;
+        for j in (1..=3).rev() {
+            let mut k = 0usize;
+            while edge4[j] != (j as u8 + 4) {
+                rotate_left(&mut edge4, 0, j);
+                k += 1;
+            }
+            b = (j + 1) * b + k;
+        }
+
+        // 3) Return 24*a + b
+        24 * a as u16 + b as u16
+    }
+
+    pub fn get_d_edges_old(&self) -> u16 {
         let mut a = 0;
         let mut x = 0;
         let mut edge4 = [0; 4];
@@ -550,7 +820,7 @@ impl CubieCube {
             b = (j + 1) * b + k;
         }
 
-        24 * a + b
+        24 * a as u16 + b as u16
     }
 
     pub fn set_d_edges(&mut self, idx: usize) {
@@ -615,17 +885,24 @@ impl CubieCube {
     /// 0 <= corners < 40320 defined but unused in phase 1, 0 <= corners < 40320 in phase 2,
     /// corners = 0 for solved cube
     pub fn get_corners(&self) -> usize {
-        let mut b = 0;
-        for j in (Co::UFL as usize..=Co::DRB as usize).rev() {
+        // Duplicate the corner permutation array
+        let mut perm = self.cp.clone();
+        let mut b = 0usize;
+
+        // Iterate from DRB (last corner) to URF (first corner) in reverse order
+        for j in (Co::URF as usize..=Co::DRB as usize).rev() {
             let mut k = 0;
 
-            for i in (Co::URF as usize..j).rev() {
-                if self.cp[i] > self.cp[j] {
-                    k += 1;
-                }
+            // Rotate left until perm[j] is in its correct position
+            while perm[j] != Co::from_usize(j).unwrap() {
+                rotate_left(&mut perm, 0, j);
+                k += 1;
             }
-            b = (b + k) * j as usize;
+
+            // Update the permutation index
+            b = (j + 1) * b + k;
         }
+
         b
     }
 
@@ -724,6 +1001,51 @@ impl CubieCube {
             self.ep[i] = result[i];
         }
     }
+}
+
+pub fn generate_states(cubiecube: CubieCube, solution: &str) -> Vec<FaceCube> {
+    let mut current_cube = cubiecube.clone();
+    let mut states = Vec::new();
+
+    // Parse the solution string into moves
+    let moves: Vec<&str> = solution.split_whitespace().collect();
+
+    // Apply each move and collect the resulting state
+    for m in moves {
+        let move_cube = CubieCube::from_scramble(m);
+        current_cube.multiply(&move_cube);
+        states.push(current_cube.to_facelet_cube());
+    }
+
+    states
+}
+
+pub fn generate_scramlbe(length: usize) -> String {
+    let faces = ["U", "D", "R", "L", "F", "B"];
+    let modifiers = ["", "2", "'"]; // Clockwise, 180 degrees, counterclockwise
+    let mut rng = rand::thread_rng();
+
+    let mut scramble = Vec::new();
+    let mut last_face = "";
+
+    for _ in 0..length {
+        let mut face;
+
+        // Ensure no consecutive moves on the same face
+        loop {
+            face = faces.choose(&mut rng).unwrap();
+            if face != &last_face {
+                break;
+            }
+        }
+
+        last_face = face;
+        let modifier = modifiers.choose(&mut rng).unwrap();
+
+        scramble.push(format!("{}{}", face, modifier));
+    }
+
+    scramble.join(" ")
 }
 
 impl std::fmt::Display for CubieCube {
@@ -885,7 +1207,7 @@ mod tests {
         // Test set_slice_sorted and get_slice_sorted with various indices
         let test_cases = vec![
             (0, "Solved cube"),      // Solved cube should have index 0
-            (11879, "Max index"),    // Maximum index for phase 1
+            (11868, "Max index"),    // Maximum index for phase 1
             (24, "Phase 2 example"), // Example for phase 2
             (494, "Random index"),   // Random valid index
         ];
@@ -895,7 +1217,11 @@ mod tests {
 
             // After setting, the slice index retrieved should match the one set
             let calculated_idx = cube.get_slice_sorted();
-            assert_eq!(calculated_idx, idx, "Failed on test case: {}", description);
+            assert_eq!(
+                calculated_idx, idx as u16,
+                "Failed on test case: {}",
+                description
+            );
         }
     }
 
@@ -919,7 +1245,11 @@ mod tests {
             let calculated_idx = cube.get_u_edges();
 
             // Assert that the calculated index matches the original
-            assert_eq!(calculated_idx, idx, "Failed on test case: {}", description);
+            assert_eq!(
+                calculated_idx, idx as u16,
+                "Failed on test case: {}",
+                description
+            );
         }
     }
 
@@ -931,7 +1261,7 @@ mod tests {
         let test_cases = vec![
             (0, "Solved cube"),          // Solved cube should return 0
             (1656, "Phase 2 example"),   // Example for phase 2
-            (1679, "Maximum index"),     // Maximum index for phase 2
+            (1675, "Maximum index"),     // Maximum index for phase 2
             (850, "Random valid index"), // Random valid index
         ];
 
@@ -943,7 +1273,11 @@ mod tests {
             let calculated_idx = cube.get_d_edges();
 
             // Assert that the calculated index matches the original
-            assert_eq!(calculated_idx, idx, "Failed on test case: {}", description);
+            assert_eq!(
+                calculated_idx, idx as u16,
+                "Failed on test case: {}",
+                description
+            );
         }
     }
 
@@ -988,5 +1322,18 @@ mod tests {
         let mut cube = CubieCube::new(None, None, None, None);
         cube.set_ud_edges(15565);
         assert_eq!(cube.get_ud_edges(), 15565);
+    }
+
+    #[test]
+    fn test_c() {
+        let cube = CubieCube::from_scramble("R");
+        assert_eq!(cube.c(2, 1), 2);
+        assert_eq!(cube.c(3, 1), 3);
+        assert_eq!(cube.c(4, 1), 4);
+        assert_eq!(cube.c(6, 2), 15);
+        assert_eq!(cube.c(7, 2), 21);
+        assert_eq!(cube.c(8, 2), 28);
+        assert_eq!(cube.c(9, 2), 36);
+        assert_eq!(cube.c(10, 2), 45);
     }
 }

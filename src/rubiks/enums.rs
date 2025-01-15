@@ -204,24 +204,124 @@ impl Edge {
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum Move {
     // The moves in the face-turn metric
-    U1,
-    U2,
-    U3, // Up face turns
-    R1,
-    R2,
-    R3, // Right face turns
-    F1,
-    F2,
-    F3, // Front face turns
-    D1,
-    D2,
-    D3, // Down face turns
-    L1,
-    L2,
-    L3, // Left face turns
-    B1,
-    B2,
-    B3, // Back face turns
+    U1 = 0,
+    U2 = 1,
+    U3 = 2, // Up face turns
+    R1 = 3,
+    R2 = 4,
+    R3 = 5, // Right face turns
+    F1 = 6,
+    F2 = 7,
+    F3 = 8, // Front face turns
+    D1 = 9,
+    D2 = 10,
+    D3 = 11, // Down face turns
+    L1 = 12,
+    L2 = 13,
+    L3 = 14, // Left face turns
+    B1 = 15,
+    B2 = 16,
+    B3 = 17, // Back face turns
+}
+impl Move {
+    pub fn from_id(id: usize) -> Self {
+        match id {
+            0 => Move::U1,
+            1 => Move::U2,
+            2 => Move::U3,
+            3 => Move::R1,
+            4 => Move::R2,
+            5 => Move::R3,
+            6 => Move::F1,
+            7 => Move::F2,
+            8 => Move::F3,
+            9 => Move::D1,
+            10 => Move::D2,
+            11 => Move::D3,
+            12 => Move::L1,
+            13 => Move::L2,
+            14 => Move::L3,
+            15 => Move::B1,
+            16 => Move::B2,
+            17 => Move::B3,
+            _ => panic!("Invalid Move ID: {}", id),
+        }
+    }
+
+    /// This is optional, but useful if you need to go the other way (variant -> ID).
+    pub fn id(&self) -> usize {
+        *self as usize
+    }
+    pub const ALL: [Move; 18] = [
+        Move::U1,
+        Move::U2,
+        Move::U3,
+        Move::R1,
+        Move::R2,
+        Move::R3,
+        Move::F1,
+        Move::F2,
+        Move::F3,
+        Move::D1,
+        Move::D2,
+        Move::D3,
+        Move::L1,
+        Move::L2,
+        Move::L3,
+        Move::B1,
+        Move::B2,
+        Move::B3,
+    ];
+
+    pub fn iterator() -> impl Iterator<Item = Move> {
+        Move::ALL.iter().copied()
+    }
+    pub fn name(&self) -> &str {
+        match self {
+            Move::U1 => "U1",
+            Move::U2 => "U2",
+            Move::U3 => "U3",
+            Move::R1 => "R1",
+            Move::R2 => "R2",
+            Move::R3 => "R3",
+            Move::F1 => "F1",
+            Move::F2 => "F2",
+            Move::F3 => "F3",
+            Move::D1 => "D1",
+            Move::D2 => "D2",
+            Move::D3 => "D3",
+            Move::L1 => "L1",
+            Move::L2 => "L2",
+            Move::L3 => "L3",
+            Move::B1 => "B1",
+            Move::B2 => "B2",
+            Move::B3 => "B3",
+        }
+    }
+    /// Returns the inverse of a move.
+    pub fn invert(self) -> Self {
+        use Move::*;
+        match self {
+            U1 => U3,
+            U2 => U2,
+            U3 => U1,
+            R1 => R3,
+            R2 => R2,
+            R3 => R1,
+            F1 => F3,
+            F2 => F2,
+            F3 => F1,
+            D1 => D3,
+            D2 => D2,
+            D3 => D1,
+            L1 => L3,
+            L2 => L2,
+            L3 => L1,
+            B1 => B3,
+            B2 => B2,
+            B3 => B1,
+        }
+    }
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]

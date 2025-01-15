@@ -5,7 +5,7 @@ use super::defs::{CORNER_COLOR, CORNER_FACELET, EDGE_COLOR, EDGE_FACELET};
 use super::enums::{Color, Corner as Co, Edge as Ed};
 use crate::rubiks::cubie::FromUsize;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct FaceCube {
     pub f: [Color; 54],
 }
