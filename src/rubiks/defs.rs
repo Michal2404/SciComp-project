@@ -292,10 +292,7 @@ pub const FOLDER: &str = "rubiks/twophase"; // Folder for generated tables
 // Dynamically resolve the path  the rubiks/twophase folder
 pub fn get_folder_path() -> PathBuf {
     let project_root = std::env::current_dir().expect("Failed to get current directory");
-    // On Windows
     project_root.join("src").join("rubiks").join("twophase")
-    // On Linux
-    //project_root.join("rubiks").join("twophase")
 }
 
 // Get the full path to a specific file in the rubiks/twophase folder
