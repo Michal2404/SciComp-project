@@ -1,6 +1,7 @@
 // The cube on the coordinate level. It is described by a 3-tuple of antural numbers in phase 1 ans phase 2
 
 use super::cubie as cb;
+use super::defs;
 use super::defs::{
     CORNER_FACELET, FOLDER, N_CHOOSE_8_4, N_FLIP, N_MOVE, N_PERM_4, N_TWIST, N_UD_EDGES,
     N_U_EDGES_PHASE2,
@@ -272,7 +273,13 @@ impl fmt::Display for CoordCube {
 pub static U_EDGES_PLUS_D_EDGES_TO_UD_EDGES: Lazy<Vec<u16>> = Lazy::new(|| {
     // Build the file path
     let fname = "phase2_edgemerge";
-    let path = Path::new(FOLDER).join(fname);
+    let path = defs::get_table_path(fname);
+
+    if !path.exists() {
+        eprintln!("Error: Table file {:?} does not exist.", path);
+        std::process::exit(1);
+    }
+
     println!("Loading {} table", fname);
 
     // Open the file

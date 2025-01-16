@@ -67,6 +67,8 @@ impl CubeVisualizerWithMoves {
 
 impl eframe::App for CubeVisualizerWithMoves {
     fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
+        // Ensure a consistent dark theme
+        ctx.set_visuals(egui::Visuals::dark());
         egui::CentralPanel::default().show(ctx, |ui| {
             // Scramble input and generation
             ui.horizontal(|ui| {

@@ -1,5 +1,7 @@
 // Constants and definitions for the cube
 
+use std::path::PathBuf;
+
 use super::cubie::CubieCube;
 use super::enums::{Color as Cl, Corner as Co, Edge as Ed, Facelet as Fc};
 
@@ -286,3 +288,17 @@ pub const N_UD_EDGES: usize = 40320; // 8! U-face and D-face edge permutations i
 pub const N_SYM: usize = 48; // Cube symmetries of group Oh
 pub const N_SYM_D4H: usize = 16; // Subgroup D4h symmetries
 pub const FOLDER: &str = "rubiks/twophase"; // Folder for generated tables
+
+// Dynamically resolve the path  the rubiks/twophase folder
+pub fn get_folder_path() -> PathBuf {
+    let project_root = std::env::current_dir().expect("Failed to get current directory");
+    // On Windows
+    project_root.join("src").join("rubiks").join("twophase")
+    // On Linux
+    //project_root.join("rubiks").join("twophase")
+}
+
+// Get the full path to a specific file in the rubiks/twophase folder
+pub fn get_table_path(fname: &str) -> PathBuf {
+    get_folder_path().join(fname)
+}

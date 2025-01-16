@@ -5,6 +5,7 @@ use crate::rubiks::defs::N_CORNERS_CLASS;
 use crate::rubiks::defs::N_FLIPSLICE_CLASS;
 use crate::rubiks::defs::N_PERM_4;
 
+use super::defs;
 use super::defs::{FOLDER, N_CORNERS, N_TWIST, N_UD_EDGES};
 use byteorder::{LittleEndian, ReadBytesExt};
 use once_cell::sync::Lazy;
@@ -39,7 +40,13 @@ pub static FLIPSLICE_TWIST_DEPTH3: Lazy<Vec<u32>> = Lazy::new(|| {
 
     // Build the file path
     let fname = "phase1_prun";
-    let path = Path::new(FOLDER).join(fname);
+    let path = defs::get_table_path(fname);
+
+    if !path.exists() {
+        eprintln!("Error: Table file {:?} does not exist.", path);
+        std::process::exit(1);
+    }
+
     println!("Loading {} table", fname);
 
     // Open file
@@ -64,7 +71,13 @@ pub static CORNERS_UD_EDGES_DEPTH3: Lazy<Vec<u32>> = Lazy::new(|| {
 
     // Build the file path
     let fname = "phase2_prun";
-    let path = Path::new(FOLDER).join(fname);
+    let path = defs::get_table_path(fname);
+
+    if !path.exists() {
+        eprintln!("Error: Table file {:?} does not exist.", path);
+        std::process::exit(1);
+    }
+
     println!("Loading {} table", fname);
 
     // Open file
@@ -86,7 +99,13 @@ pub static CORNERS_UD_EDGES_DEPTH3: Lazy<Vec<u32>> = Lazy::new(|| {
 pub static CORNSLICE_DEPTH: Lazy<Vec<i8>> = Lazy::new(|| {
     // Build the file path
     let fname = "phase2_cornsliceprun";
-    let path = Path::new(FOLDER).join(fname);
+    let path = defs::get_table_path(fname);
+
+    if !path.exists() {
+        eprintln!("Error: Table file {:?} does not exist.", path);
+        std::process::exit(1);
+    }
+
     println!("Loading {} table", fname);
 
     // Open file

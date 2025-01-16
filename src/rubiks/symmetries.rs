@@ -1,3 +1,5 @@
+use crate::rubiks::defs;
+
 // Symmetry related functions- Symmetry considerations increase the performance of the solver
 use super::cubie::{self as cb, MOVE_CUBE};
 use super::defs::{
@@ -5,6 +7,7 @@ use super::defs::{
     N_SYM_D4H, N_TWIST, N_UD_EDGES,
 };
 use super::enums::{BasicSymmetry as BS, Corner as Co, Edge as Ed, Move as Mv};
+
 use byteorder::{LittleEndian, ReadBytesExt};
 use once_cell::sync::Lazy;
 use std::fs::File;
@@ -257,8 +260,15 @@ pub static CONJ_MOVE: Lazy<[u16; N_MOVE * N_SYM]> = Lazy::new(|| {
 /// `TWIST_CONJ[t * N_SYM_D4H + s] = s*t*s^-1` in phase 1 (stored as `u16`).
 pub static TWIST_CONJ: Lazy<Vec<u16>> = Lazy::new(|| {
     // Build the file path
+
     let fname = "conj_twist";
-    let path = Path::new(FOLDER).join(fname);
+    let path = defs::get_table_path(fname);
+
+    if !path.exists() {
+        eprintln!("Error: Table file {:?} does not exist.", path);
+        std::process::exit(1);
+    }
+
     println!("Loading {} table", fname);
 
     let mut file =
@@ -283,7 +293,13 @@ pub static TWIST_CONJ: Lazy<Vec<u16>> = Lazy::new(|| {
 pub static UD_EDGES_CONJ: Lazy<Vec<u16>> = Lazy::new(|| {
     // Build the file path
     let fname = "conj_ud_edges";
-    let path = Path::new(FOLDER).join(fname);
+    let path = defs::get_table_path(fname);
+
+    if !path.exists() {
+        eprintln!("Error: Table file {:?} does not exist.", path);
+        std::process::exit(1);
+    }
+
     println!("Loading {} table", fname);
 
     let mut file =
@@ -307,8 +323,15 @@ pub static UD_EDGES_CONJ: Lazy<Vec<u16>> = Lazy::new(|| {
 // Load the tables to handle the symmetry reduced flip-slice coordinate in phase 1
 pub static FLIPSLICE_CLASSIDX: Lazy<Vec<u16>> = Lazy::new(|| {
     // Build the file path
+
     let fname = "fs_classidx";
-    let path = Path::new(FOLDER).join(fname);
+    let path = defs::get_table_path(fname);
+
+    if !path.exists() {
+        eprintln!("Error: Table file {:?} does not exist.", path);
+        std::process::exit(1);
+    }
+
     println!("Loading {} table", fname);
 
     // Open the file with detailed error handling
@@ -338,7 +361,13 @@ pub static FLIPSLICE_CLASSIDX: Lazy<Vec<u16>> = Lazy::new(|| {
 pub static FLIPSLICE_SYM: Lazy<Vec<u8>> = Lazy::new(|| {
     // Build the file path
     let fname = "fs_sym";
-    let path = Path::new(FOLDER).join(fname);
+    let path = defs::get_table_path(fname);
+
+    if !path.exists() {
+        eprintln!("Error: Table file {:?} does not exist.", path);
+        std::process::exit(1);
+    }
+
     println!("Loading {} table", fname);
 
     let mut file =
@@ -362,7 +391,13 @@ pub static FLIPSLICE_SYM: Lazy<Vec<u8>> = Lazy::new(|| {
 pub static FLIPSLICE_REP: Lazy<Vec<u32>> = Lazy::new(|| {
     // Build the file path
     let fname = "fs_rep";
-    let path = Path::new(FOLDER).join(fname);
+    let path = defs::get_table_path(fname);
+
+    if !path.exists() {
+        eprintln!("Error: Table file {:?} does not exist.", path);
+        std::process::exit(1);
+    }
+
     println!("Loading {} table", fname);
 
     let mut file =
@@ -387,7 +422,13 @@ pub static FLIPSLICE_REP: Lazy<Vec<u32>> = Lazy::new(|| {
 pub static CORNER_CLASSIDX: Lazy<Vec<u16>> = Lazy::new(|| {
     // Build the file path
     let fname = "co_classidx";
-    let path = Path::new(FOLDER).join(fname);
+    let path = defs::get_table_path(fname);
+
+    if !path.exists() {
+        eprintln!("Error: Table file {:?} does not exist.", path);
+        std::process::exit(1);
+    }
+
     println!("Loading {} table", fname);
 
     let mut file =
@@ -411,7 +452,13 @@ pub static CORNER_CLASSIDX: Lazy<Vec<u16>> = Lazy::new(|| {
 pub static CORNER_SYM: Lazy<Vec<u8>> = Lazy::new(|| {
     // Build the file path
     let fname = "co_sym";
-    let path = Path::new(FOLDER).join(fname);
+    let path = defs::get_table_path(fname);
+
+    if !path.exists() {
+        eprintln!("Error: Table file {:?} does not exist.", path);
+        std::process::exit(1);
+    }
+
     println!("Loading {} table", fname);
 
     let mut file =
@@ -435,7 +482,13 @@ pub static CORNER_SYM: Lazy<Vec<u8>> = Lazy::new(|| {
 pub static CORNER_REP: Lazy<Vec<u16>> = Lazy::new(|| {
     // Build the file path
     let fname = "co_rep";
-    let path = Path::new(FOLDER).join(fname);
+    let path = defs::get_table_path(fname);
+
+    if !path.exists() {
+        eprintln!("Error: Table file {:?} does not exist.", path);
+        std::process::exit(1);
+    }
+
     println!("Loading {} table", fname);
 
     let mut file =

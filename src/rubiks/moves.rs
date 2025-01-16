@@ -1,5 +1,6 @@
 use crate::rubiks::defs::N_SLICE;
 
+use super::defs;
 /// Movetables describe the transformation of the coordinates by cube moves
 /// We don't generate the move tables here, but load the pre-generated tables from the
 /// Herbert Kociemba's Python Script.
@@ -13,7 +14,13 @@ use std::path::Path;
 pub static TWIST_MOVE: Lazy<Vec<u16>> = Lazy::new(|| {
     // Build the file path
     let fname = "move_twist";
-    let path = Path::new(FOLDER).join(fname);
+    let path = defs::get_table_path(fname);
+
+    if !path.exists() {
+        eprintln!("Error: Table file {:?} does not exist.", path);
+        std::process::exit(1);
+    }
+
     println!("Loading {} table", fname);
 
     // Open the file
@@ -37,7 +44,13 @@ pub static TWIST_MOVE: Lazy<Vec<u16>> = Lazy::new(|| {
 pub static FLIP_MOVE: Lazy<Vec<u16>> = Lazy::new(|| {
     // Build the file path
     let fname = "move_flip";
-    let path = Path::new(FOLDER).join(fname);
+    let path = defs::get_table_path(fname);
+
+    if !path.exists() {
+        eprintln!("Error: Table file {:?} does not exist.", path);
+        std::process::exit(1);
+    }
+
     println!("Loading {} table", fname);
 
     // Open the file
@@ -61,7 +74,13 @@ pub static FLIP_MOVE: Lazy<Vec<u16>> = Lazy::new(|| {
 pub static SLICE_SORTED_MOVE: Lazy<Vec<u16>> = Lazy::new(|| {
     // Build the file path
     let fname = "move_slice_sorted";
-    let path = Path::new(FOLDER).join(fname);
+    let path = defs::get_table_path(fname);
+
+    if !path.exists() {
+        eprintln!("Error: Table file {:?} does not exist.", path);
+        std::process::exit(1);
+    }
+
     println!("Loading {} table", fname);
 
     // Open the file
@@ -85,7 +104,13 @@ pub static SLICE_SORTED_MOVE: Lazy<Vec<u16>> = Lazy::new(|| {
 pub static U_EDGES_MOVE: Lazy<Vec<u16>> = Lazy::new(|| {
     // Build the file path
     let fname = "move_u_edges";
-    let path = Path::new(FOLDER).join(fname);
+    let path = defs::get_table_path(fname);
+
+    if !path.exists() {
+        eprintln!("Error: Table file {:?} does not exist.", path);
+        std::process::exit(1);
+    }
+
     println!("Loading {} table", fname);
 
     // Open the file
@@ -109,7 +134,13 @@ pub static U_EDGES_MOVE: Lazy<Vec<u16>> = Lazy::new(|| {
 pub static D_EDGES_MOVE: Lazy<Vec<u16>> = Lazy::new(|| {
     // Build the file path
     let fname = "move_d_edges";
-    let path = Path::new(FOLDER).join(fname);
+    let path = defs::get_table_path(fname);
+
+    if !path.exists() {
+        eprintln!("Error: Table file {:?} does not exist.", path);
+        std::process::exit(1);
+    }
+
     println!("Loading {} table", fname);
 
     // Open the file
@@ -133,7 +164,13 @@ pub static D_EDGES_MOVE: Lazy<Vec<u16>> = Lazy::new(|| {
 pub static UD_EDGES_MOVE: Lazy<Vec<u16>> = Lazy::new(|| {
     // Build the file path
     let fname = "move_ud_edges";
-    let path = Path::new(FOLDER).join(fname);
+    let path = defs::get_table_path(fname);
+
+    if !path.exists() {
+        eprintln!("Error: Table file {:?} does not exist.", path);
+        std::process::exit(1);
+    }
+
     println!("Loading {} table", fname);
 
     // Open the file
@@ -157,7 +194,13 @@ pub static UD_EDGES_MOVE: Lazy<Vec<u16>> = Lazy::new(|| {
 pub static CORNERS_MOVE: Lazy<Vec<u16>> = Lazy::new(|| {
     // Build the file path
     let fname = "move_corners";
-    let path = Path::new(FOLDER).join(fname);
+    let path = defs::get_table_path(fname);
+
+    if !path.exists() {
+        eprintln!("Error: Table file {:?} does not exist.", path);
+        std::process::exit(1);
+    }
+
     println!("Loading {} table", fname);
 
     // Open the file
