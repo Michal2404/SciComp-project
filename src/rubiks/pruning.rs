@@ -6,11 +6,9 @@ use crate::rubiks::defs::N_FLIPSLICE_CLASS;
 use crate::rubiks::defs::N_PERM_4;
 
 use super::defs;
-use super::defs::{FOLDER, N_CORNERS, N_TWIST, N_UD_EDGES};
-use byteorder::{LittleEndian, ReadBytesExt};
+use super::defs::{N_CORNERS, N_TWIST, N_UD_EDGES};
 use once_cell::sync::Lazy;
 use std::fs::File;
-use std::path::Path;
 
 use std::io::Read;
 
@@ -21,13 +19,13 @@ use std::io::Read;
 /// returns *exactly* number of moves % 3 to solve phase 1
 pub fn get_flipslice_twist_depth3(ix: usize) -> u32 {
     let y = FLIPSLICE_TWIST_DEPTH3[ix / 16];
-    ((y >> ((ix % 16) * 2)) & 3) as u32
+    (y >> ((ix % 16) * 2)) & 3
 }
 
 /// Extract the depth3 value for corners_ud_edges
 pub fn get_corners_ud_edges_depth3(ix: usize) -> u32 {
     let y = CORNERS_UD_EDGES_DEPTH3[ix / 16];
-    ((y >> ((ix % 16) * 2)) & 3) as u32
+    (y >> ((ix % 16) * 2)) & 3
 }
 
 //////////////////////////////////////
@@ -56,11 +54,11 @@ pub static FLIPSLICE_TWIST_DEPTH3: Lazy<Vec<u32>> = Lazy::new(|| {
     let mut buffer = vec![0u32; count];
 
     // Read each 32-bit (4 byte) value in little-endian
-    for i in 0..count {
+    for (i, item) in buffer.iter_mut().enumerate().take(count) {
         let mut bytes = [0u8; 4];
         file.read_exact(&mut bytes)
             .unwrap_or_else(|_| panic!("Error reading entry {} from {:?}", i, path));
-        buffer[i] = u32::from_le_bytes(bytes);
+        *item = u32::from_le_bytes(bytes);
     }
     buffer
 });
@@ -87,11 +85,11 @@ pub static CORNERS_UD_EDGES_DEPTH3: Lazy<Vec<u32>> = Lazy::new(|| {
     let mut buffer = vec![0u32; count];
 
     // Read each 32-bit (4 byte) value in little-endian
-    for i in 0..count {
+    for (i, item) in buffer.iter_mut().enumerate().take(count) {
         let mut bytes = [0u8; 4];
         file.read_exact(&mut bytes)
             .unwrap_or_else(|_| panic!("Error reading entry {} from {:?}", i, path));
-        buffer[i] = u32::from_le_bytes(bytes);
+        *item = u32::from_le_bytes(bytes);
     }
     buffer
 });
@@ -116,11 +114,11 @@ pub static CORNSLICE_DEPTH: Lazy<Vec<i8>> = Lazy::new(|| {
     let mut buffer = vec![0i8; size];
 
     // Read each 32-bit (4 byte) value in little-endian
-    for i in 0..size {
+    for (i, item) in buffer.iter_mut().enumerate().take(size) {
         let mut byte = [0u8; 1];
         file.read_exact(&mut byte)
             .unwrap_or_else(|_| panic!("Error reading entry {} from {:?}", i, path));
-        buffer[i] = byte[0] as i8;
+        *item = byte[0] as i8;
     }
     buffer
 });

@@ -1,19 +1,16 @@
 use super::defs::N_SYM;
-/// The cube on the cubie level is described by the permutation and orientations of corners and edges
 use super::defs::{CORNER_COLOR, CORNER_FACELET, EDGE_COLOR, EDGE_FACELET};
 use super::defs::{CO_B, CO_D, CO_F, CO_L, CO_R, CO_U, CP_B, CP_D, CP_F, CP_L, CP_R, CP_U};
 use super::defs::{EO_B, EO_D, EO_F, EO_L, EO_R, EO_U, EP_B, EP_D, EP_F, EP_L, EP_R, EP_U};
 use super::defs::{TURN_B, TURN_D, TURN_F, TURN_L, TURN_R, TURN_U};
-use super::symmetries::{self as sy, INV_IDX, SYM_CUBE};
-
 use super::enums::{Color, Corner as Co, Edge as Ed};
 use super::face::FaceCube;
 use super::misc::{c_nk, factorial, rotate_left, rotate_right};
-
+use super::symmetries::{INV_IDX, SYM_CUBE};
 use num::integer::binomial;
 use rand::seq::SliceRandom;
 
-// Struct defining the Cube on the Cubie Level
+/// The cube on the cubie level is described by the permutation and orientations of corners and edges
 #[derive(Debug, Clone, Copy)]
 pub struct CubieCube {
     pub cp: [Co; 8],  // Corner permutation
@@ -49,8 +46,8 @@ impl CubieCube {
         }
     }
 
-    // Create an instance of the CubieCube from the standard Scramble-notation, e.g
-    // "R F2 D' U2 B2 L D'..."
+    /// Create an instance of the CubieCube from the standard Scramble-notation, e.g
+    /// "R F2 D' U2 B2 L D'..."
     pub fn from_scramble(scramble: &str) -> Self {
         let mut cube = CubieCube::new(None, None, None, None);
 
@@ -124,19 +121,7 @@ impl CubieCube {
         cube
     }
 
-    pub fn to_string(&self) -> String {
-        let mut s = String::new();
-        for i in 0..8 {
-            s.push_str(&format!("({:?},{})", self.cp[i], self.co[i]));
-        }
-        s.push('\n');
-        for i in 0..12 {
-            s.push_str(&format!("({:?},{})", self.ep[i], self.eo[i]));
-        }
-        s
-    }
-
-    // Applying a permutation to the Cube can be seen as multiplication with a different permutation
+    /// Applying a permutation to the Cube can be seen as multiplication with a different permutation
     pub fn multiply(&mut self, b: &CubieCube) {
         self.corner_multiply(b);
         self.edge_multiply(b);
@@ -161,43 +146,44 @@ impl CubieCube {
             let ori_b = b.co[c]; // orientation from 'b'
 
             // Compute the new orientation
-            let mut ori: i32 = 0;
-            if ori_a < 3 && ori_b < 3 {
+            let ori: i32 = if ori_a < 3 && ori_b < 3 {
                 // Both corners are "regular"
-                ori = ori_a as i32 + ori_b as i32;
-                if ori >= 3 {
-                    ori -= 3;
+                let mut result = ori_a as i32 + ori_b as i32;
+                if result >= 3 {
+                    result -= 3;
                 }
+                result
             } else if ori_a < 3 && ori_b >= 3 {
                 // 'b' is in a mirrored state
-                ori = ori_a as i32 + ori_b as i32;
-                if ori >= 6 {
-                    ori -= 3;
+                let mut result = ori_a as i32 + ori_b as i32;
+                if result >= 6 {
+                    result -= 3;
                 }
+                result
             } else if ori_a >= 3 && ori_b < 3 {
                 // 'self' is in a mirrored state
-                ori = ori_a as i32 - ori_b as i32;
-                if ori < 3 {
-                    ori += 3;
+                let mut result = ori_a as i32 - ori_b as i32;
+                if result < 3 {
+                    result += 3;
                 }
+                result
             } else {
                 // Both are mirrored
                 // (ori_a >= 3 && ori_b >= 3)
-                ori = ori_a as i32 - ori_b as i32;
-                if ori < 0 {
-                    ori += 3;
+                let mut result = ori_a as i32 - ori_b as i32;
+                if result < 0 {
+                    result += 3;
                 }
-            }
+                result
+            };
 
             // Store the result (cast back to u8)
             c_ori[c] = ori as u8;
         }
 
         // Now copy the temp results back into self
-        for c in 0..8 {
-            self.cp[c] = c_perm[c];
-            self.co[c] = c_ori[c];
-        }
+        self.cp.copy_from_slice(&c_perm);
+        self.co.copy_from_slice(&c_ori);
     }
 
     pub fn edge_multiply(&mut self, b: &CubieCube) {
@@ -214,7 +200,7 @@ impl CubieCube {
         self.eo.copy_from_slice(&e_ori);
     }
 
-    // Transform to the Facelet level
+    /// Transform to the Facelet level
     pub fn to_facelet_cube(&self) -> FaceCube {
         let mut fc = FaceCube::new();
 
@@ -239,9 +225,9 @@ impl CubieCube {
         fc
     }
 
-    // Let A be some scrambled Cube and B its inverse, then A * B = I (solved cube)
-    // If we are looking for a solution of some scrambled cube, we are in fact looking
-    // for its inverse permutation composed as a product of the permutations
+    /// Let A be some scrambled Cube and B its inverse, then A * B = I (solved cube)
+    /// If we are looking for a solution of some scrambled cube, we are in fact looking
+    /// for its inverse permutation composed as a product of the permutations
     // corresponding to the elementary moves.
     pub fn inv_cubie_cube(&self, d: &mut CubieCube) {
         // Invert edge permutation and orientation
@@ -325,7 +311,7 @@ impl CubieCube {
 
     // Methods for getting the coordinates from the Cube to represent it on a coordinate level
 
-    // Get the twist of the 8 corners. 0 <= twist <= 2187 in phase 1, twist = 0 in phase 2
+    /// Get the twist of the 8 corners. 0 <= twist <= 2187 in phase 1, twist = 0 in phase 2
     pub fn get_twist(&self) -> usize {
         let mut twist: u16 = 0;
         for &co in self.co.iter().take(7) {
@@ -345,7 +331,7 @@ impl CubieCube {
         self.co[7] = ((3 - (twist_parity % 3)) % 3) as u8;
     }
 
-    // Get the flip of the 12 edges. 0 <= flip < 2048 in phase 1, flip = 0 in phase 2
+    /// Get the flip of the 12 edges. 0 <= flip < 2048 in phase 1, flip = 0 in phase 2
     pub fn get_flip(&self) -> u16 {
         let mut flip: u16 = 0;
         for &eo in self.eo.iter().take(11) {
@@ -470,6 +456,7 @@ impl CubieCube {
         // 3) Return 24*a + b
         (24 * a + b) as u16
     }
+
     fn unrank_ud_permutation(&self, mut x: u16) -> [u8; 4] {
         // We'll store the four UD edges in a small "pool" vector,
         // then remove at index `digit` to build the permutation.
@@ -530,8 +517,8 @@ impl CubieCube {
         let mut non_ud_idx = 0;
         let non_ud_edges = [0u8, 1, 2, 3, 4, 5, 6, 7]; // The edges that are < FR in your enum ordering
 
-        for i in 0..12 {
-            if occupied[i] {
+        for (i, item) in occupied.iter().enumerate() {
+            if *item {
                 // This position gets a UD-slice edge
                 self.ep[i] = Ed::from_index(ud_perm[ud_idx] as usize);
                 ud_idx += 1;
@@ -545,7 +532,7 @@ impl CubieCube {
 
     pub fn set_slice_sorted_old(&mut self, idx: usize) {
         let mut slice_edge = vec![Ed::FR, Ed::FL, Ed::BL, Ed::BR];
-        let other_edge = vec![
+        let other_edge = [
             Ed::UR,
             Ed::UF,
             Ed::UL,
@@ -595,7 +582,6 @@ impl CubieCube {
         }
     }
 
-    /// Replicates the Python method `get_u_edges`.
     /// Returns a coordinate in [0..11880) for phase1, or [0..1680) in phase2, etc.
     pub fn get_u_edges(&self) -> u16 {
         // 1) Make a copy of ep and rotate it 4 times to the right on the slice [0..=11].
@@ -649,7 +635,7 @@ impl CubieCube {
         let mut a = 0;
         let mut x = 0;
         let mut edge4 = [0; 4];
-        let mut ep_mod = self.ep.clone();
+        let mut ep_mod = self.ep;
 
         // Rotate ep_mod right 4 times
         for _ in 0..4 {
@@ -681,7 +667,7 @@ impl CubieCube {
 
     pub fn set_u_edges(&mut self, idx: usize) {
         let mut slice_edge = vec![Ed::UR, Ed::UF, Ed::UL, Ed::UB];
-        let other_edge = vec![
+        let other_edge = [
             Ed::DR,
             Ed::DF,
             Ed::DL,
@@ -793,7 +779,7 @@ impl CubieCube {
         let mut a = 0;
         let mut x = 0;
         let mut edge4 = [0; 4];
-        let mut ep_mod = self.ep.clone();
+        let mut ep_mod = self.ep;
 
         // Rotate ep_mod right 4 times
         for _ in 0..4 {
@@ -825,7 +811,7 @@ impl CubieCube {
 
     pub fn set_d_edges(&mut self, idx: usize) {
         let mut slice_edge = vec![Ed::DR, Ed::DF, Ed::DL, Ed::DB];
-        let other_edge = vec![
+        let other_edge = [
             Ed::FR,
             Ed::FL,
             Ed::BL,
@@ -886,7 +872,7 @@ impl CubieCube {
     /// corners = 0 for solved cube
     pub fn get_corners(&self) -> usize {
         // Duplicate the corner permutation array
-        let mut perm = self.cp.clone();
+        let mut perm = self.cp;
         let mut b = 0usize;
 
         // Iterate from DRB (last corner) to URF (first corner) in reverse order
@@ -944,9 +930,7 @@ impl CubieCube {
         result.insert(0, array.pop().unwrap());
 
         // Assign the result to the attribute
-        for i in 0..=7 {
-            self.cp[i] = result[i];
-        }
+        self.cp[..(7 + 1)].copy_from_slice(&result[..(7 + 1)]);
     }
 
     /// Get the permutation of the 8 U and D edges.
@@ -959,7 +943,7 @@ impl CubieCube {
                     k += 1;
                 }
             }
-            b = (b + k) * j as usize;
+            b = (b + k) * j;
         }
         b
     }
@@ -997,14 +981,12 @@ impl CubieCube {
         result.insert(0, array.pop().unwrap());
 
         // Assign the result to the ep attribute
-        for i in 0..=7 {
-            self.ep[i] = result[i];
-        }
+        self.ep[..(7 + 1)].copy_from_slice(&result[..(7 + 1)]);
     }
 }
 
 pub fn generate_states(cubiecube: CubieCube, solution: &str) -> Vec<FaceCube> {
-    let mut current_cube = cubiecube.clone();
+    let mut current_cube = cubiecube;
     let mut states = Vec::new();
 
     // Parse the solution string into moves
@@ -1046,12 +1028,6 @@ pub fn generate_scramlbe(length: usize) -> String {
     }
 
     scramble.join(" ")
-}
-
-impl std::fmt::Display for CubieCube {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.to_string())
-    }
 }
 
 impl PartialEq for CubieCube {

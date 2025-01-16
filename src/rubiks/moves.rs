@@ -1,15 +1,11 @@
-use crate::rubiks::defs::N_SLICE;
-
 use super::defs;
 /// Movetables describe the transformation of the coordinates by cube moves
 /// We don't generate the move tables here, but load the pre-generated tables from the
 /// Herbert Kociemba's Python Script.
-use super::defs::{FOLDER, N_CORNERS, N_FLIP, N_MOVE, N_SLICE_SORTED, N_TWIST, N_UD_EDGES};
-use byteorder::{LittleEndian, ReadBytesExt};
+use super::defs::{N_CORNERS, N_FLIP, N_MOVE, N_SLICE_SORTED, N_TWIST, N_UD_EDGES};
 use once_cell::sync::Lazy;
 use std::fs::File;
 use std::io::Read;
-use std::path::Path;
 
 pub static TWIST_MOVE: Lazy<Vec<u16>> = Lazy::new(|| {
     // Build the file path
@@ -32,11 +28,11 @@ pub static TWIST_MOVE: Lazy<Vec<u16>> = Lazy::new(|| {
 
     // Beacause each entry is a 2-byte 'H' (unsigned short),
     // we'll read them as little-endian u16 values.
-    for i in 0..size {
+    for (i, item) in buffer.iter_mut().enumerate().take(size) {
         let mut bytes = [0u8; 2];
         file.read_exact(&mut bytes)
             .unwrap_or_else(|_| panic!("Error reading entry {} from {:?}", i, path));
-        buffer[i] = u16::from_le_bytes(bytes);
+        *item = u16::from_le_bytes(bytes);
     }
     buffer
 });
@@ -62,11 +58,11 @@ pub static FLIP_MOVE: Lazy<Vec<u16>> = Lazy::new(|| {
 
     // Beacause each entry is a 2-byte 'H' (unsigned short),
     // we'll read them as little-endian u16 values.
-    for i in 0..size {
+    for (i, item) in buffer.iter_mut().enumerate().take(size) {
         let mut bytes = [0u8; 2];
         file.read_exact(&mut bytes)
             .unwrap_or_else(|_| panic!("Error reading entry {} from {:?}", i, path));
-        buffer[i] = u16::from_le_bytes(bytes);
+        *item = u16::from_le_bytes(bytes);
     }
     buffer
 });
@@ -92,11 +88,11 @@ pub static SLICE_SORTED_MOVE: Lazy<Vec<u16>> = Lazy::new(|| {
 
     // Beacause each entry is a 2-byte 'H' (unsigned short),
     // we'll read them as little-endian u16 values.
-    for i in 0..size {
+    for (i, item) in buffer.iter_mut().enumerate().take(size) {
         let mut bytes = [0u8; 2];
         file.read_exact(&mut bytes)
             .unwrap_or_else(|_| panic!("Error reading entry {} from {:?}", i, path));
-        buffer[i] = u16::from_le_bytes(bytes);
+        *item = u16::from_le_bytes(bytes);
     }
     buffer
 });
@@ -122,11 +118,11 @@ pub static U_EDGES_MOVE: Lazy<Vec<u16>> = Lazy::new(|| {
 
     // Beacause each entry is a 2-byte 'H' (unsigned short),
     // we'll read them as little-endian u16 values.
-    for i in 0..size {
+    for (i, item) in buffer.iter_mut().enumerate().take(size) {
         let mut bytes = [0u8; 2];
         file.read_exact(&mut bytes)
             .unwrap_or_else(|_| panic!("Error reading entry {} from {:?}", i, path));
-        buffer[i] = u16::from_le_bytes(bytes);
+        *item = u16::from_le_bytes(bytes);
     }
     buffer
 });
@@ -152,11 +148,11 @@ pub static D_EDGES_MOVE: Lazy<Vec<u16>> = Lazy::new(|| {
 
     // Beacause each entry is a 2-byte 'H' (unsigned short),
     // we'll read them as little-endian u16 values.
-    for i in 0..size {
+    for (i, item) in buffer.iter_mut().enumerate().take(size) {
         let mut bytes = [0u8; 2];
         file.read_exact(&mut bytes)
             .unwrap_or_else(|_| panic!("Error reading entry {} from {:?}", i, path));
-        buffer[i] = u16::from_le_bytes(bytes);
+        *item = u16::from_le_bytes(bytes);
     }
     buffer
 });
@@ -182,11 +178,11 @@ pub static UD_EDGES_MOVE: Lazy<Vec<u16>> = Lazy::new(|| {
 
     // Beacause each entry is a 2-byte 'H' (unsigned short),
     // we'll read them as little-endian u16 values.
-    for i in 0..size {
+    for (i, item) in buffer.iter_mut().enumerate().take(size) {
         let mut bytes = [0u8; 2];
         file.read_exact(&mut bytes)
             .unwrap_or_else(|_| panic!("Error reading entry {} from {:?}", i, path));
-        buffer[i] = u16::from_le_bytes(bytes);
+        *item = u16::from_le_bytes(bytes);
     }
     buffer
 });
@@ -212,11 +208,11 @@ pub static CORNERS_MOVE: Lazy<Vec<u16>> = Lazy::new(|| {
 
     // Beacause each entry is a 2-byte 'H' (unsigned short),
     // we'll read them as little-endian u16 values.
-    for i in 0..size {
+    for (i, item) in buffer.iter_mut().enumerate().take(size) {
         let mut bytes = [0u8; 2];
         file.read_exact(&mut bytes)
             .unwrap_or_else(|_| panic!("Error reading entry {} from {:?}", i, path));
-        buffer[i] = u16::from_le_bytes(bytes);
+        *item = u16::from_le_bytes(bytes);
     }
     buffer
 });

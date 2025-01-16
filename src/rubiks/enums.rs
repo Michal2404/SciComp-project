@@ -1,5 +1,4 @@
 /// Definitions that improve the readability of the code
-
 /// The names of the facelet positions of the cube
 ///              |************|
 ///              |*U1**U2**U3*|

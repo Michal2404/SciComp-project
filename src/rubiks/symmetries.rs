@@ -3,18 +3,14 @@ use crate::rubiks::defs;
 // Symmetry related functions- Symmetry considerations increase the performance of the solver
 use super::cubie::{self as cb, MOVE_CUBE};
 use super::defs::{
-    FOLDER, N_CORNERS, N_CORNERS_CLASS, N_FLIP, N_FLIPSLICE_CLASS, N_MOVE, N_SLICE, N_SYM,
-    N_SYM_D4H, N_TWIST, N_UD_EDGES,
+    N_CORNERS, N_CORNERS_CLASS, N_FLIP, N_FLIPSLICE_CLASS, N_MOVE, N_SLICE, N_SYM, N_SYM_D4H,
+    N_TWIST, N_UD_EDGES,
 };
-use super::enums::{BasicSymmetry as BS, Corner as Co, Edge as Ed, Move as Mv};
+use super::enums::{BasicSymmetry as BS, Corner as Co, Edge as Ed};
 
-use byteorder::{LittleEndian, ReadBytesExt};
 use once_cell::sync::Lazy;
 use std::fs::File;
 use std::io::Read;
-use std::path::Path;
-
-const INVALID: u16 = 65535;
 
 // Permutation and orientations of the basic symmetries
 
@@ -219,7 +215,7 @@ pub static MULT_SYM: Lazy<[u8; N_SYM * N_SYM]> = Lazy::new(|| {
     for j in 0..N_SYM {
         for i in 0..N_SYM {
             // Make a copy of SYM_CUBE[i]
-            let mut cc = SYM_CUBE[i].clone();
+            let mut cc = SYM_CUBE[i];
             // Multiply by SYM_CUBE[j]
             cc.multiply(&SYM_CUBE[j]);
 
@@ -242,7 +238,7 @@ pub static CONJ_MOVE: Lazy<[u16; N_MOVE * N_SYM]> = Lazy::new(|| {
 
     for s in 0..N_SYM {
         for m in 0..N_MOVE {
-            let mut ss = SYM_CUBE[s].clone();
+            let mut ss = SYM_CUBE[s];
             ss.multiply(&MOVE_CUBE[m]);
             ss.multiply(&SYM_CUBE[INV_IDX[s] as usize]);
 
@@ -279,11 +275,11 @@ pub static TWIST_CONJ: Lazy<Vec<u16>> = Lazy::new(|| {
     let mut buffer = vec![0u16; size];
 
     // Read them from the file in little-endian order.
-    for i in 0..size {
+    for (i, item) in buffer.iter_mut().enumerate().take(size) {
         let mut bytes = [0u8; 2];
         file.read_exact(&mut bytes)
             .unwrap_or_else(|_| panic!("Error reading entry {} from {:?}", i, path));
-        buffer[i] = u16::from_le_bytes(bytes);
+        *item = u16::from_le_bytes(bytes);
     }
 
     buffer
@@ -310,11 +306,11 @@ pub static UD_EDGES_CONJ: Lazy<Vec<u16>> = Lazy::new(|| {
     let mut buffer = vec![0u16; size];
 
     // Read them from the file in little-endian order.
-    for i in 0..size {
+    for (i, item) in buffer.iter_mut().enumerate().take(size) {
         let mut bytes = [0u8; 2];
         file.read_exact(&mut bytes)
             .unwrap_or_else(|_| panic!("Error reading entry {} from {:?}", i, path));
-        buffer[i] = u16::from_le_bytes(bytes);
+        *item = u16::from_le_bytes(bytes);
     }
 
     buffer
@@ -348,11 +344,11 @@ pub static FLIPSLICE_CLASSIDX: Lazy<Vec<u16>> = Lazy::new(|| {
     let mut buffer = vec![0u16; size];
 
     // Read them from the file in little-endian order.
-    for i in 0..size {
+    for (i, item) in buffer.iter_mut().enumerate().take(size) {
         let mut bytes = [0u8; 2];
         file.read_exact(&mut bytes)
             .unwrap_or_else(|_| panic!("Error reading entry {} from {:?}", i, path));
-        buffer[i] = u16::from_le_bytes(bytes);
+        *item = u16::from_le_bytes(bytes);
     }
 
     buffer
@@ -378,11 +374,11 @@ pub static FLIPSLICE_SYM: Lazy<Vec<u8>> = Lazy::new(|| {
     let mut buffer = vec![0u8; size];
 
     // Read them from the file in little-endian order.
-    for i in 0..size {
+    for (i, item) in buffer.iter_mut().enumerate().take(size) {
         let mut byte = [0u8; 1];
         file.read_exact(&mut byte)
             .unwrap_or_else(|_| panic!("Error reading entry {} from {:?}", i, path));
-        buffer[i] = byte[0] as u8;
+        *item = byte[0];
     }
 
     buffer
@@ -408,11 +404,11 @@ pub static FLIPSLICE_REP: Lazy<Vec<u32>> = Lazy::new(|| {
     let mut buffer = vec![0u32; size];
 
     // Read them from the file in little-endian order.
-    for i in 0..size {
+    for (i, item) in buffer.iter_mut().enumerate().take(size) {
         let mut bytes = [0u8; 4];
         file.read_exact(&mut bytes)
             .unwrap_or_else(|_| panic!("Error reading entry {} from {:?}", i, path));
-        buffer[i] = u32::from_le_bytes(bytes);
+        *item = u32::from_le_bytes(bytes);
     }
 
     buffer
@@ -439,11 +435,11 @@ pub static CORNER_CLASSIDX: Lazy<Vec<u16>> = Lazy::new(|| {
     let mut buffer = vec![0u16; size];
 
     // Read them from the file in little-endian order.
-    for i in 0..size {
+    for (i, item) in buffer.iter_mut().enumerate().take(size) {
         let mut bytes = [0u8; 2];
         file.read_exact(&mut bytes)
             .unwrap_or_else(|_| panic!("Error reading entry {} from {:?}", i, path));
-        buffer[i] = u16::from_le_bytes(bytes);
+        *item = u16::from_le_bytes(bytes);
     }
 
     buffer
@@ -469,11 +465,11 @@ pub static CORNER_SYM: Lazy<Vec<u8>> = Lazy::new(|| {
     let mut buffer = vec![0u8; size];
 
     // Read them from the file in little-endian order.
-    for i in 0..size {
+    for (i, item) in buffer.iter_mut().enumerate().take(size) {
         let mut byte = [0u8; 1];
         file.read_exact(&mut byte)
             .unwrap_or_else(|_| panic!("Error reading entry {} from {:?}", i, path));
-        buffer[i] = byte[0] as u8;
+        *item = byte[0];
     }
 
     buffer
@@ -499,11 +495,11 @@ pub static CORNER_REP: Lazy<Vec<u16>> = Lazy::new(|| {
     let mut buffer = vec![0u16; size];
 
     // Read them from the file in little-endian order.
-    for i in 0..size {
+    for (i, item) in buffer.iter_mut().enumerate().take(size) {
         let mut bytes = [0u8; 2];
         file.read_exact(&mut bytes)
             .unwrap_or_else(|_| panic!("Error reading entry {} from {:?}", i, path));
-        buffer[i] = u16::from_le_bytes(bytes);
+        *item = u16::from_le_bytes(bytes);
     }
 
     buffer

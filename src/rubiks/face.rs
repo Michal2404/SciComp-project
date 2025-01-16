@@ -4,6 +4,7 @@ use super::cubie::CubieCube;
 use super::defs::{CORNER_COLOR, CORNER_FACELET, EDGE_COLOR, EDGE_FACELET};
 use super::enums::{Color, Corner as Co, Edge as Ed};
 use crate::rubiks::cubie::FromUsize;
+use std::fmt;
 
 #[derive(Debug, Clone)]
 pub struct FaceCube {
@@ -13,21 +14,14 @@ pub struct FaceCube {
 impl FaceCube {
     pub fn new() -> Self {
         let mut f = [Color::U; 54];
-        for i in 9..18 {
-            f[i] = Color::R;
-        }
-        for i in 18..27 {
-            f[i] = Color::F;
-        }
-        for i in 27..36 {
-            f[i] = Color::D;
-        }
-        for i in 36..45 {
-            f[i] = Color::L;
-        }
-        for i in 45..54 {
-            f[i] = Color::B;
-        }
+
+        // Update specific ranges using iterators
+        f.iter_mut().skip(9).take(9).for_each(|c| *c = Color::R);
+        f.iter_mut().skip(18).take(9).for_each(|c| *c = Color::F);
+        f.iter_mut().skip(27).take(9).for_each(|c| *c = Color::D);
+        f.iter_mut().skip(36).take(9).for_each(|c| *c = Color::L);
+        f.iter_mut().skip(45).take(9).for_each(|c| *c = Color::B);
+
         FaceCube { f }
     }
 
@@ -73,24 +67,11 @@ impl FaceCube {
         if cnt.iter().all(|&x| x == 9) {
             Ok(())
         } else {
-            Err(format!(
+            Err(
                 "Error: Cube definition string does not contain exactly 9 facelets of each color."
-            ))
+                    .to_string(),
+            )
         }
-    }
-
-    pub fn to_string(&self) -> String {
-        self.f
-            .iter()
-            .map(|&color| match color {
-                Color::U => 'U',
-                Color::R => 'R',
-                Color::F => 'F',
-                Color::D => 'D',
-                Color::L => 'L',
-                Color::B => 'B',
-            })
-            .collect()
     }
 
     pub fn to_2dstring(&self) -> String {
@@ -130,8 +111,8 @@ impl FaceCube {
         let mut cc = CubieCube::new(None, None, None, None);
         for (i, &fac) in CORNER_FACELET.iter().enumerate() {
             let mut ori = 0;
-            for k in 0..3 {
-                if self.f[fac[k] as usize] == Color::U || self.f[fac[k] as usize] == Color::D {
+            for (k, item) in fac.iter().enumerate() {
+                if self.f[*item as usize] == Color::U || self.f[*item as usize] == Color::D {
                     ori = k;
                     break;
                 }
@@ -165,5 +146,29 @@ impl FaceCube {
         }
 
         cc
+    }
+}
+
+impl fmt::Display for FaceCube {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let cube_string: String = self
+            .f
+            .iter()
+            .map(|&color| match color {
+                Color::U => 'U',
+                Color::R => 'R',
+                Color::F => 'F',
+                Color::D => 'D',
+                Color::L => 'L',
+                Color::B => 'B',
+            })
+            .collect();
+        write!(f, "{}", cube_string)
+    }
+}
+
+impl Default for FaceCube {
+    fn default() -> Self {
+        Self::new()
     }
 }

@@ -45,7 +45,6 @@ pub struct CubeVisualizerWithMoves {
     visualizer: CubeVisualizer,
     states: Vec<FaceCube>,
     current_index: usize,
-    last_update: std::time::Instant,
     solution_string: String,
     user_scramble: String,
     error_message: String,
@@ -57,7 +56,6 @@ impl CubeVisualizerWithMoves {
             visualizer: CubeVisualizer::new(initial_cube),
             states,
             current_index: 0,
-            last_update: std::time::Instant::now(),
             solution_string: solution,
             user_scramble: String::new(),
             error_message: String::new(),
@@ -66,7 +64,7 @@ impl CubeVisualizerWithMoves {
 }
 
 impl eframe::App for CubeVisualizerWithMoves {
-    fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
+    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         // Ensure a consistent dark theme
         ctx.set_visuals(egui::Visuals::dark());
         egui::CentralPanel::default().show(ctx, |ui| {
@@ -155,20 +153,21 @@ impl eframe::App for CubeVisualizerWithMoves {
             if ui
                 .add(egui::Button::new("Next Move").min_size(egui::vec2(150.0, 50.0)))
                 .clicked()
+                && self.current_index < self.states.len()
             {
-                if self.current_index < self.states.len() {
-                    self.visualizer
-                        .update_cube(self.states[self.current_index].clone());
-                    self.current_index += 1;
-                }
+                self.visualizer
+                    .update_cube(self.states[self.current_index].clone());
+                self.current_index += 1;
             }
 
             if ui
                 .add(egui::Button::new("Reset").min_size(egui::vec2(150.0, 50.0)))
                 .clicked()
             {
+                let cubiecube = CubieCube::from_scramble(&self.user_scramble);
                 self.current_index = 0;
-                self.visualizer.update_cube(self.states[0].clone());
+                self.visualizer
+                    .update_cube(cubiecube.to_facelet_cube().clone());
             }
         });
     }

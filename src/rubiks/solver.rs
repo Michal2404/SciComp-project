@@ -1,28 +1,20 @@
-use std::net::UdpSocket;
-use std::time::{Duration, Instant};
-use std::usize;
+use std::time::Instant;
 
-use eframe::egui::output;
-
-use crate::rubiks::cubie::CubieCube;
 use crate::rubiks::face::FaceCube;
 
 use super::coord::{self, U_EDGES_PLUS_D_EDGES_TO_UD_EDGES};
 use super::cubie;
+use super::defs::N_FLIP;
 use super::defs::N_MOVE;
-use super::defs::{self, N_FLIP};
 use super::enums::Move;
-use super::face;
 use super::moves::{
-    self as mv, CORNERS_MOVE, D_EDGES_MOVE, FLIP_MOVE, SLICE_SORTED_MOVE, TWIST_MOVE,
-    UD_EDGES_MOVE, U_EDGES_MOVE,
+    CORNERS_MOVE, D_EDGES_MOVE, FLIP_MOVE, SLICE_SORTED_MOVE, TWIST_MOVE, UD_EDGES_MOVE,
+    U_EDGES_MOVE,
 };
-use super::pruning::{
-    self as pr, CORNERS_UD_EDGES_DEPTH3, CORNSLICE_DEPTH, FLIPSLICE_TWIST_DEPTH3,
-};
+use super::pruning::{self as pr, CORNSLICE_DEPTH};
 use super::symmetries::{
-    self as sy, CONJ_MOVE, CORNER_CLASSIDX, CORNER_SYM, FLIPSLICE_CLASSIDX, FLIPSLICE_SYM,
-    SYM_CUBE, TWIST_CONJ, UD_EDGES_CONJ,
+    CONJ_MOVE, CORNER_CLASSIDX, CORNER_SYM, FLIPSLICE_CLASSIDX, FLIPSLICE_SYM, SYM_CUBE,
+    TWIST_CONJ, UD_EDGES_CONJ,
 };
 
 pub struct Solver {
@@ -121,7 +113,6 @@ impl Solver {
 
             // Mark phase2 as done for this branch
             self.phase2_done = true;
-            println!("phase 2 solve, moves: {:?}", self.sofar_phase2);
         } else {
             // Otherwise, continue searching
             for m in Move::iterator() {
@@ -202,7 +193,6 @@ impl Solver {
     ) {
         // Print a checkpoint every 1000 expansions
         *depth_expanded += 1;
-        if *depth_expanded % 1000 == 0 {}
 
         // If we already terminated, do nothing:
         if self.terminated {
@@ -222,11 +212,7 @@ impl Solver {
 
             // Compute initial phase2 coords
             let mut corners: usize;
-            let last_move = self
-                .sofar_phase1
-                .last()
-                .copied()
-                .unwrap_or_else(|| Move::U1);
+            let last_move = self.sofar_phase1.last().copied().unwrap_or(Move::U1);
 
             if matches!(last_move, Move::R3 | Move::F3 | Move::L3 | Move::B3) {
                 // corners = corners_move[18 * self.cornersave + (last_move.id() - 1)];
@@ -253,10 +239,10 @@ impl Solver {
             let mut u_edges = self.co_cube.as_ref().unwrap().u_edges;
             let mut d_edges = self.co_cube.as_ref().unwrap().d_edges;
             for &mov in &self.sofar_phase1 {
-                let index = 18_usize * (u_edges as usize) + (mov.id() as usize);
+                let index = 18_usize * (u_edges as usize) + (mov.id());
                 u_edges = U_EDGES_MOVE[index];
 
-                let index2 = 18_usize * (d_edges as usize) + (mov.id() as usize);
+                let index2 = 18_usize * (d_edges as usize) + (mov.id());
                 d_edges = D_EDGES_MOVE[index2];
             }
 
@@ -284,8 +270,9 @@ impl Solver {
             for m in Move::iterator() {
                 // If dist == 0 => already in subgroup H. If fewer than 5 moves left,
                 // forbid phase2 moves in phase1 (mirroring the original logic).
-                if dist == 0 && togo_phase1 < 5 {
-                    if matches!(
+                if dist == 0
+                    && togo_phase1 < 5
+                    && matches!(
                         m,
                         Move::U1
                             | Move::U2
@@ -297,9 +284,9 @@ impl Solver {
                             | Move::D3
                             | Move::L2
                             | Move::B2
-                    ) {
-                        continue;
-                    }
+                    )
+                {
+                    continue;
                 }
 
                 // Disallow successive moves on same face or axis in the wrong order
@@ -315,8 +302,8 @@ impl Solver {
                 let slice_sorted_new = SLICE_SORTED_MOVE[18 * slice_sorted + m.id()];
 
                 let flipslice = N_FLIP * (slice_sorted_new / 24) as usize + flip_new as usize; // N_FLIP * (slice//N_PERM_4) + flip
-                let classidx = FLIPSLICE_CLASSIDX[flipslice as usize];
-                let sym = FLIPSLICE_SYM[flipslice as usize];
+                let classidx = FLIPSLICE_CLASSIDX[flipslice];
+                let sym = FLIPSLICE_SYM[flipslice];
                 let dist_new_mod3 = pr::get_flipslice_twist_depth3(
                     2187_usize * (classidx as usize)
                         + TWIST_CONJ[(twist_new << 4) + (sym as usize)] as usize,
@@ -331,7 +318,7 @@ impl Solver {
                 self.sofar_phase1.push(m);
                 self.search_phase1(
                     flip_new as usize,
-                    twist_new as usize,
+                    twist_new,
                     slice_sorted_new as usize,
                     dist_new as usize,
                     togo_phase1 - 1,
@@ -353,7 +340,7 @@ impl Solver {
         // Rotate or invert the cube if needed, replicating the Python logic:
 
         let mut cb = match self.rot {
-            0 => self.cb_cube.clone(), // no rotation
+            0 => self.cb_cube, // no rotation
             1 => {
                 let mut tmp = cubie::CubieCube::new(None, None, None, None); // placeholder
                                                                              // conj by 120° rotation: symCube[32] * cb_cube * symCube[16]
@@ -370,7 +357,7 @@ impl Solver {
                 tmp.multiply(&SYM_CUBE[32]);
                 tmp
             }
-            _ => self.cb_cube.clone(),
+            _ => self.cb_cube,
         };
 
         if self.inv == 1 {
@@ -389,7 +376,7 @@ impl Solver {
             self.sofar_phase1.clear();
             self.search_phase1(
                 self.co_cube.as_ref().unwrap().flip as usize,
-                self.co_cube.as_ref().unwrap().twist as usize,
+                self.co_cube.as_ref().unwrap().twist,
                 self.co_cube.as_ref().unwrap().slice_sorted as usize,
                 dist,
                 togo1,
@@ -412,16 +399,13 @@ impl Solver {
 ///
 /// Returns a string of the solution (or an error message if invalid).
 pub fn solve(cubescramble: &str, max_length: usize, timeout: f64, from_scramble: bool) -> String {
-    let mut cc = CubieCube::from_scramble("R");
-    if from_scramble {
-        cc = cubie::CubieCube::from_scramble(cubescramble);
+    let cc = if from_scramble {
+        cubie::CubieCube::from_scramble(cubescramble)
     } else {
         let mut fc = FaceCube::new();
-        fc.from_string(&cubescramble);
-
-        cc = fc.to_cubie_cube();
-    }
-    //let cc = cubie::CubieCube::from_scramble(cubescramble);
+        let _ = fc.from_string(cubescramble);
+        fc.to_cubie_cube()
+    };
 
     // 3) Start timing
     let start_time = Instant::now();
@@ -435,7 +419,7 @@ pub fn solve(cubescramble: &str, max_length: usize, timeout: f64, from_scramble:
         let best_solution = solver.solutions.last().unwrap();
         let mut s = String::new();
         for mv in best_solution {
-            s.push_str(&mv.name()); // or format!("{:?}", mv) if debug
+            s.push_str(mv.name()); // or format!("{:?}", mv) if debug
             s.push(' ');
         }
         s = s.replace('3', "'").replace('1', "");
@@ -443,7 +427,7 @@ pub fn solve(cubescramble: &str, max_length: usize, timeout: f64, from_scramble:
         let formatted_string = format!("{}({}f)", s.trim_end(), moves_count);
 
         // Replace occurrences of '3' with '\''
-        format!("{}", formatted_string)
+        formatted_string.to_string()
     } else {
         "No solution found.".to_string()
     }
