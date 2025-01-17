@@ -1,7 +1,7 @@
 // This file contains helper functions for all files used in CFOP
 use crate::rubiks::cube::RubiksCube;
 use crate::rubiks::color::Color;
-use std::{collections::HashSet, time::Duration};
+use std::{collections::{HashMap, HashSet}, time::Duration};
 
 pub fn find_edges_with_color(cube: &RubiksCube, target: &Color) -> Vec<(usize, usize)> {
     /*
@@ -153,82 +153,118 @@ pub fn cleanup_moves(output_list: Vec<String>) -> Vec<String>{
 
 }
 
-// for outputting data into excel
-use umya_spreadsheet::*;
-
-pub fn output_data(scramble: (&str, usize), 
-                    cross_data: (Vec<String>, usize, Duration), 
-                    f2l_data: (Vec<String>, usize, Duration), 
-                    oll_data: (Vec<String>, usize, Duration), 
-                    pll_data: (Vec<String>, usize, Duration),
-                    total_data: (Vec<String>, usize, Duration)) -> Result<(), Box<dyn std::error::Error>> {
-
+pub fn local_to_global(a: usize, b: usize) -> (usize, usize, usize) {
     /*
-    This function outputs data into a excel file
-        */
-    // Open the Excel file
-    let path = "src/cfop/analysis.xlsx";
-    let mut workbook = reader::xlsx::read(std::path::Path::new(path)).unwrap();
-
-    // Specify the sheet name to read
-    // Step 2: Access a specific worksheet
-    let sheet = workbook.get_sheet_by_name_mut("raw data").unwrap();
-
-    // Iterate over rows and check for non-empty rows
-    // for (index, row) in sheet.get_row_collection().enumerate() {
-    for row_num in 1..=u32::MAX {
-        let default = Cell::default();
-        let first_cell = sheet.get_cell_by_column_and_row(1, row_num).unwrap_or(&default);
-        // Get the first cell of the row (column A)
-        // Check if the cell's value matches the target string
-        if first_cell.get_value() == scramble.0 {
-            return Ok(())
-        }
-        if !first_cell.get_value().is_empty() {
-            continue
-        }
-        // If it doesn't exist, that means we add values to it
-        else {
-            // now we add the values into the excel sheet
-            // Define the cells and their new values (row, column, value)
-            let updates = vec![
-                (row_num, 1, scramble.0.to_string()),   // Row _, Column 1
-                (row_num, 2, scramble.1.to_string()),    // Row _, Column 2
-                (row_num, 3, cross_data.0.join(" ")),// Row _, Column 3
-                (row_num, 4, cross_data.1.to_string()),// Row _, Column 4
-                (row_num, 5, cross_data.2.as_millis().to_string()),// Row _, Column 5
-                (row_num, 6, f2l_data.0.join(" ")),// Row _, Column 6
-                (row_num, 7, f2l_data.1.to_string()),// Row _, Column 7
-                (row_num, 8, f2l_data.2.as_millis().to_string()),// Row _, Column 8
-                (row_num, 9, oll_data.0.join(" ")),// Row _, Column 9
-                (row_num, 10, oll_data.1.to_string()),// Row _, Column 10
-                (row_num, 11, oll_data.2.as_millis().to_string()),// Row _, Column 11
-                (row_num, 12, pll_data.0.join(" ")),// Row _, Column 12
-                (row_num, 13, pll_data.1.to_string()),// Row _, Column 13
-                (row_num, 14, pll_data.2.as_millis().to_string()),// Row _, Column 14
-                (row_num, 15, total_data.0.join(" ")),// Row _, Column 15
-                (row_num, 16, total_data.1.to_string()),// Row _, Column 16
-                (row_num, 17, total_data.2.as_millis().to_string()),// Row _, Column 17
-            ];
-        
-            // Loop through each update and apply it
-            for (row, col, value) in updates {
-                sheet.get_cell_by_column_and_row_mut(col, row).set_value(value);
-            }
-            
-            // // Open the same file and overwrite the original content
-            let _ = writer::xlsx::write(&workbook, std::path::Path::new(path));
-            // finally return
-            return Ok(())
-
-        }
-            
-        
-
+    This function converts the local coordinate system (2d array), into global coordinate system (3d array)
+    a = face number
+    b = location on face
+    output = center is (1,1,1)
+    */
+    
+    // look at the face number
+    let mut x: usize = 3;
+    let mut y: usize = 3;
+    let mut z: usize = 3;
+    match a {
+        0 => z = 2,
+        1 => z = 0,
+        2 => y = 0,
+        3 => y = 2,
+        4 => x = 2,
+        5 => x = 0,
+        _ => panic!("a should be between 0 and 5"),
     }
+    
+    // next look at location on the face
+    let (i, j) = match b {
+        0 => if x == 2 || y == 0 || z == 2 {(0, 2)} else if z == 0 {(0, 0)} else {(2, 2)},
+        1 => (1, 2),
+        2 => if x == 2 || y == 0 || z == 2 {(2, 2)} else if z == 0 {(2, 0)} else {(0, 2)},
+        3 => if x == 2 || y == 0 || z == 2 {(0, 1)} else if z == 0 {(0, 1)} else {(2, 1)}
+        4 => (1, 1),
+        5 => if x == 2 || y == 0 || z == 2 {(2, 1)} else if z == 0 {(2, 1)} else {(0, 1)},
+        6 => if x == 2 || y == 0 || z == 2 {(0, 0)} else if z == 0 {(0, 2)} else {(2, 0)},
+        7 => (1, 0),
+        8 => if x == 2 || y == 0 || z == 2 {(2, 0)} else if z == 0 {(2, 2)} else {(0, 0)},
+        _ => panic!("b should be between 0 and 8"),
+    };
+    
+    // lastly we will change x, y, or z depending on which value is 3
+    if x != 3 {
+        y = i;
+        z = j
+    } else if y != 3 {
+        x = i;
+        z = j;
+    } else if z != 3 {
+        x = i;
+        y = j;
+    } else { panic!("all x y z are 3") };
+    
+    (x, y, z)
+    
+    
+}
 
-
-    Ok(())
-
-                    
+pub fn global_to_local(x: usize, y: usize, z: usize) -> Vec<(usize, usize)>{
+    /*
+    This function converts global coordinate system into local coordinate system
+    */
+    // specify the local coordinate system
+    let a: Vec<usize> = vec![0, 1, 2, 0, 1, 2, 0, 1, 2];
+    let b: Vec<usize> = vec![2, 2, 2, 1, 1, 1, 0, 0, 0];
+    
+    let mut local_position: HashMap<(usize, usize), usize> = HashMap::new();
+    for i in 0..a.len() {
+        local_position.insert((a[i], b[i]), i);
+    }
+    
+    let coordinate = vec![x, y, z];
+    let mut local_coordinate: Vec<(usize, usize)> = Vec::new();
+    
+    for (index, cut) in coordinate.iter().enumerate() {
+        // we only find the location if cut doesn't equal 1 
+        if *cut != 1 {
+            // we first clone coordinate and rmeove the index
+            let mut temp = coordinate.clone();
+            temp.remove(index);
+            
+            // next we transform the global coordinate system to local coordinate system using a and b directions
+            // for x and y, we need to change the coordinate, for a
+            if (index == 0 && *cut == 0) || (index == 1 && *cut == 2) {
+                match temp[0] {
+                    0 => temp[0] = 2,
+                    2 => temp[0] = 0,
+                    _ => (),
+                }
+            }
+            // for z, we need to change the coordinate, for b
+            else if index == 2 && *cut == 0 {
+                match temp[1] {
+                    0 => temp[1] = 2,
+                    2 => temp[1] = 0,
+                    _ => (),
+                }
+            }
+            // otherwise, we don't need to change anything
+            else {}
+            
+            // get the index of local coordinate
+            let position = local_position.get(&(temp[0], temp[1])).unwrap();
+            
+            // lastly face will depend on the cut
+            let face = match (index, cut) {
+                (0, 0) => 5,
+                (0, 2) => 4,
+                (1, 0) => 2,
+                (1, 2) => 3,
+                (2, 0) => 1,
+                (2, 2) => 0,
+                _ => panic!("something is wrong here")
+            };
+            local_coordinate.push((face, *position));
+        }
+        
+    }
+    local_coordinate
 }

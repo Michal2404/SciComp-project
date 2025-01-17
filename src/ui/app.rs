@@ -150,3 +150,70 @@
 //         }
 //     }
 // }
+
+use bevy::prelude::*;
+
+// initialize cubie
+#[derive(Component)]
+struct Cubie;
+
+pub fn setup(
+    mut commands: Commands, 
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+) {
+    /*
+    This function spawns in the rubiks cube
+     */
+    commands.spawn(
+        PbrBundle{
+            mesh: meshes.add(Mesh::from(shape::Cube {size: 1.0})),
+            material: materials.add(Color::rgb(0.67, 0.84, 0.92).into()),
+            transform: Transform::from_xyz(0.0, 0.5, 0.0),
+            ..default()
+        });
+    }
+    
+pub fn spawn_camera(
+    mut commands: Commands,
+) {
+    /*
+    This function sets up the camera
+     */
+    //camera
+    commands.spawn(
+        Camera3dBundle{
+            transform: Transform::from_xyz(-2.0, 2.5, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
+            ..default()
+
+    });
+        
+}
+
+// impl Rubiks {
+//     pub fn new() -> Self {
+//         /*
+//         This function creates a new rubiks cube
+//          */
+//         let mut rubic = Rubiks { items: Vec::new() };
+//         let mut num = 0;
+//         for x in -1..=1 {
+//             for y in -1..=1 {
+//                 for z in -1..=1 {
+//                     if x == 0 && y == 0 && z == 0 {
+//                         continue;
+//                     }
+//                     let item = RubicItem {
+//                         num,
+//                         original_position: [x, y, z],
+//                         position: [x, y, z],
+//                         rotation: Quat::IDENTITY,
+//                     };
+//                     num += 1;
+//                     rubic.items.push(item);
+//                 }
+//             }
+//         }
+//         rubic
+//     }
+// }

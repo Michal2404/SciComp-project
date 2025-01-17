@@ -1,7 +1,7 @@
 // File to solve the first two layers in CFOP
 use crate::rubiks::cube::RubiksCube;
 use crate::rubiks::color::Color;
-use crate::cfop::helper::*;
+use crate::helper::utils::*;
 
 use std::fs;
 use std::collections::HashMap;
@@ -281,168 +281,118 @@ fn corner_piece_location(cube: &RubiksCube, target: &Color, corner_1: &Color, co
     
     
 }
-fn local_to_global(a: usize, b: usize) -> (usize, usize, usize) {
-    /*
-    This function converts the local coordinate system (2d array), into global coordinate system (3d array)
-    a = face number
-    b = location on face
-    output = center is (1,1,1)
-    */
-    
-    // look at the face number
-    let mut x: usize = 3;
-    let mut y: usize = 3;
-    let mut z: usize = 3;
-    match a {
-        0 => z = 2,
-        1 => z = 0,
-        2 => y = 0,
-        3 => y = 2,
-        4 => x = 2,
-        5 => x = 0,
-        _ => panic!("a should be between 0 and 5"),
-    }
-    
-    // next look at location on the face
-    let (i, j) = match b {
-        0 => if x == 2 || y == 0 || z == 2 {(0, 2)} else if z == 0 {(0, 0)} else {(2, 2)},
-        1 => (1, 2),
-        2 => if x == 2 || y == 0 || z == 2 {(2, 2)} else if z == 0 {(2, 0)} else {(0, 2)},
-        3 => if x == 2 || y == 0 || z == 2 {(0, 1)} else if z == 0 {(0, 1)} else {(2, 1)}
-        4 => (1, 1),
-        5 => if x == 2 || y == 0 || z == 2 {(2, 1)} else if z == 0 {(2, 1)} else {(0, 1)},
-        6 => if x == 2 || y == 0 || z == 2 {(0, 0)} else if z == 0 {(0, 2)} else {(2, 0)},
-        7 => (1, 0),
-        8 => if x == 2 || y == 0 || z == 2 {(2, 0)} else if z == 0 {(2, 2)} else {(0, 0)},
-        _ => panic!("b should be between 0 and 8"),
-    };
-    
-    // lastly we will change x, y, or z depending on which value is 3
-    if x != 3 {
-        y = i;
-        z = j
-    } else if y != 3 {
-        x = i;
-        z = j;
-    } else if z != 3 {
-        x = i;
-        y = j;
-    } else { panic!("all x y z are 3") };
-    
-    (x, y, z)
-    
-    
-}
-
-fn global_to_local(x: usize, y: usize, z: usize) -> Vec<(usize, usize)>{
-    /*
-    This function converts global coordinate system into local coordinate system
-    */
-    // specify the local coordinate system
-    let a: Vec<usize> = vec![0, 1, 2, 0, 1, 2, 0, 1, 2];
-    let b: Vec<usize> = vec![2, 2, 2, 1, 1, 1, 0, 0, 0];
-    
-    let mut local_position: HashMap<(usize, usize), usize> = HashMap::new();
-    for i in 0..a.len() {
-        local_position.insert((a[i], b[i]), i);
-    }
-    
-    let coordinate = vec![x, y, z];
-    let mut local_coordinate: Vec<(usize, usize)> = Vec::new();
-    
-    for (index, cut) in coordinate.iter().enumerate() {
-        // we only find the location if cut doesn't equal 1 
-        if *cut != 1 {
-            // we first clone coordinate and rmeove the index
-            let mut temp = coordinate.clone();
-            temp.remove(index);
-            
-            // next we transform the global coordinate system to local coordinate system using a and b directions
-            // for x and y, we need to change the coordinate, for a
-            if (index == 0 && *cut == 0) || (index == 1 && *cut == 2) {
-                match temp[0] {
-                    0 => temp[0] = 2,
-                    2 => temp[0] = 0,
-                    _ => (),
-                }
-            }
-            // for z, we need to change the coordinate, for b
-            else if index == 2 && *cut == 0 {
-                match temp[1] {
-                    0 => temp[1] = 2,
-                    2 => temp[1] = 0,
-                    _ => (),
-                }
-            }
-            // otherwise, we don't need to change anything
-            else {}
-            
-            // get the index of local coordinate
-            let position = local_position.get(&(temp[0], temp[1])).unwrap();
-            
-            // lastly face will depend on the cut
-            let face = match (index, cut) {
-                (0, 0) => 5,
-                (0, 2) => 4,
-                (1, 0) => 2,
-                (1, 2) => 3,
-                (2, 0) => 1,
-                (2, 2) => 0,
-                _ => panic!("something is wrong here")
-            };
-            local_coordinate.push((face, *position));
-        }
-        
-    }
-    local_coordinate
-}
-
-// fn ordering(map: HashMap<Vec<Color>, Vec<(usize, usize)>>) -> HashMap<Vec<Color>, Vec<(usize, usize)>>{
+// fn local_to_global(a: usize, b: usize) -> (usize, usize, usize) {
 //     /*
-//     This function makes the ordering of the color consistent
+//     This function converts the local coordinate system (2d array), into global coordinate system (3d array)
+//     a = face number
+//     b = location on face
+//     output = center is (1,1,1)
 //     */
-//     let mut updated_map: HashMap<Vec<Color>, Vec<(usize, usize)>> = HashMap::new();
-//     for (key, val) in map.into_iter() {
-//         let mut init_key: Vec<usize> = Vec::new();
-//         let mut val_final = val.clone();
-//         let mut key_final = Vec::new();
-//         // assign a number to the color
-//         for i in 0..2 {
-//             match key[i] {
-//                 Color::W => init_key.push(0),
-//                 Color::Y => init_key.push(1),
-//                 Color::G => init_key.push(2),
-//                 Color::B => init_key.push(3),
-//                 Color::R => init_key.push(4),
-//                 Color::O => init_key.push(5),
+    
+//     // look at the face number
+//     let mut x: usize = 3;
+//     let mut y: usize = 3;
+//     let mut z: usize = 3;
+//     match a {
+//         0 => z = 2,
+//         1 => z = 0,
+//         2 => y = 0,
+//         3 => y = 2,
+//         4 => x = 2,
+//         5 => x = 0,
+//         _ => panic!("a should be between 0 and 5"),
+//     }
+    
+//     // next look at location on the face
+//     let (i, j) = match b {
+//         0 => if x == 2 || y == 0 || z == 2 {(0, 2)} else if z == 0 {(0, 0)} else {(2, 2)},
+//         1 => (1, 2),
+//         2 => if x == 2 || y == 0 || z == 2 {(2, 2)} else if z == 0 {(2, 0)} else {(0, 2)},
+//         3 => if x == 2 || y == 0 || z == 2 {(0, 1)} else if z == 0 {(0, 1)} else {(2, 1)}
+//         4 => (1, 1),
+//         5 => if x == 2 || y == 0 || z == 2 {(2, 1)} else if z == 0 {(2, 1)} else {(0, 1)},
+//         6 => if x == 2 || y == 0 || z == 2 {(0, 0)} else if z == 0 {(0, 2)} else {(2, 0)},
+//         7 => (1, 0),
+//         8 => if x == 2 || y == 0 || z == 2 {(2, 0)} else if z == 0 {(2, 2)} else {(0, 0)},
+//         _ => panic!("b should be between 0 and 8"),
+//     };
+    
+//     // lastly we will change x, y, or z depending on which value is 3
+//     if x != 3 {
+//         y = i;
+//         z = j
+//     } else if y != 3 {
+//         x = i;
+//         z = j;
+//     } else if z != 3 {
+//         x = i;
+//         y = j;
+//     } else { panic!("all x y z are 3") };
+    
+//     (x, y, z)
+    
+    
+// }
+
+// fn global_to_local(x: usize, y: usize, z: usize) -> Vec<(usize, usize)>{
+//     /*
+//     This function converts global coordinate system into local coordinate system
+//     */
+//     // specify the local coordinate system
+//     let a: Vec<usize> = vec![0, 1, 2, 0, 1, 2, 0, 1, 2];
+//     let b: Vec<usize> = vec![2, 2, 2, 1, 1, 1, 0, 0, 0];
+    
+//     let mut local_position: HashMap<(usize, usize), usize> = HashMap::new();
+//     for i in 0..a.len() {
+//         local_position.insert((a[i], b[i]), i);
+//     }
+    
+//     let coordinate = vec![x, y, z];
+//     let mut local_coordinate: Vec<(usize, usize)> = Vec::new();
+    
+//     for (index, cut) in coordinate.iter().enumerate() {
+//         // we only find the location if cut doesn't equal 1 
+//         if *cut != 1 {
+//             // we first clone coordinate and rmeove the index
+//             let mut temp = coordinate.clone();
+//             temp.remove(index);
+            
+//             // next we transform the global coordinate system to local coordinate system using a and b directions
+//             // for x and y, we need to change the coordinate, for a
+//             if (index == 0 && *cut == 0) || (index == 1 && *cut == 2) {
+//                 match temp[0] {
+//                     0 => temp[0] = 2,
+//                     2 => temp[0] = 0,
+//                     _ => (),
+//                 }
 //             }
-//         }
-//         // now we sort this and convert back into color
-//         let mut final_key = init_key.clone();
-//         final_key.sort();
-//         for i in 0..2 {
-//             match final_key[i] {
-//                 0 => key_final.push(Color::W),
-//                 1 => key_final.push(Color::Y),
-//                 2 => key_final.push(Color::G),
-//                 3 => key_final.push(Color::B),
-//                 4 => key_final.push(Color::R),
-//                 5 => key_final.push(Color::O),
-//                 _ => ()
+//             // for z, we need to change the coordinate, for b
+//             else if index == 2 && *cut == 0 {
+//                 match temp[1] {
+//                     0 => temp[1] = 2,
+//                     2 => temp[1] = 0,
+//                     _ => (),
+//                 }
 //             }
+//             // otherwise, we don't need to change anything
+//             else {}
+            
+//             // get the index of local coordinate
+//             let position = local_position.get(&(temp[0], temp[1])).unwrap();
+            
+//             // lastly face will depend on the cut
+//             let face = match (index, cut) {
+//                 (0, 0) => 5,
+//                 (0, 2) => 4,
+//                 (1, 0) => 2,
+//                 (1, 2) => 3,
+//                 (2, 0) => 1,
+//                 (2, 2) => 0,
+//                 _ => panic!("something is wrong here")
+//             };
+//             local_coordinate.push((face, *position));
 //         }
         
-
-//         // if init_key and final_key doesn't match, that means there was a change and we will reverse the values 
-//         if init_key != final_key {
-//             val_final.reverse()
-//         } else {}
-
-//         // insert this into the updated_map
-//         updated_map.insert(key_final, val_final);
-
 //     }
-
-//     updated_map
-
+//     local_coordinate
 // }

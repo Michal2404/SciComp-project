@@ -1,7 +1,7 @@
 // File to solve OLL
 use crate::rubiks::cube::RubiksCube;
 use crate::rubiks::color::Color;
-use crate::cfop::helper::*;
+use crate::helper::utils::*;
 
 use std::collections::{HashMap, HashSet};
 use std::fs;

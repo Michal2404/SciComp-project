@@ -1,7 +1,7 @@
 // File to solve the cross in CFOP
 use crate::rubiks::cube::RubiksCube;
 use crate::rubiks::color::Color;
-use crate::cfop::helper::*;
+use crate::helper::utils::*;
 use std::collections::HashMap;
 use std::collections::BinaryHeap;
 use std::cmp::Reverse;
