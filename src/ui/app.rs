@@ -1,219 +1,125 @@
-// // use crate::rubiks::cube::RubiksCube;
-// // use eframe::egui;
-// // use eframe::egui::{Painter, Pos2, Rect, Vec2};
+use crate::ui::pieces::*;
+use crate::ui::camera::*;
+use crate::ui::rotate::*;
+use crate::ui::design::*;
 
-// // pub struct MyApp {
-// //     pub cube: RubiksCube,
-// // }
-
-// // impl MyApp {
-// //     pub fn new(cube: RubiksCube) -> Self {
-// //         Self { cube }
-// //     }
-// // }
-
-// // impl eframe::App for MyApp {
-// //     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-// //         egui::CentralPanel::default().show(ctx, |ui| {
-// //             let available_size = ui.available_size();
-// //             let square_size = (available_size.x.min(available_size.y) / 12.0).max(20.0); // Adjust square size dynamically
-
-// //             let cube_size = egui::Vec2::new(9.0 * square_size, 6.0 * square_size);
-// //             if available_size.x < cube_size.x || available_size.y < cube_size.y {
-// //                 ui.label("Not enough space to render the cube! Resize the window.");
-// //                 return;
-// //             }
-
-// //             let top_left = (available_size - cube_size) / 2.0;
-// //             let top_left = ui.min_rect().min + top_left;
-
-// //             draw_cube(&self.cube, ui.painter(), top_left, square_size);
-// //         });
-// //     }
-// // }
-
-// // pub fn draw_cube(cube: &RubiksCube, painter: &Painter, top_left: Pos2, square_size: f32) {
-// //     let face_positions = [
-// //         (0, -1), // Top
-// //         (0, 1),  // Bottom
-// //         (0, 0),  // Front
-// //         (2, 0),  // Back
-// //         (1, 0),  // Right
-// //         (-1, 0), // Left
-// //     ];
-
-// //     for (face_idx, &(dx, dy)) in face_positions.iter().enumerate() {
-// //         let face = &cube.faces[face_idx];
-// //         for y in 0..3 {
-// //             for x in 0..3 {
-// //                 let color = face[y * 3 + x].to_color32();
-// //                 let rect = Rect::from_min_size(
-// //                     top_left
-// //                         + Vec2::new((dx * 3 + x as i32) as f32, (dy * 3 + y as i32) as f32)
-// //                             * square_size,
-// //                     Vec2::splat(square_size),
-// //                 );
-// //                 painter.rect_filled(rect, 0.0, color);
-// //             }
-// //         }
-// //     }
-// // }
-
-
-// // This file creates the 3d animation of rubiks cube GUI
-// use bevy::prelude::*;
-// use crate::rubiks::cube::RubiksCube;
-
-// #[derive(Component)]
-// struct Cube;
-
-
-// pub fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials: ResMut<Assets<StandardMaterial>>) {
-//     // Camera
-//     commands.spawn(Camera3dBundle {
-//         transform: Transform::from_xyz(5.0, 5.0, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
-//         ..default()
-//     });
-
-//     // Light
-//     commands.spawn(PointLightBundle {
-//         point_light: PointLight {
-//             intensity: 1500.0,
-//             ..default()
-//         },
-//         transform: Transform::from_xyz(4.0, 8.0, 4.0),
-//         ..default()
-//     });
-
-//     // Cube with colored faces
-//     let colors = [
-//         Color::RED, Color::GREEN, Color::BLUE,
-//         Color::YELLOW, Color::WHITE, Color::ORANGE,
-//     ];
-
-//     for (i, &color) in colors.iter().enumerate() {
-//         let rotation = match i {
-//             0 => Quat::from_rotation_y(0.0),         // Front
-//             1 => Quat::from_rotation_y(std::f32::consts::PI), // Back
-//             2 => Quat::from_rotation_x(std::f32::consts::PI / 2.0), // Top
-//             3 => Quat::from_rotation_x(-std::f32::consts::PI / 2.0), // Bottom
-//             4 => Quat::from_rotation_y(-std::f32::consts::PI / 2.0), // Left
-//             _ => Quat::from_rotation_y(std::f32::consts::PI / 2.0),  // Right
-//         };
-
-//         commands.spawn((
-//             PbrBundle {
-//                 mesh: meshes.add(Mesh::from(shape::Plane { size: 1.0, subdivisions: todo!() })),
-//                 material: materials.add(StandardMaterial {
-//                     base_color: color,
-//                     ..default()
-//                 }),
-//                 transform: Transform {
-//                     rotation,
-//                     translation: match i {
-//                         0 => Vec3::new(0.0, 0.0, 0.5), // Front
-//                         1 => Vec3::new(0.0, 0.0, -0.5), // Back
-//                         2 => Vec3::new(0.0, 0.5, 0.0), // Top
-//                         3 => Vec3::new(0.0, -0.5, 0.0), // Bottom
-//                         4 => Vec3::new(-0.5, 0.0, 0.0), // Left
-//                         _ => Vec3::new(0.5, 0.0, 0.0),  // Right
-//                     },
-//                     ..default()
-//                 },
-//                 ..default()
-//             },
-//             Cube,
-//         )); 
-//     }
-// }
-
-// pub fn rotate_cube(mut query: Query<&mut Transform, With<Cube>>, keys: Res<Input<KeyCode>>, time: Res<Time>) {
-//     let mut rotation = Vec3::ZERO;
-
-//     if keys.pressed(KeyCode::Left) {
-//         rotation.y += 1.0;
-//     }
-//     if keys.pressed(KeyCode::Right) {
-//         rotation.y -= 1.0;
-//     }
-//     if keys.pressed(KeyCode::Up) {
-//         rotation.x += 1.0;
-//     }
-//     if keys.pressed(KeyCode::Down) {
-//         rotation.x -= 1.0;
-//     }
-
-//     if rotation.length() > 0.0 {
-//         for mut transform in query.iter_mut() {
-//             transform.rotation *= Quat::from_rotation_y(rotation.y * time.delta_seconds())
-//                 * Quat::from_rotation_x(rotation.x * time.delta_seconds());
-//         }
-//     }
-// }
+use std::collections::VecDeque;
 
 use bevy::prelude::*;
+use bevy::transform::TransformSystem;
+use bevy::color::palettes;
+use bevy_egui::EguiPlugin;
+use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
-// initialize cubie
-#[derive(Component)]
-struct Cubie;
-
-pub fn setup(
-    mut commands: Commands, 
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-) {
-    /*
-    This function spawns in the rubiks cube
-     */
-    commands.spawn(
-        PbrBundle{
-            mesh: meshes.add(Mesh::from(shape::Cube {size: 1.0})),
-            material: materials.add(Color::rgb(0.67, 0.84, 0.92).into()),
-            transform: Transform::from_xyz(0.0, 0.5, 0.0),
-            ..default()
-        });
-    }
-    
-pub fn spawn_camera(
-    mut commands: Commands,
-) {
-    /*
-    This function sets up the camera
-     */
-    //camera
-    commands.spawn(
-        Camera3dBundle{
-            transform: Transform::from_xyz(-2.0, 2.5, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
-            ..default()
-
-    });
-        
+#[derive(Debug, Resource)]
+pub struct CubeSettings {
+    pub front_color: Color,
+    pub back_color: Color,
+    pub left_color: Color,
+    pub right_color: Color,
+    pub up_color: Color,
+    pub down_color: Color,
+    // pub piece_size: f64,
+    // pub sticker_size: f64,
+    // pub camera_zoom_speed: f64,
+    // pub rotate_speed: f64,
+    pub piece_size: f32,
+    pub sticker_size: f32,
+    pub camera_zoom_speed: f32,
+    pub rotate_speed: f32,
 }
 
-// impl Rubiks {
-//     pub fn new() -> Self {
-//         /*
-//         This function creates a new rubiks cube
-//          */
-//         let mut rubic = Rubiks { items: Vec::new() };
-//         let mut num = 0;
-//         for x in -1..=1 {
-//             for y in -1..=1 {
-//                 for z in -1..=1 {
-//                     if x == 0 && y == 0 && z == 0 {
-//                         continue;
-//                     }
-//                     let item = RubicItem {
-//                         num,
-//                         original_position: [x, y, z],
-//                         position: [x, y, z],
-//                         rotation: Quat::IDENTITY,
-//                     };
-//                     num += 1;
-//                     rubic.items.push(item);
-//                 }
-//             }
-//         }
-//         rubic
-//     }
-// }
+impl Default for CubeSettings {
+    fn default() -> Self {
+        Self {
+            front_color: palettes::css::GREEN.into(),
+            back_color: palettes::css::BLUE.into(),
+            left_color: palettes::css::ORANGE.into(),
+            right_color: palettes::css::RED.into(),
+            up_color: palettes::css::WHITE.into(),
+            down_color: palettes::css::YELLOW.into(),
+            piece_size: 1.0,
+            sticker_size: 0.9,
+            // play_mode: PlayMode::Practice,
+            camera_zoom_speed: 1.1,
+            rotate_speed: 0.5,
+        }
+    }
+}
+
+pub fn run_visualization(run: bool) {
+    /*
+    This function runs the visualization for rubiks cube
+     */
+    // let moves: Vec<String> = vec!["U B F L' U2 B"].iter().flat_map(|s| s.split_whitespace()).map(|s| s.to_string()).collect();
+    let moves: Vec<String> = vec!["U"].iter().flat_map(|s| s.split_whitespace()).map(|s| s.to_string()).collect();
+
+    if run {
+    // Visualize scrambled cube
+    App::new()
+    .add_plugins((DefaultPlugins, MeshPickingPlugin))
+    .add_plugins(EguiPlugin)
+    // .add_plugins(WorldInspectorPlugin::new())
+    .insert_resource(MeshPickingSettings {
+        require_markers: true,
+        ..Default::default()
+    })
+    .insert_resource(ClearColor(Color::srgb(0.9, 0.9, 0.9)))
+    .insert_resource(CubeSettings::default())
+    .insert_resource(InputText::default())
+    .insert_resource(MoveQueue(VecDeque::new()))
+    .insert_resource(Rotation::default())
+    .insert_resource(MouseDraggingRecorder {
+        start_pos: None,
+        piece: None,
+        triggered: false,
+    })
+    .register_type::<Cubie>()
+    .add_event::<ScrambleEvent>()
+    .add_event::<GenerateScrambleEvent>()
+    .add_systems(Startup, 
+        (
+            spawn_camera, 
+            spawn_rubiks_cube
+        ))
+    .add_systems(PreUpdate,
+    (
+        plan_move,
+        ).run_if(check_field)
+    )
+    .add_systems(Update, 
+        (
+            rotate_cube,
+            zoom_camera,
+            move_camera,
+            game_ui,
+            scramble_cube,
+            // generate_random_scramble,
+        ))
+    .add_systems(PostUpdate,
+        (
+            piece_translation_round,
+        )
+        .run_if(check_field)
+        // .after(TransformSystem::TransformPropagate,),
+    )
+    // .add_systems(
+    //     PostUpdate,
+    //     ((
+    //         piece_translation_round,
+    //         cleanup_movable_pieces.after(piece_translation_round),
+    //     )
+    //         .after(TransformSystem::TransformPropagate),),
+    // )
+    .run();
+    }
+}
+
+fn check_field(resource: Res<Rotation>) -> bool {
+    if resource.completed == true {
+        return true
+    }
+    else {
+        return false
+    }
+}

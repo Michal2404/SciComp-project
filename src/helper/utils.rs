@@ -99,7 +99,7 @@ pub fn cleanup_moves(output_list: Vec<String>) -> Vec<String>{
     while i < output_list.len() {
         let move_type = &output_list[i];
         let mut count = 0;
-        let mut move_notation = &move_type[0..1]; 
+        let move_notation = &move_type[0..1]; 
 
         if move_type.ends_with("'") {
             count -= 1

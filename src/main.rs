@@ -9,7 +9,6 @@ use std::time::Instant;
 use rubiks::cube::RubiksCube;
 use helper::utils::*;
 use ui::app::*;
-use bevy::prelude::*;
 use cfop::total::cfop_solver;
 use a_star::a_star::a_star_solver;
 use a_star::bidirectional_a_star::bidirectional_a_star_solver;
@@ -20,14 +19,14 @@ use a_star::iterative_deep_a_star::ida_star_solver;
 
 fn main() {
     // Create new instance of the Cube
-    let mut cube = RubiksCube::new();
+    // let mut cube = RubiksCube::new();
     // let mut cube1 = RubiksCube::new();
     // let mut cube2 = RubiksCube::new();
     
     // Define the scramble in the standard notation
     // let scramble = "L R U D";
     // let scramble = "L R U D U";
-    let scramble = "L2 U R U2";
+    // let scramble = "L2 U R U2";
 
     // let scramble = "L R U D B L R";
 
@@ -41,12 +40,13 @@ fn main() {
     // let scramble = "";
     
     // Scramble the Cube
-    cube.apply_scramble(scramble);
+    // cube.apply_scramble(scramble);
     // cube1.apply_scramble(scramble);
     // cube2.apply_scramble(scramble);
     
     // Solve the cube using CFOP
-    cfop_solver(scramble, cube);
+    // cfop_solver(scramble, cube);
+
     // println!("-------------parallel a-star-------------");
     // let start_time = Instant::now();
     // let solved = ida_star_solver(scramble, &mut cube2);
@@ -62,13 +62,7 @@ fn main() {
     // println!("Elapsed time: {:?}", elapsed_time);
     
     
-    // Visualize scrambled cube
-    App::new()
-        .add_plugins(DefaultPlugins)
-        .insert_resource(ClearColor(Color::rgb(0.9, 0.9, 0.9)))
-        .add_systems(Update, bevy::window::close_on_esc)
-        .add_systems(Startup, spawn_camera)
-        .add_systems(Startup, setup)
-        .run()
+    // run the visualization
+    run_visualization(true);
 
 }
