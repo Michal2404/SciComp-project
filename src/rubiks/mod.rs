@@ -1,3 +1,4 @@
+pub mod bfs;
 pub mod coord;
 pub mod cubie;
 pub mod defs;

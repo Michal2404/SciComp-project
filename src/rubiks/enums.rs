@@ -114,7 +114,7 @@ impl Color {
     }
 }
 
-#[derive(Debug, PartialEq, Eq, PartialOrd, Clone, Copy, Ord)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Clone, Copy, Ord, Hash)]
 pub enum Corner {
     // The corner positions of the cube
     URF = 0, // Up-Right-Front
@@ -141,7 +141,7 @@ impl Corner {
     ];
 }
 
-#[derive(Debug, PartialEq, PartialOrd, Eq, Clone, Copy, Ord)]
+#[derive(Debug, PartialEq, PartialOrd, Eq, Clone, Copy, Ord, Hash)]
 pub enum Edge {
     // The edge positions of the cube
     UR = 0,  // Up-Right
@@ -247,6 +247,27 @@ impl Move {
         }
     }
 
+    /// Get the number of 90° turns (1, 2, or 3)
+    pub fn turns(&self) -> usize {
+        match self {
+            Move::R1 | Move::U1 | Move::F1 | Move::L1 | Move::B1 | Move::D1 => 1,
+            Move::R2 | Move::U2 | Move::F2 | Move::L2 | Move::B2 | Move::D2 => 2,
+            Move::R3 | Move::U3 | Move::F3 | Move::L3 | Move::B3 | Move::D3 => 3,
+        }
+    }
+
+    /// Get the face of the move (e.g., 'R', 'U', etc.)
+    pub fn face(&self) -> char {
+        match self {
+            Move::R1 | Move::R2 | Move::R3 => 'R',
+            Move::U1 | Move::U2 | Move::U3 => 'U',
+            Move::F1 | Move::F2 | Move::F3 => 'F',
+            Move::L1 | Move::L2 | Move::L3 => 'L',
+            Move::B1 | Move::B2 | Move::B3 => 'B',
+            Move::D1 | Move::D2 | Move::D3 => 'D',
+        }
+    }
+
     /// This is optional, but useful if you need to go the other way (variant -> ID).
     pub fn id(&self) -> usize {
         *self as usize
@@ -330,4 +351,29 @@ pub enum BasicSymmetry {
     RotF2,   // Rotation Front 2 times
     RotU4,   // Rotation Up 4 times
     MirrLR2, // Mirror Left-Right 2 times
+}
+
+/// Create a new move given a face and number of turns
+pub fn to_move(face: char, turns: usize) -> Move {
+    match (face, turns) {
+        ('R', 1) => Move::R1,
+        ('R', 2) => Move::R2,
+        ('R', 3) => Move::R3,
+        ('U', 1) => Move::U1,
+        ('U', 2) => Move::U2,
+        ('U', 3) => Move::U3,
+        ('F', 1) => Move::F1,
+        ('F', 2) => Move::F2,
+        ('F', 3) => Move::F3,
+        ('L', 1) => Move::L1,
+        ('L', 2) => Move::L2,
+        ('L', 3) => Move::L3,
+        ('B', 1) => Move::B1,
+        ('B', 2) => Move::B2,
+        ('B', 3) => Move::B3,
+        ('D', 1) => Move::D1,
+        ('D', 2) => Move::D2,
+        ('D', 3) => Move::D3,
+        _ => panic!("Invalid face or turns"),
+    }
 }

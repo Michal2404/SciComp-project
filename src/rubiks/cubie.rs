@@ -1,3 +1,4 @@
+use super::bfs::{CORNER_DB, EDGE_DB};
 use super::defs::N_SYM;
 use super::defs::{CORNER_COLOR, CORNER_FACELET, EDGE_COLOR, EDGE_FACELET};
 use super::defs::{CO_B, CO_D, CO_F, CO_L, CO_R, CO_U, CP_B, CP_D, CP_F, CP_L, CP_R, CP_U};
@@ -11,7 +12,7 @@ use num::integer::binomial;
 use rand::seq::SliceRandom;
 
 /// The cube on the cubie level is described by the permutation and orientations of corners and edges
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Eq, Hash)]
 pub struct CubieCube {
     pub cp: [Co; 8],  // Corner permutation
     pub co: [u8; 8],  // Corner orientation
@@ -46,6 +47,14 @@ impl CubieCube {
         }
     }
 
+    pub fn is_solved(&self) -> bool {
+        let solved_state = Self::new(None, None, None, None);
+        self.cp == solved_state.cp
+            && self.co == solved_state.co
+            && self.ep == solved_state.ep
+            && self.eo == solved_state.eo
+    }
+
     /// Create an instance of the CubieCube from the standard Scramble-notation, e.g
     /// "R F2 D' U2 B2 L D'..."
     pub fn from_scramble(scramble: &str) -> Self {
@@ -54,62 +63,62 @@ impl CubieCube {
         let moves = scramble.split_whitespace();
         for mv in moves {
             match mv {
-                "U" => cube.multiply(&TURN_U),
+                "U" | "U1" => cube.multiply(&TURN_U),
                 "U2" => {
                     cube.multiply(&TURN_U);
                     cube.multiply(&TURN_U);
                 }
-                "U'" => {
+                "U'" | "U3" => {
                     cube.multiply(&TURN_U);
                     cube.multiply(&TURN_U);
                     cube.multiply(&TURN_U);
                 }
-                "R" => cube.multiply(&TURN_R),
+                "R" | "R1" => cube.multiply(&TURN_R),
                 "R2" => {
                     cube.multiply(&TURN_R);
                     cube.multiply(&TURN_R);
                 }
-                "R'" => {
+                "R'" | "R3" => {
                     cube.multiply(&TURN_R);
                     cube.multiply(&TURN_R);
                     cube.multiply(&TURN_R);
                 }
-                "F" => cube.multiply(&TURN_F),
+                "F" | "F1" => cube.multiply(&TURN_F),
                 "F2" => {
                     cube.multiply(&TURN_F);
                     cube.multiply(&TURN_F);
                 }
-                "F'" => {
+                "F'" | "F3" => {
                     cube.multiply(&TURN_F);
                     cube.multiply(&TURN_F);
                     cube.multiply(&TURN_F);
                 }
-                "D" => cube.multiply(&TURN_D),
+                "D" | "D1" => cube.multiply(&TURN_D),
                 "D2" => {
                     cube.multiply(&TURN_D);
                     cube.multiply(&TURN_D);
                 }
-                "D'" => {
+                "D'" | "D3" => {
                     cube.multiply(&TURN_D);
                     cube.multiply(&TURN_D);
                     cube.multiply(&TURN_D);
                 }
-                "L" => cube.multiply(&TURN_L),
+                "L" | "L1" => cube.multiply(&TURN_L),
                 "L2" => {
                     cube.multiply(&TURN_L);
                     cube.multiply(&TURN_L);
                 }
-                "L'" => {
+                "L'" | "L3" => {
                     cube.multiply(&TURN_L);
                     cube.multiply(&TURN_L);
                     cube.multiply(&TURN_L);
                 }
-                "B" => cube.multiply(&TURN_B),
+                "B" | "B1" => cube.multiply(&TURN_B),
                 "B2" => {
                     cube.multiply(&TURN_B);
                     cube.multiply(&TURN_B);
                 }
-                "B'" => {
+                "B'" | "B3" => {
                     cube.multiply(&TURN_B);
                     cube.multiply(&TURN_B);
                     cube.multiply(&TURN_B);
@@ -983,6 +992,38 @@ impl CubieCube {
         // Assign the result to the ep attribute
         self.ep[..(7 + 1)].copy_from_slice(&result[..(7 + 1)]);
     }
+
+    pub fn heuristic(&self) -> usize {
+        let mut distance = 0;
+        distance += self.edge_manhattan_distance();
+        distance += self.corner_manhattan_distance();
+
+        distance / 4
+    }
+
+    pub fn corner_manhattan_distance(&self) -> usize {
+        let mut distance = 0;
+        for (corner_index, (cp, co)) in self.cp.iter().zip(&self.co).enumerate() {
+            let permutation = *cp as usize;
+            let orientation = *co as usize;
+
+            let index = permutation * 3 * 8 + corner_index * 3 + orientation;
+            distance += CORNER_DB[index];
+        }
+        distance as usize
+    }
+
+    pub fn edge_manhattan_distance(&self) -> usize {
+        let mut distance = 0;
+        for (edge_index, (ep, eo)) in self.ep.iter().zip(&self.eo).enumerate() {
+            let permutation = *ep as usize;
+            let orientation = *eo as usize;
+
+            let index = permutation * 2 * 12 + edge_index * 2 + orientation;
+            distance += EDGE_DB[index];
+        }
+        distance as usize
+    }
 }
 
 pub fn generate_states(cubiecube: CubieCube, solution: &str) -> Vec<FaceCube> {
@@ -1311,5 +1352,13 @@ mod tests {
         assert_eq!(cube.c(8, 2), 28);
         assert_eq!(cube.c(9, 2), 36);
         assert_eq!(cube.c(10, 2), 45);
+    }
+
+    #[test]
+    fn test_is_solved() {
+        let mut solved = CubieCube::from_scramble("R R'");
+        assert!(solved.is_solved());
+        solved.multiply(&CubieCube::from_scramble("R"));
+        assert!(!solved.is_solved());
     }
 }

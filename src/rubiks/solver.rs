@@ -1,5 +1,6 @@
 use std::time::Instant;
 
+use crate::rubiks::bfs::{bfs_solver, ida_star_solver};
 use crate::rubiks::face::FaceCube;
 
 use super::coord::{self, U_EDGES_PLUS_D_EDGES_TO_UD_EDGES};
@@ -267,6 +268,7 @@ impl Solver {
             }
         } else {
             // Still in phase1. Explore moves.
+
             for m in Move::iterator() {
                 // If dist == 0 => already in subgroup H. If fewer than 5 moves left,
                 // forbid phase2 moves in phase1 (mirroring the original logic).
@@ -398,7 +400,14 @@ impl Solver {
 /// - `timeout`: The maximum search time (in seconds). If the solver times out, it returns the best found solution.
 ///
 /// Returns a string of the solution (or an error message if invalid).
-pub fn solve(cubescramble: &str, max_length: usize, timeout: f64, from_scramble: bool) -> String {
+pub fn solve(
+    cubescramble: &str,
+    max_length: usize,
+    timeout: f64,
+    from_scramble: bool,
+    use_ida: bool,
+    ida_depth: Option<usize>,
+) -> String {
     let cc = if from_scramble {
         cubie::CubieCube::from_scramble(cubescramble)
     } else {
@@ -410,9 +419,38 @@ pub fn solve(cubescramble: &str, max_length: usize, timeout: f64, from_scramble:
     // 3) Start timing
     let start_time = Instant::now();
 
+    // Use BFS to find candidate solutions up to depth n
+    if use_ida {
+        println!("Running IDA* for depth {}...", ida_depth.unwrap());
+        if let Some(best_solution) = ida_star_solver(&cc, ida_depth.unwrap()) {
+            println!("Solution found by IDA*: {:?}", best_solution);
+            println!("Elapsed time: {:?}", start_time.elapsed());
+            let mut s = String::new();
+            for &mv in &best_solution {
+                s.push_str(mv.name()); // or format!("{:?}", mv) if debug
+                s.push(' ');
+            }
+            s = s.replace('3', "'").replace('1', "");
+            let moves_count = best_solution.len();
+            let formatted_string = format!("{}({}f)", s.trim_end(), moves_count);
+
+            // Replace occurrences of '3' with '\''
+            return formatted_string.to_string();
+        }
+        println!(
+            "No solution found by IDA* after {:?}, proceeding to two-phase solver...",
+            start_time.elapsed()
+        );
+    }
+
+    let start_time_two_phase = Instant::now();
     let mut solver: Solver = Solver::new(cc, 0, 0, max_length, timeout, start_time);
     solver.run();
-
+    println!("Total elapsed time: {:?}", start_time.elapsed());
+    println!(
+        "two-phase elapsed time: {:?}",
+        start_time_two_phase.elapsed()
+    );
     // 4) Construct the final solution string
     if !solver.solutions.is_empty() {
         // The last solution is presumably the shortest, by your code's convention
