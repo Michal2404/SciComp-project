@@ -1,6 +1,6 @@
 use std::time::Instant;
 
-use crate::rubiks::cubie::generate_scramlbe;
+use crate::rubiks::cubie::generate_scramble;
 use crate::rubiks::cubie::generate_states;
 use crate::rubiks::cubie::CubieCube;
 use crate::rubiks::face::FaceCube;
@@ -113,7 +113,7 @@ impl eframe::App for CubeVisualizerWithMoves {
                 ui.add(egui::TextEdit::singleline(&mut self.user_scramble).desired_width(400.0));
 
                 if ui.button("Generate Random Scramble").clicked() {
-                    self.user_scramble = generate_scramlbe(20); // Generate a 20-move random scramble
+                    self.user_scramble = generate_scramble(20); // Generate a 20-move random scramble
                     self.error_message.clear(); // Clear any previous error messages
                 }
             });

@@ -13,12 +13,14 @@ def plot_compare_algs():
     
     for i in range(0, 20):
         # Read the CSV file
-        data = pd.read_csv(f"csv_files/algorithm_comparison/algorithm_comparison{i}.csv")
+        data_bfs = pd.read_csv(f"csv_files/bfs_performance/bfs_performance_{i}.csv")
+        data_ida = pd.read_csv(f"csv_files/ida_performance/ida_performance_{i}.csv")
         
         # Extract columns
-        scramble_lengths.append(data["Scramble Length"].values)
-        ida_times.append(data["IDA* Time (s)"].values)
-        bfs_times.append(data["BFS Time (s)"].values)
+        scramble_lengths.append(data_bfs["Scramble Length"].values)
+        ida_times.append(data_ida["IDA* Time (s)"].values)
+        ida_times[i] = ida_times[i][:len(data_bfs)]
+        bfs_times.append(data_bfs["BFS Time (s)"].values)
         
         # Plot individual instances
         plt.plot(scramble_lengths[i], ida_times[i], color='blue', alpha=0.5, marker='o', label='IDA* Time' if i == 0 else "")
@@ -142,6 +144,6 @@ def plot_bfs():
     plt.savefig("plots/BFS_performance.png")
 
 if __name__ == "__main__":
-    #plot_compare_algs()
-    #plot_ida()
+    plot_compare_algs()
+    plot_ida()
     plot_bfs()

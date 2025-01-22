@@ -1043,7 +1043,7 @@ pub fn generate_states(cubiecube: CubieCube, solution: &str) -> Vec<FaceCube> {
     states
 }
 
-pub fn generate_scramlbe(length: usize) -> String {
+pub fn generate_scramble(length: usize) -> String {
     let faces = ["U", "D", "R", "L", "F", "B"];
     let modifiers = ["", "2", "'"]; // Clockwise, 180 degrees, counterclockwise
     let mut rng = rand::thread_rng();
