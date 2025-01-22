@@ -145,7 +145,7 @@ pub fn measure_bfs(n: usize) -> Result<(), Box<dyn Error>> {
     let mut results = Vec::new();
 
     // Test scramble lengths from 1 to 7
-    for scramble_length in 1..=4 {
+    for scramble_length in 1..=6 {
         println!("it: {}", scramble_length);
         // Generate a scramble of the given length
         let scramble = generate_scramlbe(scramble_length);

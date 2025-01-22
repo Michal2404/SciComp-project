@@ -114,7 +114,7 @@ def plot_bfs():
         bfs_times.append(data["BFS Time (s)"].values)
         
         # Plot individual instances with light orange color
-        plt.plot(scramble_lengths[i], bfs_times[i], color='lightorange', alpha=0.5, marker='o', label='BFS Instance' if i == 0 else "")
+        plt.plot(scramble_lengths[i], bfs_times[i], color='orange', alpha=0.5, marker='o', label='BFS Instance' if i == 0 else "")
     
     # Compute average values across all instances
     avg_scramble_lengths = np.unique(np.concatenate(scramble_lengths))
@@ -143,4 +143,5 @@ def plot_bfs():
 
 if __name__ == "__main__":
     #plot_compare_algs()
-    plot_ida()
+    #plot_ida()
+    plot_bfs()

@@ -18,7 +18,7 @@ fn main() {
     //}
 
     // Measure BFS performance
-    for n in 0..20 {
+    for n in 19..20 {
         if let Err(e) = performance::measure_bfs(n) {
             eprintln!("Error: {}", e);
         }
