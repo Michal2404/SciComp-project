@@ -38,6 +38,26 @@ impl RubiksCube {
             .collect()
     }
 
+   // function to convert the state of a cube to a vector for ML
+   pub fn to_input_vector(&self) -> Vec<f64> {
+       let mut input_vector = Vec::with_capacity(6*9);
+
+       for face in &self.faces {
+           for &color in face {
+               let value = match color {
+                   Color::W => 0.0,
+                   Color::Y => 1.0/5.0, //normalization for the NN to converge
+                   Color::G => 2.0/5.0,
+                   Color::B => 3.0/5.0,
+                   Color::R => 4.0/5.0,
+                   Color::O => 1.0,
+               };
+               input_vector.push(value);
+           }
+       }
+       input_vector
+   }
+
     pub fn all_moves(&mut self) -> Vec<(&'static str, fn(&mut Self))> {
         vec![
             ("U", RubiksCube::u_clockwise),
