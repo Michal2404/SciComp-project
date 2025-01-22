@@ -1,6 +1,6 @@
 use std::time::Instant;
 
-use crate::rubiks::bfs::{bfs_solver, ida_star_solver};
+use crate::rubiks::bfs::ida_star_solver;
 use crate::rubiks::face::FaceCube;
 
 use super::coord::{self, U_EDGES_PLUS_D_EDGES_TO_UD_EDGES};

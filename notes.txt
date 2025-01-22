@@ -1,0 +1,5 @@
+Ideas for performance testing:
+1. Measure time for (10_000 or more?) two_phase solves and make a nice plot.
+2. Compare performance of BFS and IDA* for different depths
+3. Measure time for phase_1 and phase_2 of two_phase solver and compare them
+

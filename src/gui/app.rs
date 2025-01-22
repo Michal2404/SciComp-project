@@ -95,6 +95,18 @@ impl eframe::App for CubeVisualizerWithMoves {
                     self.visualizer
                         .update_cube(cubiecube.to_facelet_cube().clone());
                     self.user_scramble = "".to_string();
+                    let cubiecube = CubieCube::from_scramble(&self.user_scramble);
+
+                    // Solve the predefined scramble
+                    let solution = sv::solve(&self.user_scramble, 20, 2.0, true, false, None);
+
+                    let trimmed_solution = solution
+                        .rsplit_once('(')
+                        .map_or(solution.clone(), |(before, _)| before.trim().to_string());
+                    self.solution_string = trimmed_solution.trim().to_string();
+                    self.states = generate_states(cubiecube, &trimmed_solution);
+                    self.visualizer
+                        .update_cube(cubiecube.to_facelet_cube().clone());
                 }
 
                 ui.label("Enter Scramble:");
