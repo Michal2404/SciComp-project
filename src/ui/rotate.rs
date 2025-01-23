@@ -230,31 +230,19 @@ pub fn piece_translation_round(
             // cubie.current_position = Vec3::new(transform.translation.x, transform.translation.y, transform.translation.z);
             transform.translation.x = transform.translation.x.round();
             transform.translation.y = transform.translation.y.round();
-            transform.translation.z = transform.translation.z.round();  
-            
-            let angle = rotation.angle();
-            // let (_,_,axis_vec) = rotation.data();
-            // transform.rotation = transform.rotate_around(Vec3::new(0.0, 0.0, 0.0), Quat::from_axis_angle(axis_vec.unwrap(), angle));
-            transform.rotation = match rotation.axis {
-                Axis::X => Quat::from_rotation_x(angle),
-                Axis::Y => Quat::from_rotation_y(angle),
-                Axis::Z => Quat::from_rotation_z(angle),
-            };
-            transform.scale = Vec3::new(1f32, 1f32, 1f32);
-            
-            // println!("{}", transform.rotation);
-            // if children_query.iter().any(|parent| parent.get() == entity) {
-                //     println!("went here");
-                //     let options = [0.0, PI, FRAC_PI_2, -FRAC_PI_2, -PI];
-                //     transform.rotation.x = round_to_closest(transform.rotation.x, &options);
-            //     transform.rotation.y = round_to_closest(transform.rotation.y, &options);
-            //     transform.rotation.z = round_to_closest(transform.rotation.z, &options);
-            // }
+            transform.translation.z = transform.translation.z.round(); 
 
-            // transform.rotation.x = round_to_closest(transform.rotation.x, FRAC_PI_2);
-            // transform.rotation.y = round_to_closest(transform.rotation.y, FRAC_PI_2);
-            // transform.rotation.z = round_to_closest(transform.rotation.z, FRAC_PI_2);
-            // println!("{:?}", cubie.current_position)
+            // Extract the current rotation as Euler angles
+            let (mut pitch, mut yaw, mut roll) = transform.rotation.to_euler(EulerRot::YXZ);
+
+            // Snap each angle to the nearest multiple of 90° (π/2 radians)
+            pitch = (pitch / FRAC_PI_2).round() * FRAC_PI_2;
+            yaw = (yaw / FRAC_PI_2).round() * FRAC_PI_2;
+            roll = (roll / FRAC_PI_2).round() * FRAC_PI_2;
+
+            // Reconstruct the corrected quaternion
+            transform.rotation = Quat::from_euler(EulerRot::YXZ, pitch, yaw, roll); 
+            
         }
     }
     

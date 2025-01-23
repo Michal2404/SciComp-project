@@ -38,13 +38,14 @@ fn main() {
     // let scramble = "R U L2 F D2 F L U' L2 F' B' L2 B U2 B' U2 R2 U2 F2 R D";
     // let scramble = "B' L' R2 U B2 R2 U' R2 F2 D2 R2 L' F R2 F' D B D";
     // let scramble = "";
+    // let scramble = "R L' U' D L2 B2 D2 L' U L2";
     
-    // Scramble the Cube
+    // // Scramble the Cube
     // cube.apply_scramble(scramble);
-    // cube1.apply_scramble(scramble);
-    // cube2.apply_scramble(scramble);
+    // // cube1.apply_scramble(scramble);
+    // // cube2.apply_scramble(scramble);
     
-    // Solve the cube using CFOP
+    // // Solve the cube using CFOP
     // cfop_solver(scramble, cube);
 
     // println!("-------------parallel a-star-------------");

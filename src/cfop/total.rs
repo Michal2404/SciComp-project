@@ -9,7 +9,7 @@ use crate::helper::utils::*;
 
 use std::time::{Duration, Instant};
 
-pub fn cfop_solver(scramble: &str, mut cube: RubiksCube) {
+pub fn cfop_solver(scramble: &str, mut cube: RubiksCube) -> Vec<String> {
     /*
     This function solves using the cfop 
     */
@@ -74,6 +74,7 @@ pub fn cfop_solver(scramble: &str, mut cube: RubiksCube) {
     (pll_moves.clone(), pll_moves.len(), pll_elapsed_time),
     (total_moves_cleaned.clone(), total_moves_cleaned.len(), cross_elapsed_time+f2l_elapsed_time+oll_elapsed_time+pll_elapsed_time));
     
+    total_moves_cleaned
 }
 
 // for outputting data into excel

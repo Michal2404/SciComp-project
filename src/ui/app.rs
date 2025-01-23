@@ -19,10 +19,6 @@ pub struct CubeSettings {
     pub right_color: Color,
     pub up_color: Color,
     pub down_color: Color,
-    // pub piece_size: f64,
-    // pub sticker_size: f64,
-    // pub camera_zoom_speed: f64,
-    // pub rotate_speed: f64,
     pub piece_size: f32,
     pub sticker_size: f32,
     pub camera_zoom_speed: f32,
@@ -41,8 +37,9 @@ impl Default for CubeSettings {
             piece_size: 1.0,
             sticker_size: 0.9,
             // play_mode: PlayMode::Practice,
-            camera_zoom_speed: 1.1,
-            rotate_speed: 0.5,
+            camera_zoom_speed: 1.05,
+            // rotate_speed: 0.5,
+            rotate_speed: 1.0,
         }
     }
 }
@@ -52,7 +49,7 @@ pub fn run_visualization(run: bool) {
     This function runs the visualization for rubiks cube
      */
     // let moves: Vec<String> = vec!["U B F L' U2 B"].iter().flat_map(|s| s.split_whitespace()).map(|s| s.to_string()).collect();
-    let moves: Vec<String> = vec!["U"].iter().flat_map(|s| s.split_whitespace()).map(|s| s.to_string()).collect();
+    // let moves: Vec<String> = vec!["U"].iter().flat_map(|s| s.split_whitespace()).map(|s| s.to_string()).collect();
 
     if run {
     // Visualize scrambled cube
@@ -66,7 +63,7 @@ pub fn run_visualization(run: bool) {
     })
     .insert_resource(ClearColor(Color::srgb(0.9, 0.9, 0.9)))
     .insert_resource(CubeSettings::default())
-    .insert_resource(InputText::default())
+    .insert_resource(Scramble::default())
     .insert_resource(MoveQueue(VecDeque::new()))
     .insert_resource(Rotation::default())
     .insert_resource(MouseDraggingRecorder {
@@ -76,7 +73,8 @@ pub fn run_visualization(run: bool) {
     })
     .register_type::<Cubie>()
     .add_event::<ScrambleEvent>()
-    .add_event::<GenerateScrambleEvent>()
+    .add_event::<ResetEvent>()
+    .add_event::<CFOPEvent>()
     .add_systems(Startup, 
         (
             spawn_camera, 
@@ -89,12 +87,13 @@ pub fn run_visualization(run: bool) {
     )
     .add_systems(Update, 
         (
-            rotate_cube,
             zoom_camera,
             move_camera,
             game_ui,
+            rotate_cube,
             scramble_cube,
-            // generate_random_scramble,
+            reset_cube,
+            solve_cfop,
         ))
     .add_systems(PostUpdate,
         (
