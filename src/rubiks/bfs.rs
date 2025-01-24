@@ -16,8 +16,8 @@ pub fn bfs_solver(cube: &CubieCube, max_depth: usize) -> Option<Vec<Move>> {
     let mut queue: VecDeque<(CubieCube, Vec<Move>)> = VecDeque::new();
     let mut visited: HashSet<CubieCube> = HashSet::new();
     // Start with the inital cube stat and no moves applied
-    queue.push_back((cube.clone(), vec![]));
-    visited.insert(cube.clone());
+    queue.push_back((*cube, vec![]));
+    visited.insert(*cube);
 
     while let Some((current_cube, current_moves)) = queue.pop_front() {
         // Check if the current cube is solved
@@ -33,9 +33,9 @@ pub fn bfs_solver(cube: &CubieCube, max_depth: usize) -> Option<Vec<Move>> {
         // Generate and enqueue all possible moves
         for &m in &Move::ALL {
             let permutation_cube = CubieCube::from_scramble(m.name());
-            let mut next_cube = current_cube.clone();
+            let mut next_cube = current_cube;
             next_cube.multiply(&permutation_cube);
-            if visited.insert(next_cube.clone()) {
+            if visited.insert(next_cube) {
                 let mut next_moves = current_moves.clone();
                 next_moves.push(m);
                 queue.push_back((next_cube, next_moves));
@@ -53,7 +53,7 @@ pub fn ida_star_solver(cube: &CubieCube, max_depth: usize) -> Option<Vec<Move>> 
     let mut next_threshold = usize::MAX;
 
     while threshold <= max_depth {
-        let result = ida_star_search(&cube, threshold, &mut path, &mut next_threshold, 0);
+        let result = ida_star_search(cube, threshold, &mut path, &mut next_threshold, 0);
 
         if let Some(solution) = result {
             return Some(simplify_solution(&solution));
@@ -101,7 +101,7 @@ pub fn ida_star_search(
 
         // Apply the move and search recursively
         let permutation_cube = CubieCube::from_scramble(m.name());
-        let mut next_cube = cube.clone();
+        let mut next_cube = *cube;
         next_cube.multiply(&permutation_cube);
         path.push(m);
 
@@ -156,7 +156,7 @@ pub static CORNER_DB: Lazy<Vec<u8>> = Lazy::new(|| {
     let max_depth = 3;
 
     let solved_cube = CubieCube::new(None, None, None, None);
-    queue.push_back((solved_cube.clone(), 0));
+    queue.push_back((solved_cube, 0));
     visited.insert(solved_cube);
 
     while let Some((current_cube, depth)) = queue.pop_front() {
@@ -174,10 +174,10 @@ pub static CORNER_DB: Lazy<Vec<u8>> = Lazy::new(|| {
         // Explore all possible moves
         for &m in &Move::ALL {
             let permutation_cube = CubieCube::from_scramble(m.name());
-            let mut next_cube = current_cube.clone();
+            let mut next_cube = current_cube;
             next_cube.multiply(&permutation_cube);
 
-            if visited.insert(next_cube.clone()) {
+            if visited.insert(next_cube) {
                 queue.push_back((next_cube, depth + 1));
             }
         }
@@ -192,7 +192,7 @@ pub static EDGE_DB: Lazy<Vec<u8>> = Lazy::new(|| {
     let max_depth = 4;
 
     let solved_cube = CubieCube::new(None, None, None, None);
-    queue.push_back((solved_cube.clone(), 0));
+    queue.push_back((solved_cube, 0));
     visited.insert(solved_cube);
 
     while let Some((current_cube, depth)) = queue.pop_front() {
@@ -210,10 +210,10 @@ pub static EDGE_DB: Lazy<Vec<u8>> = Lazy::new(|| {
         // Explore all possible moves
         for &m in &Move::ALL {
             let permutation_cube = CubieCube::from_scramble(m.name());
-            let mut next_cube = current_cube.clone();
+            let mut next_cube = current_cube;
             next_cube.multiply(&permutation_cube);
 
-            if visited.insert(next_cube.clone()) {
+            if visited.insert(next_cube) {
                 queue.push_back((next_cube, depth + 1));
             }
         }

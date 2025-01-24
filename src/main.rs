@@ -18,11 +18,11 @@ fn main() {
     //}
 
     // Measure BFS performance
-    for n in 13..20 {
-        if let Err(e) = performance::measure_bfs(n) {
-            eprintln!("Error: {}", e);
-        }
-    }
+    //or n in 0..20 {
+    //   if let Err(e) = performance::measure_bfs(n) {
+    //       eprintln!("Error: {}", e);
+    //   }
+    //
 
     let cubiecube = CubieCube::new(None, None, None, None);
     let states = generate_states(cubiecube, "");

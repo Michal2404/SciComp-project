@@ -59,7 +59,7 @@ pub fn measure_ida(n: usize) -> Result<(), Box<dyn Error>> {
     let mut wtr = Writer::from_writer(File::create(filename)?);
 
     // Write header
-    wtr.write_record(&["Scramble Length", "IDA* Moves", "IDA* Time (s)"])?;
+    wtr.write_record(["Scramble Length", "IDA* Moves", "IDA* Time (s)"])?;
 
     // Write rows
     for (length, ida_moves, ida_time) in &results {
@@ -142,7 +142,7 @@ pub fn measure_bfs(n: usize) -> Result<(), Box<dyn Error>> {
     let mut wtr = Writer::from_writer(File::create(filename)?);
 
     // Write header
-    wtr.write_record(&["Scramble Length", "BFS Moves", "BFS Time (s)"])?;
+    wtr.write_record(["Scramble Length", "BFS Moves", "BFS Time (s)"])?;
 
     // Write rows
     for (length, bfs_moves, bfs_time) in &results {
