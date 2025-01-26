@@ -1,12 +1,29 @@
 // This function performs the normal a_star algorithm to solve the cube
-use std::{cmp::Reverse, collections::{BinaryHeap, HashMap}, time::Instant};
+use std::{cmp::Reverse, collections::{BinaryHeap, HashMap}, time::{Duration, Instant}};
 
-use crate::{helper::utils::*, rubiks::color::Color};
+use crate::helper::utils::*;
 use crate::rubiks::cube::RubiksCube;
 
-
-
 pub fn a_star_solver(scramble: &str, cube: &mut RubiksCube) -> Vec<String> {
+    /*
+    This function solves the cube using a star, and prints out necessary data
+     */
+    // keep track of time
+    let start_time = Instant::now();
+    // solve using a star
+    let moves_cleaned = solve(scramble, cube);
+    let elapsed_time = start_time.elapsed();
+    // Print results here
+    println!("-------------A*-------------");
+    println!("{}", moves_cleaned.join(" "));
+    println!("Number of Moves: {}", moves_cleaned.len());
+    println!("Elapsed time: {:?}", elapsed_time);
+
+    moves_cleaned
+
+}
+
+fn solve(scramble: &str, cube: &mut RubiksCube) -> Vec<String> {
     /*
     This function using the a star search
      */
@@ -67,6 +84,7 @@ pub fn a_star_solver(scramble: &str, cube: &mut RubiksCube) -> Vec<String> {
         }
 
     }
+
     return output_list
 }
 

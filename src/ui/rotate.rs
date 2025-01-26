@@ -3,8 +3,6 @@ use std::f32::consts::{FRAC_PI_2, PI, TAU};
 
 // // This file performs rotation to the cube depending on the move
 use bevy::prelude::*;
-use rand::Rng;
-use rand::seq::SliceRandom;
 use crate::ui::pieces::Cubie;
 use crate::ui::app::CubeSettings;
 
@@ -57,14 +55,11 @@ impl Rotation {
         /*
         This function rotates the cube depending on the axis, direction, and position on which to rotate
          */
-        // println!("{:?}", self.axis);
-        // let mut finished = false;
         // get the necessary constants
         let (location, angle_constant, axis_vec) = self.data();
         for (mut transform, mut cubie) in query.iter_mut() {
             // rotate pieces that have specific position
                 if cubie.current_position[location.unwrap()] == self.position {
-                    // let mut angle = angle_constant.unwrap() * cube_settings.rotate_speed * TAU * timer;
                     let mut angle = angle_constant.unwrap() * cube_settings.rotate_speed * TAU * time.delta_secs();
                     let mut new_left_angle = cubie.left_angle + angle;
                     // if we exceeded movement, we stop
@@ -76,9 +71,7 @@ impl Rotation {
                     {
                         angle = cubie.left_angle;
                         new_left_angle = 0.0;
-                        // println!("came here");
                         self.completed = true;
-                        // finished = true;
                     }
                     // for condition 2
                     else if (self.direction == Direction::Counterclockwise90 && self.position == -1.0 && new_left_angle <= 0.0) ||
@@ -86,31 +79,18 @@ impl Rotation {
                     // if (self.direction == Direction::Counterclockwise90 && self.position == -1.0 && new_left_angle <= -max_movement.unwrap()) ||
                     // ((self.direction == Direction::Clockwise90 || self.direction == Direction::Clockwise180) && self.position == 1.0 && new_left_angle <= -max_movement.unwrap())
                     {
-                        // println!("went here");
-                        // // update the cubie
-                        // cubie.current_position[0] = transform.translation.x.round();
-                        // cubie.current_position[1] = transform.translation.y.round();
-                        // cubie.current_position[2] = transform.translation.z.round();
                         angle = cubie.left_angle;
                         new_left_angle = 0.0;
                         self.completed = true;
-                        // finished = true;
                     }
-                    // println!("{}", angle);
-                    // Apply transformation
-                    // println!("{}", new_left_angle);
                     transform.rotate_around(Vec3::new(0.0, 0.0, 0.0), Quat::from_axis_angle(axis_vec.unwrap(), angle));
                     cubie.left_angle = new_left_angle;
                     
-                // if finished {
-                //     println!("{}", angle);
-                // }
             }
         }       
         
     }
     pub fn data(&self) -> (Option<usize>, Option<f32>, Option<Vec3>){
-    // pub fn data(&self) -> (Option<usize>, Option<f64>, Option<Vec3>){
         /*
         This function outputs the necessary data needed for each part of the rotation
         */
@@ -177,7 +157,6 @@ pub fn plan_move(
      */
     // first we see if the query isn't empty
     if !side_move_queue.0.is_empty(){
-        // println!("{:?}", side_move_queue);
         // pop the first move
         // let temp = side_move_queue.0[0].clone();
         let temp = side_move_queue.0.pop_front().unwrap();
@@ -192,38 +171,18 @@ pub fn plan_move(
         rotation.completed = false;
         for (_, mut cubie) in query.iter_mut() {
             cubie.left_angle = rotation.angle();
-            // if (rotation.direction == Direction::Clockwise90 && rotation.position == -1.0) ||
-            // (rotation.direction == Direction::Counterclockwise90 && rotation.position == 1.0)
-            // {
-            //     cubie.left_angle = -FRAC_PI_2;
-            // }
-            // // for condition 2
-            // else if (rotation.direction == Direction::Counterclockwise90 && rotation.position == -1.0) ||
-            // (rotation.direction == Direction::Clockwise90 && rotation.position == 1.0)
-            // {
-            //     cubie.left_angle = FRAC_PI_2;
-            // }
-            // else if rotation.direction == Direction::Clockwise180 && rotation.position == -1.0 {
-            //     cubie.left_angle = -PI;
-            // }
-            // else if rotation.direction == Direction::Clockwise180 && rotation.position == 1.0 {
-            //     cubie.left_angle = PI;
-            // }
-            // println!("{:?}", cubie.left_angle);
         }
     }
 }
 
 pub fn piece_translation_round(
-    // mut cube: Query<(Entity, &mut Transform, &mut Cubie), Without<Parent>>,
-    mut cube: Query<(Entity, &mut Transform, &mut Cubie)>,
-    mut rotation: ResMut<Rotation>,
-    children_query: Query<&Parent>,
+    mut cube: Query<(&mut Transform, &mut Cubie), Without<Parent>>,
+    // mut cube: Query<(&mut Transform, &mut Cubie)>,
 ) {
     /*
     This function cleans up moves after transformation
      */
-    for (entity, mut transform, mut cubie) in &mut cube {
+    for (mut transform, mut cubie) in &mut cube {
         if cubie.left_angle == 0.0 {
             // fix up translation
             cubie.current_position = Vec3::new(transform.translation.x.round(), transform.translation.y.round(), transform.translation.z.round());
@@ -247,21 +206,6 @@ pub fn piece_translation_round(
     }
     
 }
-fn round_to_closest(target: f32, denominator: f32) -> f32 {
-    let factor = (target / denominator).round();
-
-    if factor != 0.0 { println!("{}, {}", target, denominator*factor) };
-    denominator*factor
-
-}
-// fn round_to_closest(target: f32, options: &[f32]) -> f32 {
-//     options
-//         .iter()
-//         .cloned()
-//         .min_by(|a, b| (a - target).abs().partial_cmp(&(b - target).abs()).unwrap())
-//         .expect("Options list cannot be empty")
-// }
-
 
 pub fn rotate_cube(
     time: Res<Time>, 
@@ -272,7 +216,9 @@ pub fn rotate_cube(
     /*
     This function rotates the cube depending on which moves we perform
     */
-    rotation.rotate(&time, &mut query, &cube_settings);
+    if !rotation.completed {
+        rotation.rotate(&time, &mut query, &cube_settings);
+    }
 }
 
 fn moves(notation: &str) -> Rotation {

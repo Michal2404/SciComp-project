@@ -6,7 +6,6 @@ use crate::helper::utils::*;
 use std::fs;
 use std::collections::HashMap;
 
-// pub fn solve_f2l(cube: &mut RubiksCube, target: &Color) -> RubiksCube {
 pub fn solve_f2l(cube: &mut RubiksCube, target: &Color) -> Vec<String> {
     /*
     This function solves the f2l
@@ -43,8 +42,6 @@ pub fn solve_f2l(cube: &mut RubiksCube, target: &Color) -> Vec<String> {
         let mut color_solved = false;
         // first loop through each color in the vector
         for color in colors.clone() {
-            // println!("color: {:?}", color);
-            // println!("before: {:?}", colors);
             // find corner and edge piece locations
             let corner = corner_piece_location(cube, &target, &color[0], &color[1]);
             let edge = edge_piece_location(cube, &color[0], &color[1]);
@@ -53,22 +50,18 @@ pub fn solve_f2l(cube: &mut RubiksCube, target: &Color) -> Vec<String> {
             if corner == *target_corner_locations.get(&color).unwrap() && edge == *target_edge_locations.get(&color).unwrap() {
                 let index = colors.iter().position(|x| *x == *color).unwrap();
                 colors.remove(index);
-                // println!("went here");
                 continue
             }
             
             // otherwise, we determine if we can run any other algorithms on it
             for algo in map.get(&color).unwrap() {
                 // if we found the algorithm perform it
-                // println!("corner: {:?}", corner);
-                // println!("edge: {:?}", edge);
                 if algo.corner == corner && algo.edge == edge {
                     output_list.push(algo.moves.clone());
                     cube.apply_scramble(algo.moves.as_str());
                     // remove the color from vector
                     let index = colors.iter().position(|x| *x == *color).unwrap();
                     colors.remove(index);
-                    // println!("after: {:?}", colors);
                     // we indicate for this loop a color has been solved
                     color_solved = true;
                     // reset count

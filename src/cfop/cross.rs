@@ -84,7 +84,7 @@ pub fn solve_cross(cube: &mut RubiksCube, target: &Color) -> Vec<String>{
     // return cube.clone();
 }
 
-fn solved_state(cube: &RubiksCube, target: &Color) -> (bool, usize) {
+pub fn solved_state(cube: &RubiksCube, target: &Color) -> (bool, usize) {
     /*
     This function checks if the final cross has been made, and gives the number of edges that are in the wrong spot
      */

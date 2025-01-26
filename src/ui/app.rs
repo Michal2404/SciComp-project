@@ -6,23 +6,26 @@ use crate::ui::design::*;
 use std::collections::VecDeque;
 
 use bevy::prelude::*;
-use bevy::transform::TransformSystem;
 use bevy::color::palettes;
 use bevy_egui::EguiPlugin;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
 #[derive(Debug, Resource)]
 pub struct CubeSettings {
-    pub front_color: Color,
-    pub back_color: Color,
-    pub left_color: Color,
-    pub right_color: Color,
-    pub up_color: Color,
-    pub down_color: Color,
-    pub piece_size: f32,
-    pub sticker_size: f32,
-    pub camera_zoom_speed: f32,
-    pub rotate_speed: f32,
+    pub front_color: Color, // color of front side on rubiks cube
+    pub back_color: Color, // color of back side on rubiks cube 
+    pub left_color: Color, // color of left side on rubiks cube
+    pub right_color: Color, // color of right side on rubiks cube
+    pub up_color: Color, // color of up side on rubiks cube
+    pub down_color: Color, // color of down side on rubiks cube
+    pub piece_size: f32, // piece size of rubiks cube
+    pub sticker_size: f32, // sticker size of rubiks cube
+    pub camera_zoom_speed: f32, // speed to zoom in/out
+    pub rotate_speed: f32, // speed of rubiks cube rotation
+    pub num_scramble_moves: usize, // number of scramble moves
+    pub camera_x: f32, // camera position x
+    pub camera_y: f32, // camera position y
+    pub camera_z: f32, // camera position z
 }
 
 impl Default for CubeSettings {
@@ -38,8 +41,11 @@ impl Default for CubeSettings {
             sticker_size: 0.9,
             // play_mode: PlayMode::Practice,
             camera_zoom_speed: 1.05,
-            // rotate_speed: 0.5,
             rotate_speed: 1.0,
+            num_scramble_moves: 20,
+            camera_x: 6.0,
+            camera_y: 6.0,
+            camera_z: 6.0,
         }
     }
 }
@@ -48,14 +54,11 @@ pub fn run_visualization(run: bool) {
     /*
     This function runs the visualization for rubiks cube
      */
-    // let moves: Vec<String> = vec!["U B F L' U2 B"].iter().flat_map(|s| s.split_whitespace()).map(|s| s.to_string()).collect();
-    // let moves: Vec<String> = vec!["U"].iter().flat_map(|s| s.split_whitespace()).map(|s| s.to_string()).collect();
 
     if run {
     // Visualize scrambled cube
     App::new()
-    .add_plugins((DefaultPlugins, MeshPickingPlugin))
-    .add_plugins(EguiPlugin)
+    .add_plugins((DefaultPlugins, MeshPickingPlugin, EguiPlugin))
     // .add_plugins(WorldInspectorPlugin::new())
     .insert_resource(MeshPickingSettings {
         require_markers: true,
@@ -64,6 +67,8 @@ pub fn run_visualization(run: bool) {
     .insert_resource(ClearColor(Color::srgb(0.9, 0.9, 0.9)))
     .insert_resource(CubeSettings::default())
     .insert_resource(Scramble::default())
+    .insert_resource(SolveData::default())
+    .insert_resource(SolveTask(None))
     .insert_resource(MoveQueue(VecDeque::new()))
     .insert_resource(Rotation::default())
     .insert_resource(MouseDraggingRecorder {
@@ -75,6 +80,7 @@ pub fn run_visualization(run: bool) {
     .add_event::<ScrambleEvent>()
     .add_event::<ResetEvent>()
     .add_event::<CFOPEvent>()
+    .add_event::<ASTAREvent>()
     .add_systems(Startup, 
         (
             spawn_camera, 
@@ -94,13 +100,15 @@ pub fn run_visualization(run: bool) {
             scramble_cube,
             reset_cube,
             solve_cfop,
+            solve_astar,
+            poll_solve_task,
         ))
     .add_systems(PostUpdate,
         (
-            piece_translation_round,
+            piece_translation_round.after(TransformSystem::TransformPropagate,)
         )
+        // .after(TransformSystem::TransformPropagate,)
         .run_if(check_field)
-        // .after(TransformSystem::TransformPropagate,),
     )
     // .add_systems(
     //     PostUpdate,

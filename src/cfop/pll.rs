@@ -12,14 +12,17 @@ pub fn solve_pll(cube: &mut RubiksCube) -> Vec<String>{
      */
     // read the pll text file to determine which algorithm to use
     let map = read_file("src/cfop/pll_algorithm.txt");
-
+    
     // initialize list that contains all the moves
     let mut output_list: Vec<String> = Vec::new();
-    let mut y_list: Vec<String> = Vec::new();
     
     // loop through until we find a solution
     let mut solved = false;
     while !solved {
+        // check if its already solved
+        if *cube == RubiksCube::new(){
+            solved=true
+        }
         // First look at the position of the target color
         let position2: Vec<(usize, usize)> = piece_location(cube, &cube.faces[2][1]);
         let position3: Vec<(usize, usize)> = piece_location(cube, &cube.faces[3][1]);
@@ -35,12 +38,6 @@ pub fn solve_pll(cube: &mut RubiksCube) -> Vec<String>{
             let key_set5: HashSet<(usize, usize)> = key[3].iter().copied().collect();
             // if we found the match, we will perform the algorithm, and add any values from y_list
             if contains_element(key_set2, position2.clone()) && contains_element(key_set3, position3.clone()) && contains_element(key_set4, position4.clone()) && contains_element(key_set5, position5.clone()) {
-                // loop through y_list and add y
-                for y in &y_list {
-                    output_list.push(y.clone());
-                    // cube.apply_scramble(y.as_str());
-                }
-
                 // now perform 
                 output_list.push(algo.clone());
                 cube.apply_scramble(algo.as_str());

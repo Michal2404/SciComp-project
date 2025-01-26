@@ -1,14 +1,33 @@
 use std::{
     cmp::Reverse,
     collections::{BinaryHeap, HashMap},
-    sync::{Arc, Mutex, RwLock},
+    sync::{Arc, Mutex, RwLock}, time::{Duration, Instant},
 };
 use rayon::prelude::*;
 
 use crate::helper::utils::*;
 use crate::rubiks::cube::RubiksCube;
 
-pub fn parallel_a_star_solver(scramble: &str, cube: &mut RubiksCube) -> Vec<String> {
+pub fn parallel_a_star_solver(scramble: &str, cube: &mut RubiksCube) -> (Vec<String>, Duration) {
+    /*
+    This function solves the cube using a star, and prints out necessary data
+     */
+    // keep track of time
+    let start_time = Instant::now();
+    // solve using a star
+    let moves_cleaned = solve(scramble, cube);
+    let elapsed_time = start_time.elapsed();
+    // Print results here
+    println!("-------------A*-------------");
+    println!("{}", moves_cleaned.join(" "));
+    println!("Number of Moves: {}", moves_cleaned.len());
+    println!("Elapsed time: {:?}", elapsed_time);
+
+    (moves_cleaned, elapsed_time)
+
+}
+
+fn solve(scramble: &str, cube: &mut RubiksCube) -> Vec<String> {
     // Priority queue
     let open_set = Arc::new(Mutex::new(BinaryHeap::new()));
     open_set.lock().unwrap().push(Reverse((0, cube.clone(), "".to_string())));

@@ -12,8 +12,6 @@ pub fn solve_oll(cube: &mut RubiksCube, target: &Color) -> Vec<String> {
      */
     // read the oll text file to determine which algorithm to use
     let map: HashMap<Vec<(usize, usize)>, String> = read_file("src/cfop/oll_algorithm.txt");
-    // println!("{:?}", position);
-    // println!("{:?}", map);
     
     // initialize list that contains all the moves
     let mut output_list: Vec<String> = Vec::new();
@@ -23,6 +21,10 @@ pub fn solve_oll(cube: &mut RubiksCube, target: &Color) -> Vec<String> {
     while !solved {
         // First look at the position of the target color
         let position: Vec<(usize, usize)> = piece_location(cube, target);
+        // check if all pieces at the top are correct
+        if position.iter().all(|(first, _)| first == &position[0].0){
+            return output_list
+        }
         // now loop through the keys and items in the hashmap
         for (key, algo) in &map {
             // check if the key matches the position

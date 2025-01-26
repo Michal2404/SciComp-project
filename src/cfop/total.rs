@@ -9,6 +9,9 @@ use crate::helper::utils::*;
 
 use std::time::{Duration, Instant};
 
+use bevy::prelude::*;
+use crate::ui::design::SolveData;
+
 pub fn cfop_solver(scramble: &str, mut cube: RubiksCube) -> Vec<String> {
     /*
     This function solves using the cfop 
@@ -16,6 +19,9 @@ pub fn cfop_solver(scramble: &str, mut cube: RubiksCube) -> Vec<String> {
     // Determine the color of the bottom and top face
     let bottom = cube.faces[1][4];
     let top = cube.faces[0][4];
+
+    // Start total duration timer
+    let start_total_time = Instant::now();
     
     // Step 1: Solve the cross
     println!("-------------cross-------------");
@@ -57,6 +63,7 @@ pub fn cfop_solver(scramble: &str, mut cube: RubiksCube) -> Vec<String> {
     
     // Step 5: Total Moves
     println!("-------------Total-------------");
+    let elapsed_total_time = start_total_time.elapsed();
     let mut total_moves = Vec::new();
     total_moves.extend(cross_moves.clone());
     total_moves.extend(f2l_moves.clone());
@@ -120,19 +127,19 @@ fn output_data(scramble: (&str, usize),
                 (row_num, 2, scramble.1.to_string()),    // Row _, Column 2
                 (row_num, 3, cross_data.0.join(" ")),// Row _, Column 3
                 (row_num, 4, cross_data.1.to_string()),// Row _, Column 4
-                (row_num, 5, cross_data.2.as_millis().to_string()),// Row _, Column 5
+                (row_num, 5, cross_data.2.as_micros().to_string()),// Row _, Column 5
                 (row_num, 6, f2l_data.0.join(" ")),// Row _, Column 6
                 (row_num, 7, f2l_data.1.to_string()),// Row _, Column 7
-                (row_num, 8, f2l_data.2.as_millis().to_string()),// Row _, Column 8
+                (row_num, 8, f2l_data.2.as_micros().to_string()),// Row _, Column 8
                 (row_num, 9, oll_data.0.join(" ")),// Row _, Column 9
                 (row_num, 10, oll_data.1.to_string()),// Row _, Column 10
-                (row_num, 11, oll_data.2.as_millis().to_string()),// Row _, Column 11
+                (row_num, 11, oll_data.2.as_micros().to_string()),// Row _, Column 11
                 (row_num, 12, pll_data.0.join(" ")),// Row _, Column 12
                 (row_num, 13, pll_data.1.to_string()),// Row _, Column 13
-                (row_num, 14, pll_data.2.as_millis().to_string()),// Row _, Column 14
+                (row_num, 14, pll_data.2.as_micros().to_string()),// Row _, Column 14
                 (row_num, 15, total_data.0.join(" ")),// Row _, Column 15
                 (row_num, 16, total_data.1.to_string()),// Row _, Column 16
-                (row_num, 17, total_data.2.as_millis().to_string()),// Row _, Column 17
+                (row_num, 17, total_data.2.as_micros().to_string()),// Row _, Column 17
             ];
         
             // Loop through each update and apply it

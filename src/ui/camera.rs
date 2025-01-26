@@ -3,11 +3,13 @@ use crate::ui::app::CubeSettings;
 
 use bevy::input::mouse::{MouseScrollUnit, MouseWheel, MouseMotion};
 use bevy::prelude::*;
+use bevy_egui::EguiContexts;
 use std::f32::consts::TAU;
 
 
 pub fn spawn_camera(
     mut commands: Commands,
+    cube_settings: Res<CubeSettings>,
 ) {
     /*
     This function sets up the initial position of the camera
@@ -15,8 +17,7 @@ pub fn spawn_camera(
     //camera
     commands.spawn((
             Camera3d::default(),
-            // transform: Transform::from_xyz(-2.0, 2.5, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
-            Transform::from_xyz(5.0, 5.0, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
+            Transform::from_xyz(cube_settings.camera_x, cube_settings.camera_y, cube_settings.camera_z).looking_at(Vec3::ZERO, Vec3::Y),
 
     ));
 }
@@ -87,7 +88,15 @@ pub fn move_camera(
     mut motion_evr: EventReader<MouseMotion>,
     buttons: Res<ButtonInput<MouseButton>>,
     recorder: Res<MouseDraggingRecorder>,
+    mut egui_context: EguiContexts,
 ) {
+    // skip the movement of camera if use is interacting with the egui
+    let ctx = egui_context.ctx_mut(); // Access egui's context
+    if ctx.wants_pointer_input() {
+        // Skip rotation if egui is interacting with the pointer
+        return;
+    }
+
     if buttons.pressed(MouseButton::Left) {
         if recorder.piece.is_none() || recorder.start_pos.is_none() {
             // println!("move camera");

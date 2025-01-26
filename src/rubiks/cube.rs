@@ -1,6 +1,6 @@
 use super::color::Color;
 // use crate::ui::app::MyApp;
-use eframe::NativeOptions;
+// use eframe::NativeOptions;
 
 // Define main data structure for the cube
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
@@ -459,25 +459,3 @@ impl RubiksCube {
     }
 
 }
-
-
-//     pub fn visualize(self) {
-//         let options = NativeOptions::default();
-//         let cube_clone = self.clone();
-//         let _ = eframe::run_native(
-//             "Rubik's Cube Visualizer",
-//             options,
-//             Box::new(|_cc| Ok(Box::new(MyApp::new(cube_clone)))),
-//         );
-//     }
-// }
-
-// // For visualization
-// impl std::fmt::Display for RubiksCube {
-//     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-//         for (i, face) in self.faces.iter().enumerate() {
-//             writeln!(f, "Face {}: {:?}", i, face)?;
-//         }
-//         Ok(())
-//     }
-// }

@@ -1,7 +1,11 @@
+use SciComp_project::cfop::total::cfop_solver;
+use SciComp_project::cfop::cross::solved_state;
 use SciComp_project::rubiks::cube::RubiksCube;
+use SciComp_project::cfop::cross::solve_cross;
 use SciComp_project::cfop::f2l::solve_f2l;
 use SciComp_project::cfop::oll::solve_oll;
 use SciComp_project::cfop::pll::solve_pll;
+use SciComp_project::helper::utils::*;
 
 fn flip_and_toggle_moves(input: &str) -> String {
     input
@@ -32,20 +36,41 @@ fn flip_and_toggle_moves(input: &str) -> String {
 //     tested_cube.apply_scramble(&flip_and_toggle_moves(&scramble));
 //     assert_eq!(solved_cube, tested_cube);
 // }
-
-// fn f2l_solved() {
+// fn cross_solved() {
 //     let solved_cube = RubiksCube::new();
 //     let mut tested_cube = RubiksCube::new();
+//     // Test various moves...
+//     let scramble = "R U R' U' R' F R R U' R' U' R U R' F'";
+//     // let scramble = "M M";
+//     tested_cube.apply_scramble(&scramble);
+
 //     // get the color of the bottom
 //     let bottom = solved_cube.faces[1][0];
-//     // Test various moves...
-//     let scramble = "R' U R' U' F' U F R R";
-//     tested_cube.apply_scramble(&flip_and_toggle_moves(scramble));
+//     // now we solve the cross
+//     let moves = solve_cross(&mut tested_cube, &bottom);
 
-//     // perform f2l to solve cube
-//     let moves = solve_f2l(&mut tested_cube, &bottom);
-//     assert_eq!((solved_cube, scramble), (tested_cube, moves.join(" ").as_str()));
+//     println!("{:?}", moves);
+
+//     // tested_cube.apply_scramble(moves_str.as_str());
+//     assert_eq!(solved_state(&tested_cube, &bottom).0, true)
 // }
+
+fn f2l_solved() {
+    let solved_cube = RubiksCube::new();
+    let mut tested_cube = RubiksCube::new();
+    // get the color of the bottom
+    let bottom = solved_cube.faces[1][0];
+    // Test various moves...
+    let scramble = "U' R U' R' U R U R'";
+    tested_cube.apply_scramble(&flip_and_toggle_moves(scramble));
+    // let scramble = "R U R' U' R' F R R U' R' U' R U R' F'";
+    // tested_cube.apply_scramble(&scramble);
+
+    // perform f2l to solve cube
+    let moves = solve_f2l(&mut tested_cube, &bottom);
+    println!("{:?}", moves);
+    assert_eq!((solved_cube, scramble), (tested_cube, moves.join(" ").as_str()));
+}
 
 // fn oll_solved() {
 //     let solved_cube = RubiksCube::new();
@@ -53,23 +78,44 @@ fn flip_and_toggle_moves(input: &str) -> String {
 //     // get the color of the bottom
 //     let top = solved_cube.faces[0][0];
 //     // Test various moves...
-//     let scramble = "R L' U R' U' L R' F R F'";
-//     tested_cube.apply_scramble(&flip_and_toggle_moves(scramble));
+//     // let scramble = "R L' U R' U' L R' F R F'";
+//     // tested_cube.apply_scramble(&flip_and_toggle_moves(scramble));
+//     let scramble = "R U R' U' R' F R R U' R' U' R U R' F'";
+//     tested_cube.apply_scramble(&scramble);
 
 //     // perform f2l to solve cube
 //     let moves = solve_oll(&mut tested_cube, &top);
 //     assert_eq!((solved_cube, scramble), (tested_cube, moves.join(" ").as_str()));
 // }
 
-fn pll_solved() {
-    let solved_cube = RubiksCube::new();
-    let mut tested_cube = RubiksCube::new();
-    // Test various moves...
-    let scramble = "R U R' U' R' F R R U' R' U' R U R' F'";
-    tested_cube.apply_scramble(&flip_and_toggle_moves(scramble));
-    // tested_cube.apply_scramble(scramble);
+// fn pll_solved() {
+//     let solved_cube = RubiksCube::new();
+//     let mut tested_cube = RubiksCube::new();
+//     // Test various moves...
+//     let scramble = "R L U U R' L' F' B' U U F B";
+//     tested_cube.apply_scramble(&flip_and_toggle_moves(scramble));
+//     // tested_cube.apply_scramble(scramble);
 
-    // perform f2l to solve cube
-    let moves = solve_pll(&mut tested_cube);
-    assert_eq!((solved_cube, scramble), (tested_cube, moves.join(" ").as_str()));
-}
+//     // perform f2l to solve cube
+//     let moves = solve_pll(&mut tested_cube);
+//     let cleaned_scramble: Vec<String> = cleanup_moves(scramble.split(" ").map(|s| s.to_string()).collect());
+//     assert_eq!((solved_cube, cleaned_scramble), (tested_cube, moves));
+// }
+
+// fn solved() {
+//     let solved_cube = RubiksCube::new();
+//     let mut tested_cube = RubiksCube::new();
+//     // Test various moves...
+//     let scramble = "R U R' U' R' F R R U' R' U' R U R' F'";
+//     // let scramble = "R U'";
+//     tested_cube.apply_scramble(&scramble);
+
+//     let mut tested_cube_clone = tested_cube.clone();
+
+//     // perform f2l to solve cube
+//     let (moves, _) = cfop_solver(&scramble, tested_cube);
+//     println!("{}", &moves.join(" ").as_str());
+//     tested_cube_clone.apply_scramble(&moves.join(" ").as_str());
+//     assert_eq!(solved_cube, tested_cube_clone);
+    
+// }
