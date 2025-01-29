@@ -71,10 +71,11 @@ pub fn run_visualization(run: bool) {
     .insert_resource(SolveTask(None))
     .insert_resource(MoveQueue(VecDeque::new()))
     .insert_resource(Rotation::default())
+    .insert_resource(TimekeepingTimer::default())
     .insert_resource(MouseDraggingRecorder {
         start_pos: None,
         piece: None,
-        triggered: false,
+        // triggered: false,
     })
     .register_type::<Cubie>()
     .add_event::<ScrambleEvent>()

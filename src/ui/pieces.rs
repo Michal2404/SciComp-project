@@ -1,9 +1,7 @@
 // This file configures the cubie pieces and displays it
 use crate::ui::app::CubeSettings;
-use crate::ui::rotate::{self, *};
 
 use bevy::prelude::*;
-use bevy::render::mesh::{PrimitiveTopology, Indices};
 use std::f32::consts::{PI, FRAC_PI_2};
 
 
@@ -16,15 +14,7 @@ pub struct Cubie {
     pub original_position: Vec3,
     pub current_position: Vec3,
     pub left_angle: f32,
-    // pub left_angle: f64,
 }
-
-// #[derive(Debug, Component)]
-// pub struct MovablePiece {
-//     pub axis: rotate::Axis,
-//     pub rotate: SideRotation,
-//     pub left_angle: f32,
-// }
 
 impl Cubie {
     pub fn spawn(
@@ -33,27 +23,55 @@ impl Cubie {
         meshes: &mut ResMut<Assets<Mesh>>,
         materials: &mut ResMut<Assets<StandardMaterial>>,
         cube_settings: &Res<CubeSettings>,
+        child: &bool,
     ){
         /*
         This function spawns in the cubie
          */
+
+        let r = 0.5;
+        let g = 0.5;
+        let b = 0.5;
+        // let r = 1.0;
+        // let g = 1.0;
+        // let b = 1.0;
+        let a = 0.1;
         // create cubie
-        commands
-            .spawn((
-                Mesh3d(meshes.add(Cuboid::new(cube_settings.piece_size, cube_settings.piece_size, cube_settings.piece_size).mesh())),
-                MeshMaterial3d(materials.add(Color::BLACK)),
-                Transform::from_translation(Vec3::new(self.original_position[0], self.original_position[1], self.original_position[2])),
-                Cubie{
-                    id: self.id,
-                    original_position: self.original_position,
-                    current_position: self.current_position,
-                    left_angle: self.left_angle
-                },
-                RayCastPickable,
-            ))
-            .with_children(|parent| {
-                self.spawn_stickers(parent, meshes, materials, cube_settings);
-            });
+        if *child{
+            commands
+                .spawn((
+                    Mesh3d(meshes.add(Cuboid::new(cube_settings.piece_size, cube_settings.piece_size, cube_settings.piece_size).mesh())),
+                    // MeshMaterial3d(materials.add(Color::BLACK)),
+                    MeshMaterial3d(materials.add(Color::srgba(r, g, b, a))),
+                    Transform::from_translation(Vec3::new(self.original_position[0], self.original_position[1], self.original_position[2])),
+                    Cubie{
+                        id: self.id,
+                        original_position: self.original_position,
+                        current_position: self.current_position,
+                        left_angle: self.left_angle
+                    },
+                    RayCastPickable,
+                ))
+                .with_children(|parent| {
+                    self.spawn_stickers(parent, meshes, materials, cube_settings);
+                });
+            }
+            else {
+            commands
+                .spawn((
+                    Mesh3d(meshes.add(Cuboid::new(cube_settings.piece_size, cube_settings.piece_size, cube_settings.piece_size).mesh())),
+                    // MeshMaterial3d(materials.add(Color::BLACK)),
+                    MeshMaterial3d(materials.add(Color::srgba(r, g, b, a))),
+                    Transform::from_translation(Vec3::new(self.original_position[0], self.original_position[1], self.original_position[2])),
+                    Cubie{
+                        id: self.id,
+                        original_position: self.original_position,
+                        current_position: self.current_position,
+                        left_angle: self.left_angle
+                    },
+                    RayCastPickable,
+                ));
+        }
         
         
     }
@@ -174,15 +192,27 @@ impl Cubie {
         self.original_position[1] == -1.0
     }
     pub fn has_left_face(&self) -> bool {
+        // if self.original_position[1] == 1.0 {
+        //     return false;
+        // }
         self.original_position[0] == -1.0
     }
     pub fn has_right_face(&self) -> bool {
+        // if self.original_position[1] == 1.0 {
+        //     return false;
+        // }
         self.original_position[0] == 1.0
     }
     pub fn has_front_face(&self) -> bool {
+        // if self.original_position[1] == 1.0 {
+        //     return false;
+        // }
         self.original_position[2] == 1.0
     }
     pub fn has_back_face(&self) -> bool {
+        // if self.original_position[1] == 1.0 {
+        //     return false;
+        // }
         self.original_position[2] == -1.0
     }
 }
@@ -198,14 +228,35 @@ pub fn spawn_rubiks_cube(
     */
     // initialize cubie id
     let mut id = 0;
+    let mut child = true;
     // we loop through each cubie
     for x in [-1.0, 0.0, 1.0] {
         for y in [-1.0, 0.0, 1.0] {
             for z in [-1.0, 0.0, 1.0] {
-                if x == 0.0 && y == 0.0 && z == 0.0 {
-                    continue;
-                }
+                // if x == 0.0 && y == 0.0 && z == 0.0 {
+                //     continue;
+                // }
                 
+                // for visual
+                // scramble
+                // if (y == 0.0 && ((z == 0.0 && x != 0.0) || (x == 0.0 && z != 0.0))) ||
+                // (y != 0.0 && z == 0.0 && x == 0.0)
+
+                // cross
+                // if (y == 0.0 && ((z == 0.0 && x != 0.0) || (x == 0.0 && z != 0.0))) ||
+                // (y == -1.0 && ((z == 0.0 && x != 0.0) || (x == 0.0 && z != 0.0))) ||
+                // (y == -1.0 && x == 0.0 && z == 0.0) ||
+                // (y == 1.0 && x == 0.0 && z == 0.0)
+                
+                // f2l
+                // if y != 1.0 ||
+                // (y == 1.0 && x == 0.0 && z == 0.0)
+                // {
+                //     child = true;
+                // } else {
+                //     child = false;
+                // }
+
                 // initialize cubie
                 let cubie = Cubie {
                     id: id,
@@ -214,7 +265,7 @@ pub fn spawn_rubiks_cube(
                     left_angle: 0.0
                 };
                 // create cubie
-                cubie.spawn(&mut commands, &mut meshes, &mut materials, &cube_settings);
+                cubie.spawn(&mut commands, &mut meshes, &mut materials, &cube_settings, &child);
 
                 // update id
                 id += 1

@@ -9,9 +9,6 @@ use crate::helper::utils::*;
 
 use std::time::{Duration, Instant};
 
-use bevy::prelude::*;
-use crate::ui::design::SolveData;
-
 pub fn cfop_solver(scramble: &str, mut cube: RubiksCube) -> Vec<String> {
     /*
     This function solves using the cfop 
@@ -19,9 +16,6 @@ pub fn cfop_solver(scramble: &str, mut cube: RubiksCube) -> Vec<String> {
     // Determine the color of the bottom and top face
     let bottom = cube.faces[1][4];
     let top = cube.faces[0][4];
-
-    // Start total duration timer
-    let start_total_time = Instant::now();
     
     // Step 1: Solve the cross
     println!("-------------cross-------------");
@@ -63,7 +57,6 @@ pub fn cfop_solver(scramble: &str, mut cube: RubiksCube) -> Vec<String> {
     
     // Step 5: Total Moves
     println!("-------------Total-------------");
-    let elapsed_total_time = start_total_time.elapsed();
     let mut total_moves = Vec::new();
     total_moves.extend(cross_moves.clone());
     total_moves.extend(f2l_moves.clone());

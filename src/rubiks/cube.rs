@@ -23,20 +23,20 @@ impl RubiksCube {
         }
     }
 
-    pub fn to_string(&self) -> String {
-        self.faces
-            .iter()
-            .flat_map(|face| face.iter())
-            .map(|color| match color {
-                Color::W => 'W',
-                Color::Y => 'Y',
-                Color::G => 'G',
-                Color::B => 'B',
-                Color::R => 'R',
-                Color::O => 'O',
-            })
-            .collect()
-    }
+    // pub fn to_string(&self) -> String {
+    //     self.faces
+    //         .iter()
+    //         .flat_map(|face| face.iter())
+    //         .map(|color| match color {
+    //             Color::W => 'W',
+    //             Color::Y => 'Y',
+    //             Color::G => 'G',
+    //             Color::B => 'B',
+    //             Color::R => 'R',
+    //             Color::O => 'O',
+    //         })
+    //         .collect()
+    // }
 
     pub fn all_moves(&mut self) -> Vec<(&'static str, fn(&mut Self))> {
         vec![

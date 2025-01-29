@@ -73,16 +73,16 @@ pub fn zoom_camera(
 pub struct MouseDraggingRecorder {
     pub start_pos: Option<Vec3>,
     pub piece: Option<Entity>,
-    pub triggered: bool,
+    // pub triggered: bool,
 }
 
-impl MouseDraggingRecorder {
-    pub fn clear(&mut self) {
-        self.start_pos = None;
-        self.piece = None;
-        self.triggered = false;
-    }
-}
+// impl MouseDraggingRecorder {
+//     pub fn clear(&mut self) {
+//         self.start_pos = None;
+//         self.piece = None;
+//         self.triggered = false;
+//     }
+// }
 pub fn move_camera(
     mut q_camera: Query<&mut Transform, With<Camera>>,
     mut motion_evr: EventReader<MouseMotion>,

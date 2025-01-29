@@ -1,6 +1,6 @@
-use std::time::Duration;
+use std::time::Instant;
 use bevy::tasks::{AsyncComputeTaskPool, Task};
-use bevy::time::Stopwatch;
+use bevy_egui::egui::Frame;
 
 
 // This file creates the design for ui
@@ -9,7 +9,6 @@ use crate::ui::app::CubeSettings;
 use crate::ui::rotate::MoveQueue;
 use crate::cfop::total::cfop_solver;
 use crate::a_star::a_star::a_star_solver;
-use crate::a_star::parallel_a_star::parallel_a_star_solver;
 use crate::ui::pieces::Cubie;
 
 use bevy::prelude::*;
@@ -19,10 +18,6 @@ use rand::Rng;
 use rand::seq::SliceRandom;
 
 use futures_lite::future;
-
-
-// #[derive(Debug, Resource)]
-// pub struct TimekeepingTimer(pub Instant);
 
 // Interacting with egui
 #[derive(Debug, Default, Event)]
@@ -39,7 +34,24 @@ pub struct Scramble {
 #[derive(Resource, Default, Clone)]
 pub struct SolveData {
     solve_sequence: Vec<String>,
-    time_taken: Stopwatch,
+}
+
+// time keeping resource
+#[derive(Debug, Resource)]
+pub struct TimekeepingTimer{
+    pub time: Instant,
+    pub running: bool,
+    pub last_time: u128,
+}
+
+impl Default for TimekeepingTimer {
+    fn default() -> Self {
+        Self {
+            time: Instant::now(),
+            running: false,
+            last_time: 0,
+        }
+    }
 }
 
 // Define a resource to store the async task
@@ -66,128 +78,177 @@ pub fn game_ui(
     mut cube_settings: ResMut<CubeSettings>,
     mut scramble: ResMut<Scramble>,
     solve_data: ResMut<SolveData>,
-    // mut timekeeping_timer: ResMut<TimekeepingTimer>,
+    mut timer: ResMut<TimekeepingTimer>,
     mut scramble_event: EventWriter<ScrambleEvent>,
     mut reset_event: EventWriter<ResetEvent>,
     mut cfop_event: EventWriter<CFOPEvent>,
     mut astar_event: EventWriter<ASTAREvent>,
 ) {
     egui::Window::new("Rubiks Cube Solver").show(egui_context.ctx_mut(), |ui| {
-        egui::Grid::new("ui_grid")
-            .num_columns(2)
-            .spacing([10.0, 20.0])
-            .striped(true)
-            .show(ui, |ui| {
-                ui.add(egui::Label::new("Scramble Length"));
-                ui.add(egui::Slider::new(
-                    &mut cube_settings.num_scramble_moves,
-                    1..=20,
-                ));
+        // egui::Grid::new("ui_grid")
+        //     // .num_columns(2)
+        //     .spacing([10.0, 20.0])
+        //     .striped(true)
+        //     .show(ui, |ui| {
+        //  define column widths
+        let col1_width = 100.0;
+        let col2_width = 100.0;
+        let col_spacing = 20.0;
+                // adjust scramble length
+                ui.horizontal(|ui| {
+                    ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+                        ui.add_space(30.0);
+                        ui.add_sized([col1_width, 20.0],egui::Label::new("Scramble Length"));
+                        ui.add_space(30.0);
+                    });
+                    ui.add_space(col_spacing);
+                    
+                    ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+                        ui.add_sized([col2_width, 20.0], egui::Slider::new(
+                            &mut cube_settings.num_scramble_moves,
+                            1..=20,
+                        ));
+                    });
+                });
                 ui.end_row();
-
-                // ui.add(egui::Label::new("Play Mode"));
-                // ui.horizontal(|ui| {
-                //     ui.selectable_value(
-                    //         &mut cube_settings.play_mode,
-                //         PlayMode::Practice,
-                //         "Practice",
-                //     );
-                //     if ui
-                //         .selectable_value(
-                    //             &mut cube_settings.play_mode,
-                //             PlayMode::Timekeeping,
-                //             "Timekeeping",
-                //         )
-                //         .clicked()
-                //     {
-                    //         // 重置计时器
-                    //         timekeeping_timer.0 = Instant::now();
-                //     }
-                // });
-                // if cube_settings.play_mode == PlayMode::Timekeeping {
-                    //     ui.add(egui::Label::new(format!(
-                //         "{}s",
-                //         timekeeping_timer.0.elapsed().as_secs()
-                //     )));
-                // }
-                // ui.end_row();
+                ui.add_space(20.0);
                 
-                // TODO: Think about how to structure scrambles
                 // generate scramble
-                if ui
-                    .add_sized([100.0, 30.0], egui::Button::new("Generate Random Scramble"))
-                    .clicked()
-                {
-                    // first we remove any content from text_input
-                    scramble.input_text.clear();
-                    // add random scramble
-                    scramble.input_text.push_str(generate_random_scramble(&cube_settings).as_str());
-                }
-                
-                // add textbox here
-                ui.add(
-                    egui::TextEdit::singleline(&mut scramble.input_text)
-                    .desired_width(200.0)
-                    .hint_text("Type Scramble here ...")
-                );
+                ui.horizontal(|ui| {
+                    // generate scramble
+                    ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+                        if ui
+                        .add_sized([col1_width, 20.0], egui::Button::new("Generate Random Scramble"))
+                        .clicked()
+                        {
+                            // first we remove any content from text_input
+                            scramble.input_text.clear();
+                            // add random scramble
+                            scramble.input_text.push_str(generate_random_scramble(&cube_settings).as_str());
+                        }
+                    });
+                    ui.add_space(col_spacing);
+                    // add textbox here
+                    ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+                        ui.add_sized([150.0, 20.0],
+                            egui::TextEdit::singleline(&mut scramble.input_text)
+                            .desired_width(200.0)
+                            .hint_text("Type Scramble here ...")
+                        );
+                    });
+                });
                 ui.end_row();
+                ui.add_space(20.0);
                 
-                // perform scramble
-                if ui
-                .add_sized([100.0, 30.0], egui::Button::new("Scramble"))
-                .clicked()
-                {
-                    scramble_event.send_default();
-                }
+                // scramble cube and reset cube buttons
+                ui.horizontal(|ui| {
+                    // perform scramble
+                    ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+                        ui.add_space(30.0);
+                        if ui
+                        .add_sized([col1_width, 30.0], egui::Button::new("Scramble"))
+                        .clicked()
+                        {
+                            scramble_event.send_default();
+                        }
+                        ui.add_space(30.0);
+                    });
+                    // Reset cube
+                    ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+                        ui.add_space(30.0);
+                        if ui
+                        .add_sized([col2_width, 30.0], egui::Button::new("Reset"))
+                        .clicked()
+                        {
+                            reset_event.send_default();
+                        }
+                        ui.add_space(30.0);
+                    });
+                });
                 
-                // Reset cube
-                if ui
-                    .add_sized([100.0, 30.0], egui::Button::new("Reset"))
-                    .clicked()
-                {
-                    reset_event.send_default();
-                }
                 
                 ui.end_row();
+                ui.add_space(20.0);
                 
                 // Display current scramble
-                ui.add(egui::Label::new(scramble.scramble_content.clone()));
+                ui.horizontal(|ui| {
+                    // ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+                        ui.add(egui::Label::new(egui::RichText::new(scramble.scramble_content.clone())
+                        .font(egui::FontId::proportional(20.0)))
+                        .wrap()
+                    );
+                    // });
+                });
                 ui.end_row();
+                ui.add_space(20.0);
                 
                 // Solve cube CFOP
-                if ui
-                .add_sized([100.0, 30.0], egui::Button::new("CFOP Solve"))
-                .clicked()
-                {
-                    // make sure scramble is not empty
-                    if !scramble.scramble_content.is_empty(){
-                        cfop_event.send_default();
-                    }
-                }
-                // Solve cube A star
-                if ui
-                .add_sized([100.0, 30.0], egui::Button::new("A star Solve"))
-                .clicked()
-                {
-                    // make sure scramble is not empty
-                    if !scramble.scramble_content.is_empty(){
-                        astar_event.send_default();
-                    }
-                }
+                ui.horizontal(|ui| {
+                    ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+                        ui.add_space(30.0);
+                        if ui
+                        .add_sized([100.0, 30.0], egui::Button::new("CFOP Solve"))
+                        .clicked()
+                        {
+                            // make sure scramble is not empty
+                            if !scramble.scramble_content.is_empty(){
+                                timer.time = Instant::now();
+                                timer.running = true;
+                                cfop_event.send_default();
+                            }
+                        }
+                    });
+                    ui.add_space(30.0);
+                    // Solve cube A star
+                    ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+                        if ui
+                        .add_sized([100.0, 30.0], egui::Button::new("A star Solve"))
+                        .clicked()
+                        {
+                            // make sure scramble is not empty
+                            if !scramble.scramble_content.is_empty(){
+                                timer.time = Instant::now();
+                                timer.running = true;
+                                astar_event.send_default();
+                            }
+                        }
+                    });
+                    ui.add_space(30.0);
+                });
                 ui.end_row();
-
+                ui.add_space(20.0);
+                
                 // Time taken to solve the rubiks cube and number of moves
-                ui.add(egui::Label::new("Time Taken"));
-                ui.add(egui::Label::new(format!("{:?} ms", solve_data.time_taken.elapsed().as_millis())));
+                ui.horizontal(|ui| {
+                    ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+                        ui.add(egui::Label::new("Time Taken"));
+                    });
+                    // check if timer is running
+                    let time_taken = match timer.running {
+                        true => timer.time.elapsed().as_millis(),
+                        false => timer.last_time,
+                    };
+                    
+                    ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+                        ui.add(egui::Label::new(format!("{:?} ms", time_taken)));
+                    });
+                });
                 ui.end_row();
+                ui.add_space(20.0);
                 
                 // Total move length
-                ui.add(egui::Label::new("Move Length"));
-                ui.add(egui::Label::new(solve_data.solve_sequence.len().to_string()));
+                ui.horizontal(|ui| {
+                    ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+                        ui.add(egui::Label::new("Move Length"));
+                    });
+                    ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+                        ui.add(egui::Label::new(solve_data.solve_sequence.len().to_string()));
+                    });
+                });
                 ui.end_row();
                 
             });
-    });
+    // });
 }
 
 fn generate_random_scramble(
@@ -305,6 +366,7 @@ pub fn poll_solve_task(
     mut move_queue: ResMut<MoveQueue>,
     mut solve_data: ResMut<SolveData>,
     mut scramble: ResMut<Scramble>,
+    mut timer: ResMut<TimekeepingTimer>,
 ) {
     /*
     This function polls the async task and handles the result
@@ -329,7 +391,9 @@ pub fn poll_solve_task(
             // Clear the task
             solve_task.0 = None;
             // stop the timer
-            solve_data.time_taken.pause();
+            timer.running = false;
+            timer.last_time = timer.time.elapsed().as_millis();
+            // solve_data.time_taken = Instant::now();
         }
     }
 }
@@ -338,8 +402,6 @@ pub fn solve_cfop(
     mut events: EventReader<CFOPEvent>,
     scramble: ResMut<Scramble>,
     mut solve_task: ResMut<SolveTask>,
-    mut solve_data: ResMut<SolveData>,
-    time: Res<Time>,
 ) {
     /*
     This function solves the cube using the CFOP method
@@ -350,34 +412,17 @@ pub fn solve_cfop(
         let mut cube = RubiksCube::new();
         cube.apply_scramble(scramble_sequence.as_str());
         
-        // initialize timer and reset it
-        // solve_data.time_taken = Stopwatch::new();
-        solve_data.time_taken.reset();
-        // solve_data.time_taken.tick(time.delta());
-        
         // solve using cfop
         // Clone necessary data for the async task
         let scramble_sequence_clone = scramble_sequence.clone();
-        let mut solve_data_clone = solve_data.clone();
-        let time_clone = time.clone();
         
         // solve using cfop
         // Spawn a task on Bevy's thread pool
         let task_pool = AsyncComputeTaskPool::get();
         let result = task_pool.spawn(async move {
-            solve_data_clone.time_taken.tick(time_clone.delta());
+            // solve_data_clone.time_taken.tick(time_clone.delta());
             cfop_solver(&scramble_sequence_clone.as_str(), cube)
         });
-        // // Spawn a task on Bevy's thread pool
-        // let task_pool = AsyncComputeTaskPool::get();
-        // let result = task_pool.spawn(async move {
-        //     solve_data.time_taken.tick(time.delta());
-        //     cfop_solver(&scramble_sequence.as_str(), cube)
-        //     // let time_taken = solve_data.time_taken.tick(time_clone.delta());
-        //     // let moves = cfop_solver(&scramble_sequence.as_str(), cube);
-        //     // (moves, time_taken.clone())
-        // });
-        
         // Store the task in the resource
         solve_task.0 = Some(result);
         
@@ -387,8 +432,6 @@ pub fn solve_astar(
     mut events: EventReader<ASTAREvent>,
     scramble: ResMut<Scramble>,
     mut solve_task: ResMut<SolveTask>,
-    mut solve_data: ResMut<SolveData>,
-    time: Res<Time>,
 ) {
     /*
     This function solves the cube using the CFOP method
@@ -399,28 +442,17 @@ pub fn solve_astar(
         let mut cube = RubiksCube::new();
         cube.apply_scramble(scramble_sequence.as_str());
         
-        // initialize timer
-        solve_data.time_taken.tick(time.delta());
-
-        
         // solve using cfop
         // Clone necessary data for the async task
         let scramble_sequence_clone = scramble_sequence.clone();
-        let mut solve_data_clone = solve_data.clone();
-        let time_clone = time.clone();
         
         // solve using cfop
         // Spawn a task on Bevy's thread pool
         let task_pool = AsyncComputeTaskPool::get();
         let result = task_pool.spawn(async move {
-            solve_data_clone.time_taken.tick(time_clone.delta());
+            // solve_data_clone.time_taken.tick(time_clone.delta());
             a_star_solver(&scramble_sequence_clone.as_str(), &mut cube)
         });
-        // // Spawn a task on Bevy's thread pool
-        // let task_pool = AsyncComputeTaskPool::get();
-        // let result = task_pool.spawn(async move {
-        //         a_star_solver(&scramble_sequence.as_str(), &mut cube)
-        // });
 
         // Store the task in the resource
         solve_task.0 = Some(result);

@@ -1,7 +1,7 @@
 // This file contains helper functions for all files used in CFOP
 use crate::rubiks::cube::RubiksCube;
 use crate::rubiks::color::Color;
-use std::{collections::{HashMap, HashSet}, time::Duration};
+use std::collections::{HashMap, HashSet};
 
 pub fn find_edges_with_color(cube: &RubiksCube, target: &Color) -> Vec<(usize, usize)> {
     /*
