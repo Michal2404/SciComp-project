@@ -3,3 +3,15 @@ Ideas for performance testing:
 2. Compare performance of BFS and IDA* for different depths
 3. Measure time for phase_1 and phase_2 of two_phase solver and compare them
 
+Scramble Length,Solution Moves,Solution Time (s)
+1,1,0.000164979
+2,2,0.000422194
+3,3,0.006208196
+4,4,0.164935171
+5,5,1.111162616
+6,6,20.556573035
+
+Experiment design:
+1. Solution length vs scramble length for two_phase
+2. Solution time vs scramble length for two_phase
+    - 10000 it, scramble len 30, IDA bound 10, 9 to high, 8 good

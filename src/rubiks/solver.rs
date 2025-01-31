@@ -421,10 +421,10 @@ pub fn solve(
 
     // Use BFS to find candidate solutions up to depth n
     if use_ida {
-        println!("Running IDA* for depth {}...", ida_depth.unwrap());
+        //println!("Running IDA* for depth {}...", ida_depth.unwrap());
         if let Some(best_solution) = ida_star_solver(&cc, ida_depth.unwrap()) {
-            println!("Solution found by IDA*: {:?}", best_solution);
-            println!("Elapsed time: {:?}", start_time.elapsed());
+            //println!("Solution found by IDA*: {:?}", best_solution);
+            //println!("Elapsed time: {:?}", start_time.elapsed());
             let mut s = String::new();
             for &mv in &best_solution {
                 s.push_str(mv.name()); // or format!("{:?}", mv) if debug
@@ -437,20 +437,20 @@ pub fn solve(
             // Replace occurrences of '3' with '\''
             return formatted_string.to_string();
         }
-        println!(
-            "No solution found by IDA* after {:?}, proceeding to two-phase solver...",
-            start_time.elapsed()
-        );
+        //println!(
+        //"No solution found by IDA* after {:?}, proceeding to two-phase solver...",
+        //   start_time.elapsed()
+        //);
     }
 
     let start_time_two_phase = Instant::now();
     let mut solver: Solver = Solver::new(cc, 0, 0, max_length, timeout, start_time);
     solver.run();
-    println!("Total elapsed time: {:?}", start_time.elapsed());
-    println!(
-        "two-phase elapsed time: {:?}",
-        start_time_two_phase.elapsed()
-    );
+    //println!("Total elapsed time: {:?}", start_time.elapsed());
+    //println!(
+    //    "two-phase elapsed time: {:?}",
+    //    start_time_two_phase.elapsed()
+    //);
     // 4) Construct the final solution string
     if !solver.solutions.is_empty() {
         // The last solution is presumably the shortest, by your code's convention

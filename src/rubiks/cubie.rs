@@ -994,11 +994,10 @@ impl CubieCube {
     }
 
     pub fn heuristic(&self) -> usize {
-        let mut distance = 0;
-        distance += self.edge_manhattan_distance();
-        distance += self.corner_manhattan_distance();
+        let corner_h = (self.corner_manhattan_distance() + 3) / 4; // +3 for rounding up
+        let edge_h = (self.edge_manhattan_distance() + 3) / 4; // +3 for rounding up
 
-        distance / 4
+        corner_h.max(edge_h)
     }
 
     pub fn corner_manhattan_distance(&self) -> usize {

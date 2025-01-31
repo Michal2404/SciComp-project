@@ -11,11 +11,11 @@ fn main() {
     // }
 
     // Measure IDA* performance
-    //for n in 0..20 {
-    //    if let Err(e) = performance::measure_ida(n) {
-    //        eprintln!("Error: {}", e);
-    //    }
-    //}
+    for n in 0..20 {
+        if let Err(e) = performance::measure_ida(n) {
+            eprintln!("Error: {}", e);
+        }
+    }
 
     // Measure BFS performance
     //or n in 0..20 {
@@ -23,6 +23,16 @@ fn main() {
     //       eprintln!("Error: {}", e);
     //   }
     //
+
+    // Measure two phase performance
+    /*
+    if let Err(e) = performance::measure_two_phase_ida() {
+        eprintln!("Error: {}", e);
+    }
+
+    if let Err(e) = performance::measure_two_phase() {
+        eprintln!("Error: {}", e);
+    }
 
     let cubiecube = CubieCube::new(None, None, None, None);
     let states = generate_states(cubiecube, "");
@@ -33,4 +43,5 @@ fn main() {
         options,
         Box::new(|_cc| Ok(Box::new(app))),
     );
+    */
 }

@@ -1,3 +1,5 @@
+use crate::rubiks::solver::solve;
+
 use super::bfs::{bfs_solver, ida_star_solver};
 use super::cubie::{generate_scramble, CubieCube};
 use csv::Writer;
@@ -10,7 +12,7 @@ pub fn measure_ida(n: usize) -> Result<(), Box<dyn Error>> {
     let max_depth = 20;
     let mut results = Vec::new();
 
-    for scramble_length in 1..=10 {
+    for scramble_length in 1..=8 {
         println!("it: {}", scramble_length);
         // Generate a scramble of the given length
 
@@ -54,7 +56,8 @@ pub fn measure_ida(n: usize) -> Result<(), Box<dyn Error>> {
     }
 
     // Write results to a CSV file
-    let format_string = format!("csv_files/ida_performance/ida_performance_{n}.csv");
+    let format_string =
+        format!("csv_files/ida_performance/ida_performance_new_heuristics{n}_sclen8.csv");
     let filename = format_string.as_str();
     let mut wtr = Writer::from_writer(File::create(filename)?);
 
@@ -165,6 +168,105 @@ pub fn measure_bfs(n: usize) -> Result<(), Box<dyn Error>> {
             "| {:<15} | {:<10} | {:<14.6} |",
             length, bfs_moves, bfs_time
         );
+    }
+    println!("+----------------+------------+----------------+");
+
+    Ok(())
+}
+
+// Measure the performance of the two phase solver
+pub fn measure_two_phase() -> Result<(), Box<dyn Error>> {
+    let mut results = Vec::new();
+    let init_scramble = "R U L F D";
+    let _solution = solve(&init_scramble, 20, 2.0, true, false, Some(10));
+    for i in 0..10000 {
+        println!("it: {}", i);
+        for scramble_length in 1..=30 {
+            // Generate a scramble of the given length
+
+            let scramble = generate_scramble(scramble_length);
+            let start_time = Instant::now();
+            let solution = solve(&scramble, 20, 2.0, true, false, Some(8));
+            let end_time = start_time.elapsed();
+            let trimmed_solution = solution
+                .rsplit_once('(')
+                .map_or(solution.clone(), |(before, _)| before.trim().to_string());
+            let solution_string = trimmed_solution.trim().to_string();
+            let solution_length = solution_string.split_whitespace().count();
+            results.push((scramble_length, solution_length, end_time.as_secs_f64()));
+        }
+    }
+    // Write results to a CSV file
+    let format_string = format!("csv_files/real_experiments/performance_no_ida_it_10000.csv");
+    let filename = format_string.as_str();
+    let mut wtr = Writer::from_writer(File::create(filename)?);
+
+    // Write header
+    wtr.write_record(["Scramble Length", "Solution Moves", "Solution Time (s)"])?;
+
+    // Write rows
+    for (length, moves, time) in &results {
+        wtr.write_record(&[length.to_string(), moves.to_string(), time.to_string()])?;
+    }
+
+    wtr.flush()?;
+    println!("Results written to {}", filename);
+
+    // Print results as a table
+    println!("+-----------------+---------+-----------+");
+    println!("| Scramble Length |  Moves  | Time (s)  |");
+    println!("+-----------------+---------+-----------+");
+    for (length, moves, time) in results {
+        println!("| {:<15} | {:<10} | {:<14.6} |", length, moves, time);
+    }
+    println!("+----------------+------------+----------------+");
+
+    Ok(())
+}
+
+pub fn measure_two_phase_ida() -> Result<(), Box<dyn Error>> {
+    let mut results = Vec::new();
+    let init_scramble = "R U L F D";
+    let _solution = solve(&init_scramble, 20, 2.0, true, false, Some(10));
+    for i in 0..10000 {
+        println!("it: {}", i);
+        for scramble_length in 1..=30 {
+            // Generate a scramble of the given length
+
+            let scramble = generate_scramble(scramble_length);
+            let start_time = Instant::now();
+            let solution = solve(&scramble, 20, 2.0, true, true, Some(8));
+            let end_time = start_time.elapsed();
+            let trimmed_solution = solution
+                .rsplit_once('(')
+                .map_or(solution.clone(), |(before, _)| before.trim().to_string());
+            let solution_string = trimmed_solution.trim().to_string();
+            let solution_length = solution_string.split_whitespace().count();
+            results.push((scramble_length, solution_length, end_time.as_secs_f64()));
+        }
+    }
+    // Write results to a CSV file
+    let format_string = format!("csv_files/real_experiments/performance_ida_it_10000.csv");
+    let filename = format_string.as_str();
+    let mut wtr = Writer::from_writer(File::create(filename)?);
+
+    // Write header
+    wtr.write_record(["Scramble Length", "Solution Moves", "Solution Time (s)"])?;
+
+    // Write rows
+    for (length, moves, time) in &results {
+        wtr.write_record(&[length.to_string(), moves.to_string(), time.to_string()])?;
+    }
+
+    wtr.flush()?;
+    println!("Results written to {}", filename);
+
+    // Print results as a table
+    println!("+-----------------+---------+-----------+");
+    println!("| Scramble Length |  Moves  | Time (s)  |");
+    println!("+-----------------+---------+-----------+");
+    for (length, moves, time) in results {
+        println!("| {:<15} | {:<10} | {:<14.6} |", length, moves, time);
     }
     println!("+----------------+------------+----------------+");
 
