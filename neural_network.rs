@@ -1,5 +1,7 @@
 use rand::prelude::*;
 use rubiks::rubiks::cube::RubiksCube;
+use std::time::Instant;
+use std::fs;
 
 // collection of activation functions
 fn sigmoid(x: f64) -> f64 {
@@ -50,6 +52,53 @@ fn generate_data(i: i32) -> (Vec<RubiksCube>, Vec<f64>) {
     (data_input, data_output)
 }
 
+// Get the data from the text files
+fn get_data(file_path: &str) -> (Vec<String>, Vec<String>) {
+    // Read the file
+    let content = fs::read_to_string(file_path).expect("Error reading the file!");
+
+    // Vectors for the different lines
+    let mut lowercase_lines = Vec::new();
+    let mut answer_lines = Vec::new();
+
+    // Zeilen aufteilen und verarbeiten
+    for line in content.lines() {
+        if line.chars().all(|c| c.is_ascii_lowercase() || c.is_whitespace()) {
+            lowercase_lines.push(line.to_string());
+        } else {
+            answer_lines.push(line.to_string());
+        }
+    }
+    (lowercase_lines, answer_lines)
+}
+// Get the number of how many moves we need to solve the cube
+fn count_commands(line: &str) -> usize {
+    let commands: Vec<&str> = line.split_whitespace().collect();
+    commands.len()
+}
+//Convert the lines from the text file to a vector
+pub fn convert_to_input_vector(line: &str) -> Vec<f64> {
+    let mut input_vector = Vec::with_capacity(6 * 9);
+
+    // Mapping from colors to the numeric values
+    let color_map = |color: char| match color {
+        'w' => 0.0,
+        'y' => 1.0 / 5.0,
+        'g' => 2.0 / 5.0,
+        'b' => 3.0 / 5.0,
+        'r' => 4.0 / 5.0,
+        'o' => 1.0,
+        _ => panic!("Error color: {}", color),
+    };
+
+    for color in line.split_whitespace() {
+        let color_value = color_map(color.chars().next().unwrap());
+        input_vector.push(color_value);
+    }
+
+    input_vector
+}
+
 fn print_results(input: &Vec<[f64; 2]>, output: &Vec<f64>) {
     for i in 0..input.len() {
         println!("{:?} = {:?}", input[i], output[i])
@@ -62,7 +111,7 @@ fn test_nn(prediction: &Vec<f64>, real: &Vec<f64>) -> f64 {
         let scaled_prediction = (prediction[i] * 4.0).round(); //Rescaling and rounding
         let scaled_real = real[i] * 4.0; //Rescaling
         println!("Predict: {} and Real: {}", scaled_prediction, scaled_real);
-        if (scaled_prediction - scaled_real ).abs() == 0 { // this is the error measuring
+        if (scaled_prediction - scaled_real ).abs() == 0.0 { // this is the error measuring
             value += 1.0;
         }
     }
@@ -175,7 +224,10 @@ pub fn run() {
     let (test_input, test_ouput) = generate_data(10);
 
     // create a NN 
-    let mut neural_network = NeuralNetwork::new(10);
+    let mut neural_network = NeuralNetwork::new(5);
+
+    //set the parameters
+    let episodes = 10 as usize;
 
     // Predictions of the NN before traning
     let mut predictions : Vec<f64> = Vec::new();
@@ -187,10 +239,12 @@ pub fn run() {
     }
     
     println!("Test before training: {}", test_nn(&predictions, &test_ouput));
-    println!("Before training hidden weights: {:?}", neural_network.hidden_weights);
 
+    let start = Instant::now();//Starting time for the training
     // train the NN 
-    neural_network.train(inputs, outputs, 100);
+    neural_network.train(inputs, outputs, episodes);
+
+    let duration = start.elapsed().as_secs(); //Ending time for the training
 
     // Predictions of the NN
     let mut predictions : Vec<f64> = Vec::new();
@@ -202,5 +256,9 @@ pub fn run() {
     }
     
     println!("Test after training: {}", test_nn(&predictions, &test_ouput));
-    println!("After training hidden weights: {:?}", neural_network.hidden_weights);
+    println!("Elapsed time: {:?} seconds", duration);
+    println!("Episodes trained: {}", episodes);
+
+    let file_path = "../test_data.txt";
+    let (lowercase_lines, answer_lines) = get_data(file_path);
 }
