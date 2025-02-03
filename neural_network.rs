@@ -20,6 +20,15 @@ fn relu_derivative(x: f64) -> f64 {
     if x > 0.0 { 1.0 } else { 0.0 }
 }
 
+//Some constants
+const SCALE: f64 = 80.0; //For rescaling the values
+const EPISODES: usize = 10; //How many episodes should the NN learn
+const HIDDEN_NEURONS: usize = 5; // The number of hidden neurons in the NN
+const LEARNING_RATE: f64 = 0.01; //The learning rate of the NN
+const OUTPUT_BIAS:f64 = 0.0; 
+
+
+
 // Generate Test data with states of RubiksCubes and the maximal number of steps to solve them.
 fn generate_data(i: i32) -> (Vec<RubiksCube>, Vec<f64>) {
     // Define the possible moves
@@ -47,13 +56,13 @@ fn generate_data(i: i32) -> (Vec<RubiksCube>, Vec<f64>) {
         let mut cube = RubiksCube::new();
         cube.apply_scramble(&joined_moves); // scramble
         data_input.push(cube);
-        data_output.push((num_moves as f64)/4.0); //Normalization
+        data_output.push((num_moves as f64)/SCALE); //Normalization
     }
     (data_input, data_output)
 }
 
 // Get the data from the text files
-fn get_data(file_path: &str) -> (Vec<String>, Vec<String>) {
+fn get_data(file_path: &str) -> (Vec<Vec<f64>>, Vec<f64>) {
     // Read the file
     let content = fs::read_to_string(file_path).expect("Error reading the file!");
 
@@ -64,17 +73,17 @@ fn get_data(file_path: &str) -> (Vec<String>, Vec<String>) {
     // Zeilen aufteilen und verarbeiten
     for line in content.lines() {
         if line.chars().all(|c| c.is_ascii_lowercase() || c.is_whitespace()) {
-            lowercase_lines.push(line.to_string());
+            lowercase_lines.push(convert_to_input_vector(&line.to_string()));
         } else {
-            answer_lines.push(line.to_string());
+            answer_lines.push(count_commands(&line)/SCALE); //Normalization
         }
     }
     (lowercase_lines, answer_lines)
 }
 // Get the number of how many moves we need to solve the cube
-fn count_commands(line: &str) -> usize {
+fn count_commands(line: &str) -> f64 {
     let commands: Vec<&str> = line.split_whitespace().collect();
-    commands.len()
+    commands.len() as f64
 }
 //Convert the lines from the text file to a vector
 pub fn convert_to_input_vector(line: &str) -> Vec<f64> {
@@ -108,9 +117,9 @@ fn print_results(input: &Vec<[f64; 2]>, output: &Vec<f64>) {
 fn test_nn(prediction: &Vec<f64>, real: &Vec<f64>) -> f64 {
     let mut value: f64 = 0.0;
     for i in 0..real.len() {
-        let scaled_prediction = (prediction[i] * 4.0).round(); //Rescaling and rounding
-        let scaled_real = real[i] * 4.0; //Rescaling
-        println!("Predict: {} and Real: {}", scaled_prediction, scaled_real);
+        let scaled_prediction = (prediction[i] * SCALE).round(); //Rescaling and rounding
+        let scaled_real = real[i] * SCALE; //Rescaling
+        //println!("Predict: {} and Real: {}", scaled_prediction, scaled_real);
         if (scaled_prediction - scaled_real ).abs() == 0.0 { // this is the error measuring
             value += 1.0;
         }
@@ -147,8 +156,8 @@ impl NeuralNetwork {
             input_weights,
             hidden_weights,
             hidden_bias,
-            output_bias: 0.0,
-            learning_rate: 0.01,
+            output_bias: OUTPUT_BIAS,
+            learning_rate: LEARNING_RATE,
             hidden_neurons,
         }
     }
@@ -170,13 +179,15 @@ impl NeuralNetwork {
         sigmoid(output_sum)
     }
 
-    fn train(&mut self, inputs: Vec<RubiksCube>, outputs: Vec<f64>, epochs: usize) {
-        let mut rng = rand::thread_rng();  // Zufallsgenerator
+    fn train(&mut self, inputs: Vec<Vec<f64>>, outputs: Vec<f64>, epochs: usize) {
+        let mut rng = rand::thread_rng();  // Random generator
 
         for _ in 0..epochs {
             for (i, cube) in inputs.iter().enumerate() {
-                let input_vector = cube.to_input_vector();
-
+                /*Old One
+                let input_vector = cube.to_input_vector(); // For the generate Data, where the cubes have to be transformed first.
+                */
+                let input_vector = cube;
                 let mut hidden_layer_output = vec![];
                 for j in 0..self.hidden_neurons {
                     let sum: f64 = input_vector.iter()
@@ -195,7 +206,7 @@ impl NeuralNetwork {
 
                 // Update hidden to output layer weights mit Rauschen
                 for j in 0..self.hidden_neurons {
-                    let noise: f64 = rng.gen_range(-0.01..0.01);  // Kleines Rauschen zwischen -0.01 und 0.01
+                    let noise: f64 = rng.gen_range(-0.01..0.01);  // Small Rauschen zwischen -0.01 und 0.01
                     self.hidden_weights[j] += self.learning_rate * output_delta * hidden_layer_output[j] + noise;
                 }
                 self.output_bias += self.learning_rate * output_delta;
@@ -217,24 +228,33 @@ impl NeuralNetwork {
 
 
 pub fn run() {
+    /* OLD data for generated content
     // create trainings data
     let (inputs, outputs) = generate_data(1000);
 
     // Create test data
     let (test_input, test_ouput) = generate_data(10);
+    */
+
+    // New data from files
+    let file_path = "../training_data.txt";
+    let (inputs, outputs) = get_data(file_path);
+
+    let file_path_test = "../test_data.txt";
+    let(test_input, test_ouput) = get_data(file_path_test);
 
     // create a NN 
-    let mut neural_network = NeuralNetwork::new(5);
-
-    //set the parameters
-    let episodes = 10 as usize;
+    let mut neural_network = NeuralNetwork::new(HIDDEN_NEURONS);
 
     // Predictions of the NN before traning
     let mut predictions : Vec<f64> = Vec::new();
 
     for (_i, cube) in test_input.iter().enumerate() {
+        /*OLD ONE
         // Convert the RubiksCube to a vector of f64 values
         let input_vector = cube.to_input_vector();
+        */
+        let input_vector = cube;
         predictions.push(neural_network.predict(&input_vector));
     }
     
@@ -242,7 +262,7 @@ pub fn run() {
 
     let start = Instant::now();//Starting time for the training
     // train the NN 
-    neural_network.train(inputs, outputs, episodes);
+    neural_network.train(inputs, outputs, EPISODES);
 
     let duration = start.elapsed().as_secs(); //Ending time for the training
 
@@ -250,15 +270,15 @@ pub fn run() {
     let mut predictions : Vec<f64> = Vec::new();
 
     for (_i, cube) in test_input.iter().enumerate() {
+        /*OLD ONE
         // Convert the RubiksCube to a vector of f64 values
         let input_vector = cube.to_input_vector();
+        */
+        let input_vector = cube;
         predictions.push(neural_network.predict(&input_vector));
     }
     
     println!("Test after training: {}", test_nn(&predictions, &test_ouput));
     println!("Elapsed time: {:?} seconds", duration);
-    println!("Episodes trained: {}", episodes);
-
-    let file_path = "../test_data.txt";
-    let (lowercase_lines, answer_lines) = get_data(file_path);
+    println!("The trained NN:\nEpisodes: {}\nLearning-rate: {}\nOutputbias: {}\nHidden neurons: {}", EPISODES, LEARNING_RATE, OUTPUT_BIAS, HIDDEN_NEURONS);
 }
