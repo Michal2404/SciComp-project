@@ -339,7 +339,7 @@ impl Solver {
     pub fn run(&mut self) {
         let mut depth_expanded: usize = 0;
 
-        // Rotate or invert the cube if needed, replicating the Python logic:
+        // Rotate or invert the cube if needed
 
         let mut cb = match self.rot {
             0 => self.cb_cube, // no rotation
@@ -443,7 +443,6 @@ pub fn solve(
         //);
     }
 
-    let start_time_two_phase = Instant::now();
     let mut solver: Solver = Solver::new(cc, 0, 0, max_length, timeout, start_time);
     solver.run();
     //println!("Total elapsed time: {:?}", start_time.elapsed());

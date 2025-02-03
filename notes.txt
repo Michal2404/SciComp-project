@@ -15,3 +15,30 @@ Experiment design:
 1. Solution length vs scramble length for two_phase
 2. Solution time vs scramble length for two_phase
     - 10000 it, scramble len 30, IDA bound 10, 9 to high, 8 good
+
+TO DO Saturday:
+- Clean and comment the code
+- Write BFS and IDA* sections, create nice graphs to compare them
+    - Make a column plot comparing speed of BFS and IDA* for different lengths from BFS_time_performance and IDA_time_performance
+        - In make (replace BFS with iddfs beacause of memeory issues for bfs)
+    
+run experiment with imporved IDA, wait for finish of BFS
+
+Run experiments:
+1000 iterations, scramble_length 20
+Perforamnce_2phaseida_02_02_depth_10 -> done
+Perforamnce_2phaseida_02_02_depth_09 -> done
+Perforamnce_2phaseida_02_02_depth_08 -> done
+Perforamnce_2phaseida_02_02_depth_07 -> done
+Perforamnce_2phase_02_02             -> done
+
+Make depth_07 with 100_000 iterations -> running
+
+Topics to discuss in the meeting:
+1. We discuss both A* and IDA*, then choose IDA* as a presolver for Two-Phase and A* as a cross solving algorithm in CFOP. Doesn't it seem
+    a bit inconsistent?
+2. Should we normalize plots?
+3. Should we add a nice picture of a Rubik's Cube in the introduction section?
+4. In the section 4.1 generate a steps of solving the cube for the Two-Phase algorithm, analog to the pictures of CFOP steps.
+
+

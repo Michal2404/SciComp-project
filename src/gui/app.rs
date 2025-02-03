@@ -1,3 +1,4 @@
+/// Here is the implementation of the UI to test and play with the solver
 use std::time::Instant;
 
 use crate::rubiks::cubie::generate_scramble;
@@ -7,8 +8,10 @@ use crate::rubiks::face::FaceCube;
 use crate::rubiks::solver as sv;
 
 use eframe::egui;
-use eframe::egui::{Painter, Pos2, Rect, Vec2};
+use eframe::egui::{Align2, Color32, FontId, Painter, Pos2, Rect, Vec2};
 
+/// We use FaceCube struct only for visual representation of the cube, because it is
+/// the easiest way to do so. The FaceCube is not well-suited for fast computations.
 pub struct CubeVisualizer {
     pub cube: FaceCube,
 }
@@ -52,6 +55,7 @@ pub struct CubeVisualizerWithMoves {
     error_message: String,
     use_ida: bool,
     solution_time: u128,
+    ida_len: usize,
 }
 
 impl CubeVisualizerWithMoves {
@@ -65,6 +69,7 @@ impl CubeVisualizerWithMoves {
             error_message: String::new(),
             use_ida: false,
             solution_time: 0,
+            ida_len: 0,
         }
     }
 }
@@ -77,16 +82,15 @@ impl eframe::App for CubeVisualizerWithMoves {
             // Scramble input and generation
             ui.horizontal(|ui| {
                 // "Load Tables" button
+                // First solve requires the utility tables to load which takes around 10s
+                // The button simulates solving the cube and solving it back to its
+                // zero state s.t. every next solve is "clean"
                 if ui.button("Load Tables").clicked() {
-                    self.user_scramble = "R U R' U' U R R' R'".to_string(); // Set the scramble to ""
+                    self.user_scramble = "R U R' U' U R R' R'".to_string(); // Some random scramble that will trigger loading the tables
                     self.error_message.clear(); // Clear previous error messages
                     self.current_index = 0;
-
                     let cubiecube = CubieCube::from_scramble(&self.user_scramble);
-
-                    // Solve the predefined scramble
                     let solution = sv::solve(&self.user_scramble, 20, 2.0, true, false, None);
-
                     let trimmed_solution = solution
                         .rsplit_once('(')
                         .map_or(solution.clone(), |(before, _)| before.trim().to_string());
@@ -94,12 +98,10 @@ impl eframe::App for CubeVisualizerWithMoves {
                     self.states = generate_states(cubiecube, &trimmed_solution);
                     self.visualizer
                         .update_cube(cubiecube.to_facelet_cube().clone());
+                    // and solve it back to the original state by applying the empty scramble
                     self.user_scramble = "".to_string();
                     let cubiecube = CubieCube::from_scramble(&self.user_scramble);
-
-                    // Solve the predefined scramble
                     let solution = sv::solve(&self.user_scramble, 20, 2.0, true, false, None);
-
                     let trimmed_solution = solution
                         .rsplit_once('(')
                         .map_or(solution.clone(), |(before, _)| before.trim().to_string());
@@ -109,9 +111,11 @@ impl eframe::App for CubeVisualizerWithMoves {
                         .update_cube(cubiecube.to_facelet_cube().clone());
                 }
 
+                // Let user define his own scramble
                 ui.label("Enter Scramble:");
                 ui.add(egui::TextEdit::singleline(&mut self.user_scramble).desired_width(400.0));
 
+                // Generate random scramble of length 20 (standard for the community)
                 if ui.button("Generate Random Scramble").clicked() {
                     self.user_scramble = generate_scramble(20); // Generate a 20-move random scramble
                     self.error_message.clear(); // Clear any previous error messages
@@ -119,25 +123,39 @@ impl eframe::App for CubeVisualizerWithMoves {
             });
 
             // Add a toggle for the IDA* solver
+            // User can decide if the IDA* pre-solver should be enabled. It assures findining the most optimal solution,
+            // but it costs time, the optimal values for IDA* depth are up to 8.
             ui.checkbox(&mut self.use_ida, "Use IDA*");
 
+            // If the user checked Use IDA*, show an input to set ida_len
+            // Let user decide about the IDA* depth
+            if self.use_ida {
+                ui.horizontal(|ui| {
+                    ui.label("IDA Length:");
+                    ui.add(
+                        egui::DragValue::new(&mut self.ida_len)
+                            .speed(0.1)
+                            .range(1..=20), // Adjust the range as needed
+                    );
+                });
+            }
+
             // Button to solve the scramble
+            // It generates the solution of a given scramble
             if ui.button("Solve Scramble").clicked() {
                 let cubiecube = CubieCube::from_scramble(&self.user_scramble);
                 self.error_message.clear(); // Clear previous error messages
                 self.current_index = 0;
 
                 let start_time = Instant::now();
-
                 // Conditionally call the solver based on the toggle
                 let solution = if self.use_ida {
-                    sv::solve(&self.user_scramble, 20, 2.0, true, true, Some(10))
+                    sv::solve(&self.user_scramble, 20, 2.0, true, true, Some(self.ida_len))
                 // IDA* enabled
                 } else {
                     sv::solve(&self.user_scramble, 20, 2.0, true, false, Some(10))
                     // IDA* disabled
                 };
-
                 self.solution_time = start_time.elapsed().as_millis();
 
                 let trimmed_solution = solution
@@ -179,12 +197,14 @@ impl eframe::App for CubeVisualizerWithMoves {
                     }
                 });
 
+                // Display Solution Length
                 let length = self.solution_string.split_whitespace().count();
                 ui.label(
                     egui::RichText::new(format!("Solution length: {}", length))
                         .color(egui::Color32::WHITE)
                         .size(20.0),
                 );
+                // Display solution Time
                 ui.label(
                     egui::RichText::new(format!("Solution time: {} ms", self.solution_time))
                         .color(egui::Color32::WHITE)
@@ -207,7 +227,7 @@ impl eframe::App for CubeVisualizerWithMoves {
 
             ui.add_space(20.0); // Add spacing between the cube and the buttons
 
-            // Add larger buttons for "Next Move" and "Reset"
+            // buttons for "Next Move" and "Reset"
             if ui
                 .add(egui::Button::new("Next Move").min_size(egui::vec2(150.0, 50.0)))
                 .clicked()
@@ -252,5 +272,21 @@ fn draw_face_cube(cube: &FaceCube, painter: &Painter, top_left: Pos2, square_siz
                 painter.rect_filled(rect, 0.0, color.to_color32());
             }
         }
+    }
+    // Letters corresponding to each face.
+    let face_letters = ["U", "R", "F", "D", "L", "B"];
+
+    // Draw the letter in the center sticker of each face.
+    for (face_idx, &(dx, dy)) in face_positions.iter().enumerate() {
+        // The center sticker is at x=1, y=1 within the 3x3 face.
+        let sticker_top_left = top_left + Vec2::new((dx + 1) as f32, (dy + 1) as f32) * square_size;
+        let center = sticker_top_left + Vec2::splat(square_size * 0.5);
+        painter.text(
+            center,
+            Align2::CENTER_CENTER,
+            face_letters[face_idx],
+            FontId::proportional(square_size * 0.8),
+            Color32::BLACK,
+        );
     }
 }

@@ -1,6 +1,6 @@
+/// Here are methods for BFS, IDDFS and IDA* algorithms
 use std::{
     collections::{HashSet, VecDeque},
-    io::{self},
     time::Instant,
 };
 
@@ -11,6 +11,69 @@ use super::{
     enums::{to_move, Move},
 };
 
+/// The public iterative deepening search solver.
+/// Tries increasing depths up to `max_depth` and returns the first solution found.
+pub fn iddfs_solver(cube: &CubieCube, max_depth: usize) -> Option<Vec<Move>> {
+    for depth in 0..=max_depth {
+        println!("Searching with depth limit: {}", depth);
+        // Start the DFS from the root (the current cube state) with an empty move path.
+        if let Some(solution) = dfs(cube, depth, &mut Vec::new()) {
+            return Some(solution);
+        }
+    }
+    None
+}
+
+/// Depth-limited DFS.
+/// - `cube`: current state of the cube.
+/// - `depth`: remaining depth allowed.
+/// - `path`: moves taken so far (will be built up as the search goes deeper).
+fn dfs(cube: &CubieCube, depth: usize, path: &mut Vec<Move>) -> Option<Vec<Move>> {
+    // Check if the cube is solved.
+    if cube.is_solved() {
+        return Some(path.clone());
+    }
+    // If we reached the depth limit, stop exploring.
+    if depth == 0 {
+        return None;
+    }
+
+    // Iterate over all possible moves.
+    for &m in &Move::ALL {
+        // Prune redundant moves
+        if let Some(last_move) = path.last() {
+            // Do not twist te same face twice in a row
+            if m.face() == last_move.face() {
+                continue;
+            }
+            // If two moves are on opposite faces
+            if last_move.is_opposite(&m) && !last_move.allowed_opposite_order(&m) {
+                continue;
+            }
+        }
+
+        // Generate the next state by applying the move.
+        let permutation_cube = CubieCube::from_scramble(m.name());
+        let mut next_cube = *cube;
+        next_cube.multiply(&permutation_cube);
+
+        // Add the move to the current path.
+        path.push(m);
+
+        // Continue depth-first search with one less depth.
+        if let Some(solution) = dfs(&next_cube, depth - 1, path) {
+            return Some(solution);
+        }
+        // Backtrack: remove the move before trying the next possibility.
+        path.pop();
+    }
+
+    // No solution found at this depth.
+    None
+}
+
+/// BFS Solver solves the cube by applying the brute force BFS Search, this methos
+/// always finds optimal solution but is very slow
 pub fn bfs_solver(cube: &CubieCube, max_depth: usize) -> Option<Vec<Move>> {
     let start = Instant::now();
     let mut queue: VecDeque<(CubieCube, Vec<Move>)> = VecDeque::new();
@@ -32,6 +95,17 @@ pub fn bfs_solver(cube: &CubieCube, max_depth: usize) -> Option<Vec<Move>> {
 
         // Generate and enqueue all possible moves
         for &m in &Move::ALL {
+            // Prune redundant moves
+            if let Some(last_move) = current_moves.last() {
+                // Do not twist te same face twice in a row
+                if m.face() == last_move.face() {
+                    continue;
+                }
+                // If two moves are on opposite faces
+                if last_move.is_opposite(&m) && !last_move.allowed_opposite_order(&m) {
+                    continue;
+                }
+            }
             let permutation_cube = CubieCube::from_scramble(m.name());
             let mut next_cube = current_cube;
             next_cube.multiply(&permutation_cube);
@@ -47,6 +121,8 @@ pub fn bfs_solver(cube: &CubieCube, max_depth: usize) -> Option<Vec<Move>> {
     None
 }
 
+/// IDA* solver is an improved version of BFS. It performs faster so it is integrated to the
+/// original two-phase solver to boost searching for short solutions.
 pub fn ida_star_solver(cube: &CubieCube, max_depth: usize) -> Option<Vec<Move>> {
     let mut threshold = cube.heuristic();
     let mut path = vec![];
@@ -92,9 +168,14 @@ pub fn ida_star_search(
 
     // Explore all possivle moves
     for &m in &Move::ALL {
-        // Avoid undoing the last move
-        if let Some(&last_move) = path.last() {
-            if last_move.invert() == m {
+        // Prune redundant moves
+        if let Some(last_move) = path.last() {
+            // Do not twist te same face twice in a row
+            if m.face() == last_move.face() {
+                continue;
+            }
+            // If two moves are on opposite faces
+            if last_move.is_opposite(&m) && !last_move.allowed_opposite_order(&m) {
                 continue;
             }
         }
@@ -117,6 +198,7 @@ pub fn ida_star_search(
     None
 }
 
+/// this methos translates solution to the standard notation - nothing special
 pub fn simplify_solution(solution: &[Move]) -> Vec<Move> {
     let mut simplified: Vec<Move> = Vec::new();
 
@@ -149,6 +231,9 @@ pub fn simplify_solution(solution: &[Move]) -> Vec<Move> {
     simplified
 }
 
+/// Here are the Heuristics databases for corners that are used in the IDA* algorithm
+/// We use Manhattan Distanceof every corner to its original position. We store the position of every possible
+/// variant in the table
 pub static CORNER_DB: Lazy<Vec<u8>> = Lazy::new(|| {
     let mut database = vec![u8::MAX; 8 * 3 * 8]; // 8 corners * 3 orientations * 8 permutations
     let mut queue: VecDeque<(CubieCube, usize)> = VecDeque::new();
@@ -185,6 +270,7 @@ pub static CORNER_DB: Lazy<Vec<u8>> = Lazy::new(|| {
     database
 });
 
+/// Same as for corners but here is the manhattan distance for edges
 pub static EDGE_DB: Lazy<Vec<u8>> = Lazy::new(|| {
     let mut database = vec![u8::MAX; 12 * 2 * 12]; // 12 edges * 2 orientations * 12 permutations
     let mut queue: VecDeque<(CubieCube, usize)> = VecDeque::new();
@@ -221,12 +307,6 @@ pub static EDGE_DB: Lazy<Vec<u8>> = Lazy::new(|| {
 
     database
 });
-
-pub fn load_edges_databsae(filename: &str) -> io::Result<Vec<u8>> {
-    use std::fs;
-    let data = fs::read(filename)?;
-    Ok(data)
-}
 
 #[cfg(test)]
 mod tests {

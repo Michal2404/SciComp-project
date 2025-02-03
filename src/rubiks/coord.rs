@@ -1,3 +1,5 @@
+/// Here is the Cube representation of the coordinate level. The most important representation in the algorithm,
+/// because it allows fast computation with the use of pre-generated tables.
 use super::cubie as cb;
 use super::defs;
 use super::defs::{N_FLIP, N_MOVE, N_PERM_4, N_TWIST, N_UD_EDGES, N_U_EDGES_PHASE2};
@@ -100,8 +102,6 @@ impl CoordCube {
 
     /// Updates phase 1 coordinates when move is applied
     pub fn phase1_move(&mut self, m: usize) {
-        // Load tables
-
         // Apply moves using the tables
         self.twist = TWIST_MOVE[N_MOVE * self.twist + m] as usize;
         self.flip = FLIP_MOVE[N_MOVE * self.flip as usize + m];
@@ -123,7 +123,6 @@ impl CoordCube {
 
     /// Updates phase 2 coordinates when move is applied
     pub fn phase2_move(&mut self, m: usize) {
-        // Load tables
         // Apply moves using tables
         self.slice_sorted = SLICE_SORTED_MOVE[N_MOVE * self.slice_sorted as usize + m];
         self.corners = CORNERS_MOVE[N_MOVE * self.corners + m] as usize;

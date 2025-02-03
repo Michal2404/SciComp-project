@@ -342,6 +342,29 @@ impl Move {
             B3 => B1,
         }
     }
+
+    pub fn allowed_opposite_order(&self, other: &Move) -> bool {
+        match (self.face(), other.face()) {
+            ('U', 'D') => true,
+            ('R', 'L') => true,
+            ('F', 'B') => true,
+            // The reverse order for each opposite pair is not allowed.
+            ('D', 'U') => false,
+            ('L', 'R') => false,
+            ('B', 'F') => false,
+            // If the faces are not opposites, no ordering is imposed.
+            _ => true,
+        }
+    }
+
+    pub fn is_opposite(&self, other: &Move) -> bool {
+        let self_face = self.face();
+        let other_face = other.face();
+        matches!(
+            (self_face, other_face),
+            ('U', 'D') | ('D', 'U') | ('R', 'L') | ('L', 'R') | ('F', 'B') | ('B', 'F')
+        )
+    }
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
