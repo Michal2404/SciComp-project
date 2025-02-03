@@ -18,6 +18,7 @@ use rand::Rng;
 use rand::seq::SliceRandom;
 
 use futures_lite::future;
+use egui_flex::{Flex};
 
 // Interacting with egui
 #[derive(Debug, Default, Event)]
@@ -90,6 +91,9 @@ pub fn game_ui(
         //     .spacing([10.0, 20.0])
         //     .striped(true)
         //     .show(ui, |ui| {
+            // Flex::horizontal().show(ui, |flex| {
+        // egui::Grid::new("ui_grid").vertical(|mut strip| {
+
         //  define column widths
         let col1_width = 100.0;
         let col2_width = 100.0;
@@ -246,8 +250,167 @@ pub fn game_ui(
                     });
                 });
                 ui.end_row();
-                
+            
             });
+            // });
+
+        // let col1_width = 100.0;
+        // let col2_width = 100.0;
+        // let col_spacing = 20.0;
+        //         // adjust scramble length
+        //         ui.horizontal(|ui| {
+        //             ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+        //                 ui.add_space(30.0);
+        //                 ui.add_sized([col1_width, 20.0],egui::Label::new("Scramble Length"));
+        //                 ui.add_space(30.0);
+        //             });
+        //             ui.add_space(col_spacing);
+                    
+        //             ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+        //                 ui.add_sized([col2_width, 20.0], egui::Slider::new(
+        //                     &mut cube_settings.num_scramble_moves,
+        //                     1..=20,
+        //                 ));
+        //             });
+        //         });
+        //         ui.end_row();
+        //         ui.add_space(20.0);
+                
+        //         // generate scramble
+        //         ui.horizontal(|ui| {
+        //             // generate scramble
+        //             ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+        //                 if ui
+        //                 .add_sized([col1_width, 20.0], egui::Button::new("Generate Random Scramble"))
+        //                 .clicked()
+        //                 {
+        //                     // first we remove any content from text_input
+        //                     scramble.input_text.clear();
+        //                     // add random scramble
+        //                     scramble.input_text.push_str(generate_random_scramble(&cube_settings).as_str());
+        //                 }
+        //             });
+        //             ui.add_space(col_spacing);
+        //             // add textbox here
+        //             ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+        //                 ui.add_sized([150.0, 20.0],
+        //                     egui::TextEdit::singleline(&mut scramble.input_text)
+        //                     .desired_width(200.0)
+        //                     .hint_text("Type Scramble here ...")
+        //                 );
+        //             });
+        //         });
+        //         ui.end_row();
+        //         ui.add_space(20.0);
+                
+        //         // scramble cube and reset cube buttons
+        //         ui.horizontal(|ui| {
+        //             // perform scramble
+        //             ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+        //                 ui.add_space(30.0);
+        //                 if ui
+        //                 .add_sized([col1_width, 30.0], egui::Button::new("Scramble"))
+        //                 .clicked()
+        //                 {
+        //                     scramble_event.send_default();
+        //                 }
+        //                 ui.add_space(30.0);
+        //             });
+        //             // Reset cube
+        //             ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+        //                 ui.add_space(30.0);
+        //                 if ui
+        //                 .add_sized([col2_width, 30.0], egui::Button::new("Reset"))
+        //                 .clicked()
+        //                 {
+        //                     reset_event.send_default();
+        //                 }
+        //                 ui.add_space(30.0);
+        //             });
+        //         });
+                
+                
+        //         ui.end_row();
+        //         ui.add_space(20.0);
+                
+        //         // Display current scramble
+        //         ui.horizontal(|ui| {
+        //             // ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+        //                 ui.add(egui::Label::new(egui::RichText::new(scramble.scramble_content.clone())
+        //                 .font(egui::FontId::proportional(20.0)))
+        //                 .wrap()
+        //             );
+        //             // });
+        //         });
+        //         ui.end_row();
+        //         ui.add_space(20.0);
+                
+        //         // Solve cube CFOP
+        //         ui.horizontal(|ui| {
+        //             ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+        //                 ui.add_space(30.0);
+        //                 if ui
+        //                 .add_sized([100.0, 30.0], egui::Button::new("CFOP Solve"))
+        //                 .clicked()
+        //                 {
+        //                     // make sure scramble is not empty
+        //                     if !scramble.scramble_content.is_empty(){
+        //                         timer.time = Instant::now();
+        //                         timer.running = true;
+        //                         cfop_event.send_default();
+        //                     }
+        //                 }
+        //             });
+        //             ui.add_space(30.0);
+        //             // Solve cube A star
+        //             ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+        //                 if ui
+        //                 .add_sized([100.0, 30.0], egui::Button::new("A star Solve"))
+        //                 .clicked()
+        //                 {
+        //                     // make sure scramble is not empty
+        //                     if !scramble.scramble_content.is_empty(){
+        //                         timer.time = Instant::now();
+        //                         timer.running = true;
+        //                         astar_event.send_default();
+        //                     }
+        //                 }
+        //             });
+        //             ui.add_space(30.0);
+        //         });
+        //         ui.end_row();
+        //         ui.add_space(20.0);
+                
+        //         // Time taken to solve the rubiks cube and number of moves
+        //         ui.horizontal(|ui| {
+        //             ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+        //                 ui.add(egui::Label::new("Time Taken"));
+        //             });
+        //             // check if timer is running
+        //             let time_taken = match timer.running {
+        //                 true => timer.time.elapsed().as_millis(),
+        //                 false => timer.last_time,
+        //             };
+                    
+        //             ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+        //                 ui.add(egui::Label::new(format!("{:?} ms", time_taken)));
+        //             });
+        //         });
+        //         ui.end_row();
+        //         ui.add_space(20.0);
+                
+        //         // Total move length
+        //         ui.horizontal(|ui| {
+        //             ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+        //                 ui.add(egui::Label::new("Move Length"));
+        //             });
+        //             ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+        //                 ui.add(egui::Label::new(solve_data.solve_sequence.len().to_string()));
+        //             });
+        //         });
+        //         ui.end_row();
+                
+        //     });
     // });
 }
 

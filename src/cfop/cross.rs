@@ -138,6 +138,7 @@ fn heuristics(cube: &RubiksCube, target:&Color) -> usize {
     // we will calculate heuristics based on number of misplaced edges
     let (_, misplaced) = solved_state(cube, target);
     misplaced
+    // 0
 }
 
 

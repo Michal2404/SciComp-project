@@ -8,6 +8,7 @@ use crate::cfop::pll::solve_pll;
 use crate::helper::utils::*;
 
 use std::time::{Duration, Instant};
+use umya_spreadsheet::*;
 
 pub fn cfop_solver(scramble: &str, mut cube: RubiksCube) -> Vec<String> {
     /*
@@ -78,8 +79,6 @@ pub fn cfop_solver(scramble: &str, mut cube: RubiksCube) -> Vec<String> {
 }
 
 // for outputting data into excel
-use umya_spreadsheet::*;
-
 fn output_data(scramble: (&str, usize), 
                 cross_data: (Vec<String>, usize, Duration), 
                 f2l_data: (Vec<String>, usize, Duration), 
@@ -92,11 +91,13 @@ fn output_data(scramble: (&str, usize),
         */
     // Open the Excel file
     let path = "src/cfop/analysis.xlsx";
+    // let path = "src/cfop/path_analysis.xlsx";
     let mut workbook = reader::xlsx::read(std::path::Path::new(path)).unwrap();
 
     // Specify the sheet name to read
     // Step 2: Access a specific worksheet
-    let sheet = workbook.get_sheet_by_name_mut("raw data").unwrap();
+    // let sheet = workbook.get_sheet_by_name_mut("raw data").unwrap();
+    let sheet = workbook.get_sheet_by_name_mut("dijkstra").unwrap();
 
     // Iterate over rows and check for non-empty rows
     // for (index, row) in sheet.get_row_collection().enumerate() {
@@ -121,22 +122,23 @@ fn output_data(scramble: (&str, usize),
                 (row_num, 3, cross_data.0.join(" ")),// Row _, Column 3
                 (row_num, 4, cross_data.1.to_string()),// Row _, Column 4
                 (row_num, 5, cross_data.2.as_micros().to_string()),// Row _, Column 5
-                (row_num, 6, f2l_data.0.join(" ")),// Row _, Column 6
-                (row_num, 7, f2l_data.1.to_string()),// Row _, Column 7
-                (row_num, 8, f2l_data.2.as_micros().to_string()),// Row _, Column 8
-                (row_num, 9, oll_data.0.join(" ")),// Row _, Column 9
-                (row_num, 10, oll_data.1.to_string()),// Row _, Column 10
-                (row_num, 11, oll_data.2.as_micros().to_string()),// Row _, Column 11
-                (row_num, 12, pll_data.0.join(" ")),// Row _, Column 12
-                (row_num, 13, pll_data.1.to_string()),// Row _, Column 13
-                (row_num, 14, pll_data.2.as_micros().to_string()),// Row _, Column 14
-                (row_num, 15, total_data.0.join(" ")),// Row _, Column 15
-                (row_num, 16, total_data.1.to_string()),// Row _, Column 16
-                (row_num, 17, total_data.2.as_micros().to_string()),// Row _, Column 17
+                (row_num, 7, f2l_data.0.join(" ")),// Row _, Column 7
+                (row_num, 8, f2l_data.1.to_string()),// Row _, Column 8
+                (row_num, 9, f2l_data.2.as_micros().to_string()),// Row _, Column 9
+                (row_num, 11, oll_data.0.join(" ")),// Row _, Column 11
+                (row_num, 12, oll_data.1.to_string()),// Row _, Column 12
+                (row_num, 13, oll_data.2.as_micros().to_string()),// Row _, Column 13
+                (row_num, 15, pll_data.0.join(" ")),// Row _, Column 15
+                (row_num, 16, pll_data.1.to_string()),// Row _, Column 16
+                (row_num, 17, pll_data.2.as_micros().to_string()),// Row _, Column 17
+                (row_num, 19, total_data.0.join(" ")),// Row _, Column 19
+                (row_num, 20, total_data.1.to_string()),// Row _, Column 20
+                (row_num, 21, total_data.2.as_micros().to_string()),// Row _, Column 21
             ];
         
             // Loop through each update and apply it
             for (row, col, value) in updates {
+                assert!(col >= 1, "Column number starts from 1.");
                 sheet.get_cell_by_column_and_row_mut(col, row).set_value(value);
             }
             

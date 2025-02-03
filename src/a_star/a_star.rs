@@ -3,6 +3,9 @@ use std::{cmp::Reverse, collections::{BinaryHeap, HashMap}, time::{Duration, Ins
 
 use crate::helper::utils::*;
 use crate::rubiks::cube::RubiksCube;
+use crate::rubiks::color::Color;
+
+use umya_spreadsheet::*;
 
 pub fn a_star_solver(scramble: &str, cube: &mut RubiksCube) -> Vec<String> {
     /*
@@ -11,7 +14,7 @@ pub fn a_star_solver(scramble: &str, cube: &mut RubiksCube) -> Vec<String> {
     // keep track of time
     let start_time = Instant::now();
     // solve using a star
-    let moves_cleaned = solve(scramble, cube);
+    let moves_cleaned = solve(cube);
     let elapsed_time = start_time.elapsed();
     // Print results here
     println!("-------------A*-------------");
@@ -19,11 +22,72 @@ pub fn a_star_solver(scramble: &str, cube: &mut RubiksCube) -> Vec<String> {
     println!("Number of Moves: {}", moves_cleaned.len());
     println!("Elapsed time: {:?}", elapsed_time);
 
+
+    // output data
+    let data = (moves_cleaned.clone(), moves_cleaned.len(), elapsed_time);
+    let _ = output_data((scramble, scramble.split(" ").collect::<Vec<&str>>().len()), data);
+
     moves_cleaned
 
 }
 
-fn solve(scramble: &str, cube: &mut RubiksCube) -> Vec<String> {
+fn output_data(scramble: (&str, usize),
+                data: (Vec<String>, usize, Duration)
+                            ) -> Result<(), Box<dyn std::error::Error>> {
+    /*
+    This function outputs data into a excel file
+        */
+    // Open the Excel file
+    let path = "src/a_star/a_star_algorithm.xlsx";
+    let mut workbook = reader::xlsx::read(std::path::Path::new(path)).unwrap();
+
+    // Specify the sheet name to read
+    // Step 2: Access a specific worksheet
+    let sheet = workbook.get_sheet_by_name_mut("raw data").unwrap();
+
+    // Iterate over rows and check for non-empty rows
+    // for (index, row) in sheet.get_row_collection().enumerate() {
+    for row_num in 1..=u32::MAX {
+        let default = Cell::default();
+        let first_cell = sheet.get_cell_by_column_and_row(1, row_num).unwrap_or(&default);
+        // Get the first cell of the row (column A)
+        // Check if the cell's value matches the target string
+        if first_cell.get_value() == scramble.0 {
+            return Ok(())
+        }
+        if !first_cell.get_value().is_empty() {
+            continue
+        }
+        // If it doesn't exist, that means we add values to it
+        else {
+            // now we add the values into the excel sheet
+            // Define the cells and their new values (row, column, value)
+            let updates = vec![
+                (row_num, 1, scramble.0.to_string()),   // Row _, Column 1
+                (row_num, 2, scramble.1.to_string()),    // Row _, Column 2
+                (row_num, 3, data.0.join(" ")),// Row _, Column 3
+                (row_num, 4, data.1.to_string()),// Row _, Column 4
+                (row_num, 5, data.2.as_micros().to_string()),// Row _, Column 5
+                ];
+                
+                // Loop through each update and apply it
+                for (row, col, value) in updates {
+                    assert!(col >= 1, "Column number starts from 1.");
+                    sheet.get_cell_by_column_and_row_mut(col, row).set_value(value);
+                }
+                
+                // // Open the same file and overwrite the original content
+                let _ = writer::xlsx::write(&workbook, std::path::Path::new(path));
+                println!("went here");
+                // finally return
+                return Ok(())
+                
+        }
+    }
+    Ok(())               
+}
+
+fn solve(cube: &mut RubiksCube) -> Vec<String> {
     /*
     This function using the a star search
      */
@@ -88,47 +152,11 @@ fn solve(scramble: &str, cube: &mut RubiksCube) -> Vec<String> {
     return output_list
 }
 
-fn heuristics(cube: &RubiksCube) -> usize {
-    /*
-    This function creates heuristics to solve cube using a* algorithm
-    Heuristic:
-        Determines the number of pieces that arent solved
-     */
-    // initialize the solved rubiks cube
-    let solved_cube = RubiksCube::new();
-
-    // initialize count
-    let mut count = 0;
-    // check the number of faces that are already cube solved
-    // loop through each position on the global scale
-    for i in 0..=2 {
-        for j in 0..=2 {
-            for k in 0..=2 {
-                // first we convert this global scale into local
-                let local = global_to_local(i, j, k);
-
-                // next we determine if all faces are correct
-                for location in local {
-                    // if one face is incorrect, we add 1 to the count and break the for loop
-                    if cube.faces[location.0][location.1] != solved_cube.faces[location.0][location.1] {
-                        count += 1;
-                        break
-                    }
-                }
-            }
-        }
-    }
-
-    // finally return the count
-    count
-
-}
-
 // fn heuristics(cube: &RubiksCube) -> usize {
 //     /*
 //     This function creates heuristics to solve cube using a* algorithm
 //     Heuristic:
-//         Determines number of moves needed to solve each individual piece
+//         Determines the number of pieces that arent solved
 //      */
 //     // initialize the solved rubiks cube
 //     let solved_cube = RubiksCube::new();
@@ -142,8 +170,44 @@ fn heuristics(cube: &RubiksCube) -> usize {
 //             for k in 0..=2 {
 //                 // first we convert this global scale into local
 //                 let local = global_to_local(i, j, k);
-//                 let mut target_location = vec![1, 1, 1];
 
+//                 // next we determine if all faces are correct
+//                 for location in local {
+//                     // if one face is incorrect, we add 1 to the count and break the for loop
+//                     if cube.faces[location.0][location.1] != solved_cube.faces[location.0][location.1] {
+//                         count += 1;
+//                         break
+//                     }
+//                 }
+//             }
+//         }
+//     }
+
+//     // finally return the count
+//     count
+
+// }
+
+// fn heuristics(cube: &RubiksCube) -> usize {
+//     /*
+//     This function creates heuristics to solve cube using a* algorithm
+//     Heuristic:
+//     Determines number of moves needed to solve each individual piece
+//     */
+//     // initialize the solved rubiks cube
+//     let solved_cube = RubiksCube::new();
+    
+//     // initialize count
+//     let mut count = 0;
+//     // check the number of faces that are already cube solved
+//     // loop through each position on the global scale
+//     for i in 0..=2 {
+//         for j in 0..=2 {
+//             for k in 0..=2 {
+//                 // first we convert this global scale into local
+//                 let local = global_to_local(i, j, k);
+//                 let mut target_location = vec![1, 1, 1];
+                
 //                 // determine the color of each side of the piece
 //                 for vector in local.clone() {
 //                     // determine color
@@ -159,7 +223,7 @@ fn heuristics(cube: &RubiksCube) -> usize {
 //                         Color::O => target_location[0] = 0,
 //                     };
 //                 }
-
+                
 //                 // next we determine how far the piece is to its final destination
 //                 let position_moves_0 = if i < target_location[0] {target_location[0] - i} else {i - target_location[0]};
 //                 let position_moves_1 = if j < target_location[1] {target_location[1] - j} else {j - target_location[1]};
@@ -174,7 +238,7 @@ fn heuristics(cube: &RubiksCube) -> usize {
 //                             // add 1 move (1 move == 2 here)
 //                             orientation_moves = 2;
 //                             break
-
+                            
 //                         }
 //                     } 
 //                 }
@@ -186,15 +250,166 @@ fn heuristics(cube: &RubiksCube) -> usize {
 //                     position_moves = position_moves * 2;
 //                     orientation_moves = orientation_moves * 3;
 //                 }
-
+                
 //                 // update count
 //                 count += position_moves + orientation_moves;
                 
 //             }
 //         }
 //     }
-
+    
 //     // finally return the count
 //     count
-
+    
 // }
+
+fn heuristics(cube: &RubiksCube) -> usize {
+    /*
+    This function creates heuristics to solve cube using a* algorithm
+     */
+    // initialize the distance
+    let mut distance_edge = 0;
+    let mut distance_corner = 0;
+    let mut position = true;
+    let mut orientation = true;
+
+    // loop through each position on the global scale
+    for i in 0..=2 {
+        for j in 0..=2 {
+            for k in 0..=2 {
+                // skip the center
+                if i == 1 && j == 1 && k == 1 {
+                    continue
+                }
+                // first we convert this global scale into local
+                let local = global_to_local(i, j, k);
+
+                let mut target_location = vec![1, 1, 1];
+
+                // determine the color of each side of the piece
+                for vector in local.clone() {
+                    // determine color
+                    let color = cube.faces[vector.0][vector.1];
+                    // find location of center color
+                    match color {
+                        Color::W => target_location[2] = 2,
+                        Color::Y => target_location[2] = 0,
+                        Color::G => target_location[1] = 0,
+                        Color::B => target_location[1] = 2,
+                        Color::R => target_location[0] = 2,
+                        Color::O => target_location[0] = 0,
+                    };
+                }
+                
+                // check if the piece is on the target location
+                if target_location != vec![i, j, k] {
+                    position = false;
+                } else {
+                    position = true;
+                }
+                
+                // now check if this is a corner or edge
+                // if this is a corner
+                if local.clone().len() == 3 {
+                    orientation = corner_orientation(cube, local.clone());
+                    // now we determine the distance
+                    if position && orientation {
+                        distance_corner += 0;
+                    } else if !position && orientation {
+                        distance_corner += 1;
+                    } else if position && !orientation {
+                        distance_corner += 2;
+                    } else {
+                        distance_corner += 2;
+                    }
+
+                }
+                // if this is an edge
+                else if local.clone().len() == 2 {
+                    orientation = edge_orientation(cube, local.clone());
+                    if position && orientation {
+                        distance_edge += 0;
+                    } else if !position && orientation {
+                        distance_edge += 1;
+                    } else if !position && !orientation {
+                        distance_edge += 2;
+                    } else {
+                        distance_edge += 3;
+                    }
+                }
+                // if its the center, we skip
+                else {
+                    continue
+                }
+            
+            }
+        }
+    }
+    
+    // distance_edge = distance_edge / 4;
+    // distance_corner = distance_corner / 4;
+    
+    // println!("distance edge: {}", distance_edge);
+    // println!("distance corner: {}", distance_corner);
+    // finally return the count
+    // distance_edge.max(distance_corner)
+    // std::cmp::max(distance_edge, distance_corner)
+    (distance_corner+distance_edge)/5
+
+}
+
+fn corner_orientation(cube: &RubiksCube, local: Vec<(usize, usize)>) -> bool {
+    /*
+    This function determines the orientation of the corner pieces
+     */
+    // determine the color of each side of the piece
+    for vector in local.clone() {
+        // determine color
+        let color = cube.faces[vector.0][vector.1];
+        // determine if white/yellow is in the correct position
+        // check if white is on the top
+        if (color == Color::W || color == Color::Y) && (vector.0 == 0 || vector.0 == 1) {
+            return true
+        } else { continue }
+    }
+    false
+}
+
+fn edge_orientation(cube: &RubiksCube, local: Vec<(usize, usize)>) -> bool {
+    /*
+    This function determines the orientation of the corner pieces
+     */
+    // initialize the faces
+    // println!("local: {:?}", local);
+    let mut face1 = local.clone()[0];
+    let mut face2 = local.clone()[1];
+
+    // check if the edge is in the correct position
+    for _ in local.clone() {
+        // determine color
+        let color1 = cube.faces[face1.0][face1.1];
+        let color2 = cube.faces[face2.0][face2.1];
+        // look at top/bottom faces        
+        if face1.0 == 0 || face1.0 == 1 || face1.0 == 2 || face1.0 == 3 {
+            // if orange/red is on the top/bottom
+            if color1 == Color::O || color1 == Color::R {
+                return false
+            }
+            // if green/blue is on the top/bottom, need to check other side
+            else if color1 == Color::G || color1 == Color::B {
+                if color2 == Color::W || color2 == Color::Y {
+                    return false
+                }
+            }
+        // otherwise we flip the faces
+        else {
+            let temp = face1.clone();
+            face1 = face2.clone();
+            face2 = temp.clone();
+        }
+
+        }
+
+    }
+    true
+}
