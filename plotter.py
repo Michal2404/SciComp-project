@@ -6,31 +6,248 @@ import matplotlib.ticker as mticker
 
 # Compare IDA* vs BFS
 def plot_compare_ida_vs_bfs():
-    data_bfs = pd.read_csv(f"csv_files/real_experiments/BFS_time_performance.csv")
-    data_ida = pd.read_csv(f"csv_files/real_experiments/IDA_time_performance.csv")
+    data_dijkstra = pd.read_excel(f"src/data/dijkstra_analysis.xlsx")
+    data_astar = pd.read_excel(f"src/data/astar_analysis.xlsx")
 
-    data_ida = data_ida.rename(columns={"IDA* Moves": "Moves", "IDA* Time (s)": "Time"})
-    data_bfs = data_bfs.rename(columns={"BFS Moves": "Moves", "BFS Time (s)": "Time"})
-
-    ida_means = data_ida.groupby("Moves")["Time"].mean().reset_index()
-    bfs_means = data_bfs.groupby("Moves")["Time"].mean().reset_index()
+    dijkstra_means = data_dijkstra.groupby("scramble number of moves")["cross time (s)"].mean().reset_index()
+    astar_means = data_astar.groupby("scramble number of moves")["cross time (s)"].mean().reset_index()
 
     plt.figure(figsize=(10,6))
 
-    plt.plot(ida_means["Moves"], ida_means["Time"], '-o', label='IDA*')
-    plt.plot(bfs_means["Moves"], bfs_means["Time"], '-s', label='BFS')
+    plt.plot(dijkstra_means["scramble number of moves"], dijkstra_means["cross time (s)"], '-o', label='Dijkstra')
+    plt.plot(astar_means["scramble number of moves"], astar_means["cross time (s)"], '-s', label='A*')
 
-    #plt.yscale('log')
+    plt.yscale('log')
 
-    plt.xlabel('Depth')
+    plt.xlabel('Scramble Length')
     plt.ylabel('Times (s) [Log Scale]')
-    plt.title('Time performance comparison: IDA* vs BFS')
+    plt.title('Time performance comparison: Dijkstra vs A*')
     plt.legend()
 
     plt.grid(True, which="both", ls="--", linewidth=0.5)
-    plt.savefig("plots/IDA_vs_BFS_no_log")
+    plt.savefig("src/plots/Dijkstra_vs_A_no_log")
     plt.show()
 
+# Plots time performance of CFOP
+def plot_cfop_time():
+    data_cfop = pd.read_excel(f"src/data/cfop_analysis.xlsx")
+
+    cfop_means = data_cfop.groupby("scramble number of moves")["total time (ms)"].mean().reset_index()
+
+    plt.figure(figsize=(10,6))
+
+    plt.plot(cfop_means["scramble number of moves"], cfop_means["total time (ms)"], '-o', label='CFOP')
+
+    plt.xlabel('Scramble Length')
+    plt.ylabel('Times (ms)')
+    plt.title('Time performance of CFOP')
+    # plt.legend()
+
+    plt.xticks(cfop_means["scramble number of moves"])
+
+    plt.grid(True, which="both", ls="--", linewidth=0.5)
+    plt.savefig("src/plots/CFOP_time")
+    plt.show()
+
+# Plots move performance of CFOP
+def plot_cfop_moves():
+    data_cfop = pd.read_excel(f"src/data/cfop_analysis.xlsx")
+
+    cfop_means = data_cfop.groupby("scramble number of moves")["total number of moves"].mean().reset_index()
+
+    plt.figure(figsize=(10,6))
+
+    plt.plot(cfop_means["scramble number of moves"], cfop_means["total number of moves"], '-s', label='CFOP', color='orange')
+
+    plt.xlabel('Scramble Length')
+    plt.ylabel('Solution Length')
+    plt.title('Time performance of CFOP')
+    # plt.legend()
+
+    plt.xticks(cfop_means["scramble number of moves"])
+
+    plt.grid(True, which="both", ls="--", linewidth=0.5)
+    plt.savefig("src/plots/CFOP_moves")
+    plt.show()
+
+def plot_cfop_time_and_moves():
+    data_cfop = pd.read_excel("src/data/cfop_analysis.xlsx")
+
+    cfop_means_time = data_cfop.groupby("scramble number of moves")["total time (ms)"].mean().reset_index()
+    cfop_means_moves = data_cfop.groupby("scramble number of moves")["total number of moves"].mean().reset_index()
+
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
+    fig.suptitle('CFOP Time and Move performance', fontsize=16)
+
+    # Plot CFOP time performance
+    ax1.plot(cfop_means_time["scramble number of moves"], cfop_means_time["total time (ms)"], '-o', label='CFOP Time')
+    ax1.set_xlabel('Scramble Length')
+    ax1.set_ylabel('Times (ms)')
+    ax1.set_title('Time performance of CFOP')
+    # ax1.set_xticks(cfop_means_time["scramble number of moves"])
+    ax1.grid(True, which="both", ls="--", linewidth=0.5)
+    # Set x-axis to show integer ticks and divide ticks
+    ax1.xaxis.set_major_locator(mticker.MultipleLocator(4))
+
+    # Plot CFOP move performance
+    ax2.plot(cfop_means_moves["scramble number of moves"], cfop_means_moves["total number of moves"], '-o', label='CFOP Moves', color='orange')
+    ax2.set_xlabel('Scramble Length')
+    ax2.set_ylabel('Total Moves')
+    ax2.set_title('Move performance of CFOP')
+    # ax2.set_xticks(cfop_means_moves["scramble number of moves"])
+    ax2.grid(True, which="both", ls="--", linewidth=0.5)
+    ax2.xaxis.set_major_locator(mticker.MultipleLocator(4))
+
+
+    plt.tight_layout()
+    plt.savefig("src/plots/CFOP_time_and_moves.png")
+    plt.show()
+
+def plot_stacked_bar_chart():
+    data_cfop = pd.read_excel("src/data/cfop_analysis.xlsx")
+
+    # Group data by scramble length and calculate mean times for each phase
+    phase_time_means = data_cfop.groupby("scramble number of moves")[["cross time (ms)", "f2l time (ms)", "oll time (ms)", "pll time (ms)", "total time (ms)"]].mean().reset_index()
+    phase_move_means = data_cfop.groupby("scramble number of moves")[["cross number of moves", "f2l number of moves", "oll number of moves", "pll number of moves", "total number of moves"]].mean().reset_index()
+
+    # Calculate the total number of moves by summing the individual phase moves
+    phase_move_means["total number of moves"] = (
+        phase_move_means["cross number of moves"] +
+        phase_move_means["f2l number of moves"] +
+        phase_move_means["oll number of moves"] +
+        phase_move_means["pll number of moves"]
+    )
+
+    # Normalize each phase's time and moves by the total time and total moves
+    for phase in ["cross time (ms)", "f2l time (ms)", "oll time (ms)", "pll time (ms)"]:
+        phase_time_means[phase] = (phase_time_means[phase] / phase_time_means["total time (ms)"]) * 100
+
+    for phase in ["cross number of moves", "f2l number of moves", "oll number of moves", "pll number of moves"]:
+        phase_move_means[phase] = (phase_move_means[phase] / phase_move_means["total number of moves"]) * 100
+
+    # Plot stacked bar chart
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
+    fig.suptitle('Proportion of Time Spent and Moves Taken in Each Phase by Scramble Length', fontsize=16)
+
+    # Define the phases and their colors
+    phases_time = ["cross time (ms)", "f2l time (ms)", "oll time (ms)", "pll time (ms)"]
+    phases_move = ["cross number of moves", "f2l number of moves", "oll number of moves", "pll number of moves"]
+    colors = ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728"]
+
+    # Plot each phase as a stacked bar for time
+    bottom_time = None
+    for phase, color in zip(phases_time, colors):
+        if bottom_time is None:
+            ax1.bar(phase_time_means["scramble number of moves"], phase_time_means[phase], label=phase.split(" ")[0], color=color)
+            bottom_time = phase_time_means[phase]
+        else:
+            ax1.bar(phase_time_means["scramble number of moves"], phase_time_means[phase], label=phase.split(" ")[0], bottom=bottom_time, color=color)
+            bottom_time += phase_time_means[phase]
+    ax1.set_xlabel('Scramble Length')
+    ax1.set_ylabel('Percentage of Total Time (%)')
+    ax1.set_title('Time')
+    ax1.xaxis.set_major_locator(mticker.MultipleLocator(4))
+    ax1.legend(title="Phases", loc="lower right")
+    # ax1.grid(True, which="both", ls="--", linewidth=0.5)
+
+    # Plot each phase as a stacked bar for moves
+    bottom_move = None
+    for phase, color in zip(phases_move, colors):
+        if bottom_move is None:
+            ax2.bar(phase_move_means["scramble number of moves"], phase_move_means[phase], label=phase.split(" ")[0], color=color)
+            bottom_move = phase_move_means[phase]
+        else:
+            ax2.bar(phase_move_means["scramble number of moves"], phase_move_means[phase], label=phase.split(" ")[0], bottom=bottom_move, color=color)
+            bottom_move += phase_move_means[phase]
+    ax2.set_xlabel('Scramble Length')
+    ax2.set_ylabel('Percentage of Total Moves (%)')
+    ax2.set_title('Moves')
+    ax2.xaxis.set_major_locator(mticker.MultipleLocator(4))
+    ax2.legend(title="Phases", loc="lower right")
+    # ax2.grid(True, which="both", ls="--", linewidth=0.5)
+
+
+    # # Plot stacked bar chart
+    # fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
+    # fig.suptitle('Proportion of Time Spent and Moves Taken in Each Phase by Scramble Length', fontsize=16)
+    # # fig, ax = plt.subplots(figsize=(10, 6))
+
+    # # Define the phases and their colors
+    # phases_time = ["cross time (ms)", "f2l time (ms)", "oll time (ms)", "pll time (ms)"]
+    # phases_move = ["cross number of moves", "f2l number of moves", "oll number of moves", "pll number of moves"]
+    # # print(phase_move_means)
+    # # assert phase_time_means["total time (ms)"][0] == phase_time_means["cross time (ms)"][0] + phase_time_means["f2l time (ms)"][0] + phase_time_means["oll time (ms)"][0] + phase_time_means["pll time (ms)"][0]
+    # colors = ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728"]
+
+    # total_time = phase_time_means["cross time (ms)"] + phase_time_means["f2l time (ms)"] + phase_time_means["oll time (ms)"] + phase_time_means["pll time (ms)"]
+    # total_move = phase_move_means["cross number of moves"] + phase_move_means["f2l number of moves"] + phase_move_means["oll number of moves"] + phase_move_means["pll number of moves"]
+
+    # print(phase_time_means["total time (ms)"])
+    # print(total_time)
+    # # print(phase_move_means["total number of moves"])
+    # # print(total_move)
+    # # Plot each phase as a stacked bar time
+    # bottom_time = None
+    # for phase, color in zip(phases_time, colors):
+    #     if bottom_time is None:
+    #         ax1.bar(phase_time_means["scramble number of moves"], phase_time_means[phase]/total_time*100, label=phase.split(" ")[0], color=color)
+    #         bottom_time = phase_time_means[phase]/total_time*100
+    #     else:
+    #         ax1.bar(phase_time_means["scramble number of moves"], phase_time_means[phase]/total_move*100, label=phase.split(" ")[0], bottom=bottom_time, color=color)
+    #         bottom_time += phase_time_means[phase]/total_move*100
+    # ax1.set_xlabel('Scramble Length')
+    # ax1.set_ylabel('Percentage (%)')
+    # ax1.set_title('Time')
+    # # ax1.set_xticks(cfop_means_time["scramble number of moves"])
+    # # ax1.grid(True, which="both", ls="--", linewidth=0.5)
+    # # Set x-axis to show integer ticks and divide ticks
+    # ax1.xaxis.set_major_locator(mticker.MultipleLocator(4))
+    # ax1.legend(title="Phases", loc="lower right")
+
+    # # Plot each phase as a stacked bar moves
+    # bottom_move = None
+    # for phase, color in zip(phases_move, colors):
+    #     if bottom_move is None:
+    #         ax2.bar(phase_move_means["scramble number of moves"], phase_move_means[phase]/phase_move_means["total number of moves"]*100, label=phase.split(" ")[0], color=color)
+    #         bottom_move = phase_move_means[phase]/phase_move_means["total number of moves"]*100
+    #     else:
+    #         ax2.bar(phase_move_means["scramble number of moves"], phase_move_means[phase]/phase_move_means["total number of moves"]*100, label=phase.split(" ")[0], bottom=bottom_move, color=color)
+    #         bottom_move += phase_move_means[phase]/phase_move_means["total number of moves"]*100
+    # ax2.set_xlabel('Scramble Length')
+    # ax2.set_ylabel('Percentage (%)')
+    # ax2.set_title('Moves')
+    # # ax2.set_xticks(cfop_means_moves["scramble number of moves"])
+    # # ax2.grid(True, which="both", ls="--", linewidth=0.5)
+    # ax2.xaxis.set_major_locator(mticker.MultipleLocator(4))
+    # ax2.legend(title="Phases", loc="lower right")
+
+
+    # # ax.set_xlabel('Scramble Length')
+    # # ax.set_ylabel('Percentage (%)')
+    # # ax.set_title('Proportion of Total Time Spent in Each Phase by Scramble Length')
+    # # ax.xaxis.set_major_locator(mticker.MultipleLocator(4))
+    # # ax.grid(True, which="both", ls="--", linewidth=0.5)
+
+    plt.tight_layout()
+    plt.savefig("src/plots/CFOP_phase_times_stacked_bar.png")
+    plt.show()
+
+def phase_times():
+    data_cfop = pd.read_excel("src/data/cfop_analysis.xlsx")
+
+    # Group data by scramble length and calculate mean times for each phase
+    phase_means = data_cfop.groupby("scramble number of moves")[["cross time (ms)", "f2l time (ms)", "oll time (ms)", "pll time (ms)", "total time (ms)"]].mean().reset_index()
+
+    # Define the phases and their colors
+    phases = ["cross time (ms)", "f2l time (ms)", "oll time (ms)", "pll time (ms)"]
+    colors = ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728"]
+
+    # Plot each phase as a stacked bar
+    bottom = None
+    for phase, color in zip(phases, colors):
+        percentage = phase_means[phase]/phase_means["total time (ms)"]*100
+        print(f"{phase}: {percentage}%")
+#--------------------------------------------------------------------------------------------------------------#
 
 # Different way of comparing IDA* vs BFS
 def plot_compare_algs():
@@ -398,5 +615,9 @@ def plot_two_phase_len_and_time():
 
 
 if __name__ == "__main__":
-    plot_solution_lengths()
-    plot_solution_times()
+    # plot_compare_ida_vs_bfs()
+    # plot_cfop_time()
+    # plot_cfop_moves()
+    # plot_cfop_time_and_moves()
+    plot_stacked_bar_chart()
+    # phase_times()

@@ -185,6 +185,17 @@ pub fn game_ui(
                 });
                 ui.end_row();
                 ui.add_space(20.0);
+
+                // // Enable or disable moving back and fourth
+                // ui.horizontal(|ui| {
+                //     ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+                //         ui.add_space(30.0);
+                //         ui.add(egui::Label::new("Enable/Disable Moving Back and Fourth"));
+                //         ui.add_space(30.0);
+                //         ui.add(egui::Checkbox::new(&mut cube_settings.move_back_and_fourth, "Enable"));
+                //     });
+
+                // });
                 
                 // Solve cube CFOP
                 ui.horizontal(|ui| {
