@@ -42,3 +42,6 @@ Topics to discuss in the meeting:
 4. In the section 4.1 generate a steps of solving the cube for the Two-Phase algorithm, analog to the pictures of CFOP steps.
 
 
+After Lunch:
+- Read Text once again
+- clean the code and try to merge it for the submission

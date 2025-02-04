@@ -5,31 +5,45 @@ import seaborn as sns
 import matplotlib.ticker as mticker
 
 # Compare IDA* vs BFS
-def plot_compare_ida_vs_bfs():
-    data_bfs = pd.read_csv(f"csv_files/real_experiments/BFS_time_performance.csv")
-    data_ida = pd.read_csv(f"csv_files/real_experiments/IDA_time_performance.csv")
 
+
+def plot_compare_ida_vs_bfs():
+    # Load the CSV files
+    data_bfs = pd.read_csv("csv_files/real_experiments/BFS_time_performance.csv")
+    data_ida = pd.read_csv("csv_files/real_experiments/IDA_time_performance.csv")
+
+    # Rename columns for consistency
     data_ida = data_ida.rename(columns={"IDA* Moves": "Moves", "IDA* Time (s)": "Time"})
     data_bfs = data_bfs.rename(columns={"BFS Moves": "Moves", "BFS Time (s)": "Time"})
 
-    ida_means = data_ida.groupby("Moves")["Time"].mean().reset_index()
-    bfs_means = data_bfs.groupby("Moves")["Time"].mean().reset_index()
+    # Compute mean and standard deviation for each depth (Moves)
+    ida_stats = data_ida.groupby("Moves")["Time"].agg(['mean', 'std']).reset_index()
+    bfs_stats = data_bfs.groupby("Moves")["Time"].agg(['mean', 'std']).reset_index()
 
-    plt.figure(figsize=(10,6))
+    # Create the plot
+    plt.figure(figsize=(10, 6))
 
-    plt.plot(ida_means["Moves"], ida_means["Time"], '-o', label='IDA*')
-    plt.plot(bfs_means["Moves"], bfs_means["Time"], '-s', label='BFS')
+    # Plot with error bars using standard deviation as the error metric
+    plt.errorbar(ida_stats["Moves"], ida_stats["mean"],
+                 yerr=ida_stats["std"], fmt='-o', capsize=5, label='IDA*')
+    plt.errorbar(bfs_stats["Moves"], bfs_stats["mean"],
+                 yerr=bfs_stats["std"], fmt='-s', capsize=5, label='BFS')
 
-    #plt.yscale('log')
+    # Optionally, use a log scale for the y-axis if needed (uncomment the next line)
+    # plt.yscale('log')
+    plt.yscale('log')
 
     plt.xlabel('Depth')
-    plt.ylabel('Times (s) [Log Scale]')
-    plt.title('Time performance comparison: IDA* vs BFS')
+    plt.ylabel('Time (s) [Log Scale]')
+    plt.title('Time Performance Comparison: IDA* vs BFS')
     plt.legend()
-
     plt.grid(True, which="both", ls="--", linewidth=0.5)
-    plt.savefig("plots/IDA_vs_BFS_no_log")
+    
+    # Save and display the plot
+    plt.savefig("plots/IDA_vs_BFS_with_error_bars")
     plt.show()
+
+
 
 
 # Different way of comparing IDA* vs BFS
@@ -214,35 +228,21 @@ def plot_solution_times():
     """
     Plots solution time (in milliseconds) vs. scramble length for each instance with enhanced readability.
     """
-    # Load the data
-    data_generic = pd.read_csv("csv_files/real_experiments/Performance_2phase_02_02_HQ.csv")
-    data_ida = pd.read_csv("csv_files/real_experiments/Performance_2phaseida_02_02_depth_06.csv")
-    
+    # Load the generic 2 phase solver data
+    data_generic = pd.read_csv("csv_files/real_experiments/Performance_2phase_02_02.csv")
     # Ensure data contains the expected columns
     required_columns = {"Scramble Length", "Solution Time (s)"}
     if not required_columns.issubset(data_generic.columns):
         raise ValueError("data_generic must contain 'Scramble Length' and 'Solution Time (s)' columns.")
-    if not required_columns.issubset(data_ida.columns):
-        raise ValueError("data_ida must contain 'Scramble Length' and 'Solution Time (s)' columns.")
-
-    # Convert data types
+    
     data_generic["Scramble Length"] = data_generic["Scramble Length"].astype(int)
     data_generic["Solution Time (s)"] = data_generic["Solution Time (s)"].astype(float)
-    data_ida["Scramble Length"] = data_ida["Scramble Length"].astype(int)
-    data_ida["Solution Time (s)"] = data_ida["Solution Time (s)"].astype(float)
-
-    # Compute average solution times per scramble length
     avg_data_generic = data_generic.groupby("Scramble Length")["Solution Time (s)"].mean().reset_index()
-    avg_data_ida = data_ida.groupby("Scramble Length")["Solution Time (s)"].mean().reset_index()
-
-    # Convert average times from seconds to milliseconds
     avg_data_generic["Solution Time (ms)"] = avg_data_generic["Solution Time (s)"] * 1000
-    avg_data_ida["Solution Time (ms)"] = avg_data_ida["Solution Time (s)"] * 1000
 
     # Create the plot with a larger figure size
     plt.figure(figsize=(12, 8))
-    
-    # Plot the average solution times (in ms) with markers and thicker lines
+
     plt.plot(
         avg_data_generic["Scramble Length"],
         avg_data_generic["Solution Time (ms)"],
@@ -253,17 +253,35 @@ def plot_solution_times():
         markersize=6,
         label="Two-Phase"
     )
-    plt.plot(
-        avg_data_ida["Scramble Length"],
-        avg_data_ida["Solution Time (ms)"],
-        color="orange",
-        marker='o',
-        linestyle='-',
-        linewidth=2,
-        markersize=6,
-        label="Two-Phase + IDA* depth 6"
-    )
+    for i in range(6,9):
+        # Load the boosted solver data
+        data_ida = pd.read_csv(f"csv_files/real_experiments/Performance_2phaseida_02_02_depth_0{i}.csv")      
+        
+        if not required_columns.issubset(data_ida.columns):
+            raise ValueError("data_ida must contain 'Scramble Length' and 'Solution Time (s)' columns.")
+
+        # Convert data types     
+        data_ida["Scramble Length"] = data_ida["Scramble Length"].astype(int)
+        data_ida["Solution Time (s)"] = data_ida["Solution Time (s)"].astype(float)
+
+        # Compute average solution times per scramble length  
+        avg_data_ida = data_ida.groupby("Scramble Length")["Solution Time (s)"].mean().reset_index()
+
+        # Convert average times from seconds to milliseconds   
+        avg_data_ida["Solution Time (ms)"] = avg_data_ida["Solution Time (s)"] * 1000
+
     
+        # Plot the average solution times (in ms) with markers and thicker lines  
+        plt.plot(
+            avg_data_ida["Scramble Length"],
+            avg_data_ida["Solution Time (ms)"],
+            marker='o',
+            linestyle='-',
+            linewidth=2,
+            markersize=6,
+            label=f"Two-Phase + IDA* depth {i}"
+        )
+        
     # Customize the plot for better readability
     plt.title("Solution Time vs. Scramble Length", fontsize=20, fontweight='bold')
     plt.xlabel("Scramble Length", fontsize=16)
@@ -278,7 +296,7 @@ def plot_solution_times():
     
     # Adjust layout and save the plot with high resolution (300 dpi)
     plt.tight_layout()
-    plt.savefig("plots/Performance_time_02_02_2phase_depth_06.png", dpi=300)
+    plt.savefig("plots/Performance_Time.png", dpi=300)
     plt.close()
 
 
@@ -286,27 +304,13 @@ def plot_solution_lengths():
     """
     Plots solution length vs. scramble length for each instance with enhanced readability.
     """
-    # Load the data
-    data_generic = pd.read_csv("csv_files/real_experiments/Performance_2phase_02_02_HQ.csv")
-    data_ida = pd.read_csv("csv_files/real_experiments/Performance_2phaseida_02_02_depth_06.csv")
-
-    # Ensure data contains the expected columns
+    data_generic = pd.read_csv("csv_files/real_experiments/Performance_2phase_02_02.csv")
     required_columns = {"Scramble Length", "Solution Moves"}
     if not required_columns.issubset(data_generic.columns):
         raise ValueError("data_generic must contain 'Scramble Length' and 'Solution Moves' columns.")
-    if not required_columns.issubset(data_ida.columns):
-        raise ValueError("data_ida must contain 'Scramble Length' and 'Solution Moves' columns.")
-    
-    # Convert data types
     data_generic["Scramble Length"] = data_generic["Scramble Length"].astype(int)
     data_generic["Solution Moves"] = data_generic["Solution Moves"].astype(float)
-    data_ida["Scramble Length"] = data_ida["Scramble Length"].astype(int)
-    data_ida["Solution Moves"] = data_ida["Solution Moves"].astype(float)
-    
-    # Compute average solution moves per scramble length
     avg_data_generic = data_generic.groupby("Scramble Length")["Solution Moves"].mean().reset_index()
-    avg_data_ida = data_ida.groupby("Scramble Length")["Solution Moves"].mean().reset_index()
-
     # Create the plot with a larger figure size
     plt.figure(figsize=(12, 8))
     
@@ -321,16 +325,31 @@ def plot_solution_lengths():
         markersize=6,
         label="Two-Phase"
     )
-    plt.plot(
-        avg_data_ida["Scramble Length"],
-        avg_data_ida["Solution Moves"],
-        color="orange",
-        marker='o',
-        linestyle='-',
-        linewidth=2,
-        markersize=6,
-        label="Two-Phase + IDA* depth 6"
-    )
+    for i in range(6,9):
+        # Load the data
+        data_ida = pd.read_csv(f"csv_files/real_experiments/Performance_2phaseida_02_02_depth_0{i}.csv")
+
+        # Ensure data contains the expected columns
+        if not required_columns.issubset(data_ida.columns):
+            raise ValueError("data_ida must contain 'Scramble Length' and 'Solution Moves' columns.")
+        
+        # Convert data types
+        data_ida["Scramble Length"] = data_ida["Scramble Length"].astype(int)
+        data_ida["Solution Moves"] = data_ida["Solution Moves"].astype(float)
+        
+        # Compute average solution moves per scramble length
+        avg_data_ida = data_ida.groupby("Scramble Length")["Solution Moves"].mean().reset_index()
+
+        
+        plt.plot(
+            avg_data_ida["Scramble Length"],
+            avg_data_ida["Solution Moves"],
+            marker='o',
+            linestyle='-',
+            linewidth=2,
+            markersize=6,
+            label=f"Two-Phase + IDA* depth {i}"
+        )
     
     # Customize the plot for better readability
     plt.title("Solution Length vs. Scramble Length", fontsize=20, fontweight='bold')
@@ -347,7 +366,7 @@ def plot_solution_lengths():
     
     # Adjust layout and save the plot with high resolution (300 dpi)
     plt.tight_layout()
-    plt.savefig("plots/Performance_len_02_02_2phase_depth_06.png", dpi=300)
+    plt.savefig("plots/Performance_Length.png", dpi=300)
     plt.close()
 
 def plot_two_phase_len_and_time():
@@ -398,5 +417,5 @@ def plot_two_phase_len_and_time():
 
 
 if __name__ == "__main__":
-    plot_solution_lengths()
     plot_solution_times()
+    plot_solution_lengths()
