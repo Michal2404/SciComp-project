@@ -58,7 +58,7 @@ fn generate_data(i: i32) -> (Vec<RubiksCube>, Vec<f64>) {
         data_input.push(cube);
         data_output.push((num_moves as f64)/SCALE); //Normalization
     }
-    (data_input, data_output)
+    (data_input, data_output) //return the states and the number of moves done
 }
 
 // Get the data from the text files
@@ -70,12 +70,12 @@ fn get_data(file_path: &str) -> (Vec<Vec<f64>>, Vec<f64>) {
     let mut lowercase_lines = Vec::new();
     let mut answer_lines = Vec::new();
 
-    // Zeilen aufteilen und verarbeiten
+    // Split the lines and convert them
     for line in content.lines() {
         if line.chars().all(|c| c.is_ascii_lowercase() || c.is_whitespace()) {
-            lowercase_lines.push(convert_to_input_vector(&line.to_string()));
+            lowercase_lines.push(convert_to_input_vector(&line.to_string())); //Lines, which contain the state of the cube
         } else {
-            answer_lines.push(count_commands(&line)/SCALE); //Normalization
+            answer_lines.push(count_commands(&line)/SCALE); //Lines, which contain the moves to solve the state
         }
     }
     (lowercase_lines, answer_lines)
@@ -108,23 +108,19 @@ pub fn convert_to_input_vector(line: &str) -> Vec<f64> {
     input_vector
 }
 
-fn print_results(input: &Vec<[f64; 2]>, output: &Vec<f64>) {
-    for i in 0..input.len() {
-        println!("{:?} = {:?}", input[i], output[i])
-    }
-}
-
+// A function to test the neural network and its accuracy
 fn test_nn(prediction: &Vec<f64>, real: &Vec<f64>) -> f64 {
     let mut value: f64 = 0.0;
     for i in 0..real.len() {
         let scaled_prediction = (prediction[i] * SCALE).round(); //Rescaling and rounding
         let scaled_real = real[i] * SCALE; //Rescaling
-        //println!("Predict: {} and Real: {}", scaled_prediction, scaled_real);
+        
+        //println!("Predict: {} and Real: {}", scaled_prediction, scaled_real); //optional priniting of predictions and the correct anwser
         if (scaled_prediction - scaled_real ).abs() == 0.0 { // this is the error measuring
             value += 1.0;
         }
     }
-    return value / real.len() as f64
+    return value / real.len() as f64 // returns the accuracy of the NN
 }
 
 // Define a Neural Network
@@ -149,7 +145,7 @@ impl NeuralNetwork {
                 hidden_neurons
         ];
 
-        let hidden_bias = vec![0.0; hidden_neurons];
+        let hidden_bias = vec![0.0; hidden_neurons]; // Set the hidden bias to 0
 
 
         Self {
@@ -165,7 +161,6 @@ impl NeuralNetwork {
     fn predict(&self, input: &Vec<f64>) -> f64 {
         // Feedforward pass
         let mut hidden_layer_output = vec![];
-
         for i in 0..self.hidden_neurons {
             let sum: f64 = input.iter()
                 .enumerate()
@@ -178,46 +173,51 @@ impl NeuralNetwork {
         let output_sum = hidden_layer_output.iter().zip(self.hidden_weights.iter()).map(|(h, w)| h * w).sum::<f64>() + self.output_bias;
         sigmoid(output_sum)
     }
-
+    //Function for training the neural network
     fn train(&mut self, inputs: Vec<Vec<f64>>, outputs: Vec<f64>, epochs: usize) {
         let mut rng = rand::thread_rng();  // Random generator
-
         for _ in 0..epochs {
+            //Iterate over each input vector and its corresponding output
             for (i, cube) in inputs.iter().enumerate() {
                 /*Old One
                 let input_vector = cube.to_input_vector(); // For the generate Data, where the cubes have to be transformed first.
                 */
                 let input_vector = cube;
                 let mut hidden_layer_output = vec![];
+                //Loop thorugh each neuron in the hidden layer
                 for j in 0..self.hidden_neurons {
                     let sum: f64 = input_vector.iter()
                         .enumerate()
                         .map(|(k, &x)| x * self.input_weights[j * 54 + k])
                         .sum();
                     let sum_with_bias = sum + self.hidden_bias[j];
+                    // Apply the ReLU activation function and store the result
                     hidden_layer_output.push(relu(sum_with_bias));
                 }
-
+                // Compute the output sum by combining the hidden layer output and the hidden-to-output weights
                 let output_sum = hidden_layer_output.iter().zip(self.hidden_weights.iter()).map(|(h, w)| h * w).sum::<f64>() + self.output_bias;
+                // Apply the sigmoid activation function to get the final prediction
                 let prediction = sigmoid(output_sum);
 
                 let output_error = outputs[i] - prediction;
-                let output_delta = output_error * sigmoid_derivative(prediction);
+                let output_delta = output_error * sigmoid_derivative(prediction); // Calculate the output layer delta (gradient for backpropagation)
 
-                // Update hidden to output layer weights mit Rauschen
+                 // Update the hidden-to-output weights, adding noise for regularization
                 for j in 0..self.hidden_neurons {
-                    let noise: f64 = rng.gen_range(-0.01..0.01);  // Small Rauschen zwischen -0.01 und 0.01
+                    let noise: f64 = rng.gen_range(-0.01..0.01);  // Small noise
                     self.hidden_weights[j] += self.learning_rate * output_delta * hidden_layer_output[j] + noise;
                 }
                 self.output_bias += self.learning_rate * output_delta;
 
-                // Update input to hidden layer weights mit Rauschen
+               // Update the input-to-hidden layer weights, with added noise for regularization
                 for j in 0..self.hidden_neurons {
                     let hidden_error = output_delta * self.hidden_weights[j] * relu_derivative(hidden_layer_output[j]);
+                    // Update each input-to-hidden weight
                     for k in 0..54 {
-                        let noise: f64 = rng.gen_range(-0.01..0.01);
+                        let noise: f64 = rng.gen_range(-0.01..0.01); //Impro
                         self.input_weights[j * 54 + k] += self.learning_rate * hidden_error * input_vector[k] + noise;
                     }
+                    // Update the hidden layer bias
                     self.hidden_bias[j] += self.learning_rate * hidden_error;
                 }
             }
@@ -250,7 +250,7 @@ pub fn run() {
     let mut predictions : Vec<f64> = Vec::new();
 
     for (_i, cube) in test_input.iter().enumerate() {
-        /*OLD ONE
+        /* For generated data only
         // Convert the RubiksCube to a vector of f64 values
         let input_vector = cube.to_input_vector();
         */
@@ -259,18 +259,21 @@ pub fn run() {
     }
     
     println!("Test before training: {}", test_nn(&predictions, &test_ouput));
-
-    let start = Instant::now();//Starting time for the training
+    
+    //Starting time for the training
+    let start = Instant::now();
+    
     // train the NN 
     neural_network.train(inputs, outputs, EPISODES);
-
-    let duration = start.elapsed().as_secs(); //Ending time for the training
+    
+    //Ending time for the training
+    let duration = start.elapsed().as_secs();
 
     // Predictions of the NN
     let mut predictions : Vec<f64> = Vec::new();
 
     for (_i, cube) in test_input.iter().enumerate() {
-        /*OLD ONE
+        /* For generated data only
         // Convert the RubiksCube to a vector of f64 values
         let input_vector = cube.to_input_vector();
         */
