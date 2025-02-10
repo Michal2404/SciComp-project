@@ -26,6 +26,9 @@ pub struct CubeSettings {
     pub camera_x: f32, // camera position x
     pub camera_y: f32, // camera position y
     pub camera_z: f32, // camera position z
+    pub cube_x: f32, // rubiks cube position x
+    pub cube_y: f32, // rubiks cube position y
+    pub cube_z: f32, // rubiks cube position z
 }
 
 impl Default for CubeSettings {
@@ -45,7 +48,17 @@ impl Default for CubeSettings {
             camera_x: 6.0,
             camera_y: 6.0,
             camera_z: 6.0,
+            cube_x: 0.0,
+            cube_y: 0.0,
+            cube_z: 0.0,
         }
+    }
+}
+
+impl CubeSettings {
+    pub fn shift_view_sideways(&mut self, delta_x: f32, delta_y: f32) {
+        self.camera_x += delta_x;
+        self.camera_y += delta_y;
     }
 }
 
@@ -67,6 +80,8 @@ pub fn run_visualization(run: bool) {
     .insert_resource(CubeSettings::default())
     .insert_resource(Scramble::default())
     .insert_resource(SolveData::default())
+    .insert_resource(SolverInformation::default())
+    .insert_resource(UiInformation::default())
     .insert_resource(SolveTask(None))
     .insert_resource(MoveQueue(VecDeque::new()))
     .insert_resource(Rotation::default())
@@ -79,8 +94,7 @@ pub fn run_visualization(run: bool) {
     .register_type::<Cubie>()
     .add_event::<ScrambleEvent>()
     .add_event::<ResetEvent>()
-    .add_event::<CFOPEvent>()
-    .add_event::<ASTAREvent>()
+    .add_event::<SolveEvent>()
     .add_systems(Startup, 
         (
             spawn_camera, 
@@ -95,12 +109,13 @@ pub fn run_visualization(run: bool) {
         (
             zoom_camera,
             move_camera,
+            // handle_keyboard_input,
+            // update_camera_position,
             game_ui,
             rotate_cube,
             scramble_cube,
             reset_cube,
-            solve_cfop,
-            solve_astar,
+            solve_cube,
             poll_solve_task,
         ))
     .add_systems(PostUpdate,

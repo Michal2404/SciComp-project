@@ -18,6 +18,7 @@ pub fn spawn_camera(
     commands.spawn((
             Camera3d::default(),
             Transform::from_xyz(cube_settings.camera_x, cube_settings.camera_y, cube_settings.camera_z).looking_at(Vec3::ZERO, Vec3::Y),
+            // Transform::from_xyz(cube_settings.camera_x, cube_settings.camera_y, cube_settings.camera_z).looking_at(Vec3::new(3.0, 0.0, -3.0), Vec3::new(3.0, 1.0, -3.0)),
 
     ));
 }
@@ -89,6 +90,7 @@ pub fn move_camera(
     buttons: Res<ButtonInput<MouseButton>>,
     recorder: Res<MouseDraggingRecorder>,
     mut egui_context: EguiContexts,
+    cube_settings: Res<CubeSettings>,
 ) {
     // skip the movement of camera if use is interacting with the egui
     let ctx = egui_context.ctx_mut(); // Access egui's context
@@ -119,7 +121,8 @@ pub fn move_camera(
                             0.0002 * -motion.delta.x * max * TAU, // Multiplying by max is to maintain the same rate as sliding up and down
                             0.0,
                         );
-                        transform.rotate_around(Vec3::ZERO, quat);
+                        // transform.rotate_around(Vec3::ZERO, quat);
+                        transform.rotate_around(Vec3::new(cube_settings.cube_x, cube_settings.cube_y, cube_settings.cube_z), quat);
                     }
                     if motion.delta.y.abs() > 0.001 {
                         // Vertical rotation requires rotation around the x-axis and z-axis at the same time, and the rotation angle is inversely proportional to the angle with the coordinate axis.
@@ -129,7 +132,8 @@ pub fn move_camera(
                             0.0,
                             0.0002 * motion.delta.y * transform.translation.x * TAU,
                         );
-                        transform.rotate_around(Vec3::ZERO, quat);
+                        // transform.rotate_around(Vec3::ZERO, quat);
+                        transform.rotate_around(Vec3::new(cube_settings.cube_x, cube_settings.cube_y, cube_settings.cube_z), quat);
                     }
                 }
             }
@@ -138,3 +142,29 @@ pub fn move_camera(
     motion_evr.clear();
 }
 
+// pub fn handle_keyboard_input(
+//     keyboard_input: Res<ButtonInput<KeyCode>>,
+//     mut cube_settings: ResMut<CubeSettings>,
+// ) {
+//     if keyboard_input.pressed(KeyCode::ArrowLeft) {
+//         cube_settings.shift_view_sideways(-0.1, 0.0);
+//     }
+//     if keyboard_input.pressed(KeyCode::ArrowRight) {
+//         cube_settings.shift_view_sideways(0.1, 0.0);
+//     }
+//     if keyboard_input.pressed(KeyCode::ArrowUp) {
+//         cube_settings.shift_view_sideways(0.0, -0.1);
+//     }
+//     if keyboard_input.pressed(KeyCode::ArrowDown) {
+//         cube_settings.shift_view_sideways(0.0, 0.1);
+//     }
+// }
+
+// pub fn update_camera_position(
+//     mut q_camera: Query<&mut Transform, With<Camera3d>>,
+//     cube_settings: Res<CubeSettings>,
+// ) {
+//     let mut transform = q_camera.single_mut();
+//     transform.translation.x = cube_settings.camera_x;
+//     transform.translation.y = cube_settings.camera_y;
+// }

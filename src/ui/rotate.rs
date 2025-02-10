@@ -3,6 +3,7 @@ use std::f32::consts::{FRAC_PI_2, PI, TAU};
 
 // // This file performs rotation to the cube depending on the move
 use bevy::prelude::*;
+use crate::rubiks::cube;
 use crate::ui::pieces::Cubie;
 use crate::ui::app::CubeSettings;
 
@@ -56,7 +57,7 @@ impl Rotation {
         This function rotates the cube depending on the axis, direction, and position on which to rotate
          */
         // get the necessary constants
-        let (location, angle_constant, axis_vec) = self.data();
+        let (location, angle_constant, axis_vec) = self.data(cube_settings);
         for (mut transform, mut cubie) in query.iter_mut() {
             // rotate pieces that have specific position
                 if cubie.current_position[location.unwrap()] == self.position {
@@ -84,13 +85,14 @@ impl Rotation {
                         self.completed = true;
                     }
                     transform.rotate_around(Vec3::new(0.0, 0.0, 0.0), Quat::from_axis_angle(axis_vec.unwrap(), angle));
+                    // transform.rotate_around(Vec3::new(cube_settings.cube_x, cube_settings.cube_y, cube_settings.cube_z), Quat::from_axis_angle(axis_vec.unwrap(), angle));
                     cubie.left_angle = new_left_angle;
                     
             }
         }       
         
     }
-    pub fn data(&self) -> (Option<usize>, Option<f32>, Option<Vec3>){
+    pub fn data(&self, cube_settings: &CubeSettings) -> (Option<usize>, Option<f32>, Option<Vec3>){
         /*
         This function outputs the necessary data needed for each part of the rotation
         */
@@ -109,6 +111,9 @@ impl Rotation {
         if self.position == 1.0 {angle_constant *= -1.0};
         // get axis
         let axis_vec = match self.axis {
+            // Axis::X => Vec3::new(1.0, cube_settings.cube_y, cube_settings.cube_z),
+            // Axis::Y => Vec3::new(cube_settings.cube_x, 1.0, cube_settings.cube_z),
+            // Axis::Z => Vec3::new(cube_settings.cube_x, cube_settings.cube_y, 1.0),
             Axis::X => Vec3::X,
             Axis::Y => Vec3::Y,
             Axis::Z => Vec3::Z,

@@ -4,16 +4,8 @@ mod ui;
 mod a_star;
 mod helper;
 
-use std::time::Instant;
-
-use rubiks::cube::RubiksCube;
-use helper::utils::*;
 use ui::app::*;
-use cfop::total::cfop_solver;
-use a_star::a_star::a_star_solver;
-use a_star::bidirectional_a_star::bidirectional_a_star_solver;
-use a_star::parallel_a_star::parallel_a_star_solver;
-use a_star::iterative_deep_a_star::ida_star_solver;
+
 
 
 

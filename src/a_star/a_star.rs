@@ -24,8 +24,8 @@ pub fn a_star_solver(scramble: &str, cube: &mut RubiksCube) -> Vec<String> {
 
 
     // output data
-    let data = (moves_cleaned.clone(), moves_cleaned.len(), elapsed_time);
-    let _ = output_data((scramble, scramble.split(" ").collect::<Vec<&str>>().len()), data);
+    // let data = (moves_cleaned.clone(), moves_cleaned.len(), elapsed_time);
+    // let _ = output_data((scramble, scramble.split(" ").collect::<Vec<&str>>().len()), data);
 
     moves_cleaned
 
