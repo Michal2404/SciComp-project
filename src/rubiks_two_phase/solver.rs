@@ -70,6 +70,9 @@ impl Solver {
         dist: usize,
         togo_phase2: usize,
     ) {
+        //println!("starting searcH_phase2");
+        //println!("Moves in phase 1 so far: {:?}", self.sofar_phase1);
+
         // Check for termination or if phase 2 is already done
         if self.terminated || self.phase2_done {
             return;
@@ -77,6 +80,7 @@ impl Solver {
 
         // If phase 2 is complete
         if togo_phase2 == 0 && slice_sorted == 0 {
+            println!("phase 2 solved, moves: {:?}", self.sofar_phase2);
             // Contruct the entire maneuver = phase1 + phase2
             let mut man = Vec::new();
             man.extend_from_slice(&self.sofar_phase1);
@@ -199,8 +203,6 @@ impl Solver {
 
         // If phase1 depth is reached (phase1 solved):
         if togo_phase1 == 0 {
-            //println!("phase 1 solved, moves: {:?}", self.sofar_phase1);
-
             // Check timeout
             let elapsed = self.start_time.elapsed().as_secs_f64();
             if elapsed > self.timeout && !self.solutions.is_empty() {
@@ -213,6 +215,8 @@ impl Solver {
             let last_move = self.sofar_phase1.last().copied().unwrap_or(Move::U1);
 
             if matches!(last_move, Move::R3 | Move::F3 | Move::L3 | Move::B3) {
+                // corners = corners_move[18 * self.cornersave + (last_move.id() - 1)];
+                // Because python uses R3 => R2? Actually, be careful. This logic is from your code.
                 corners = CORNERS_MOVE[18 * self.cornersave + (last_move.id() - 1)] as usize;
             } else {
                 corners = self.co_cube.as_ref().unwrap().corners;
@@ -258,6 +262,7 @@ impl Solver {
                 self.phase2_done = false;
                 self.search_phase2(corners, ud_edges as usize, slice_sorted, dist2, togo2);
                 if self.phase2_done || self.terminated {
+                    println!("phase 1 solved, moves: {:?}", self.sofar_phase1);
                     break;
                 }
             }
@@ -266,6 +271,7 @@ impl Solver {
 
             for m in Move::iterator() {
                 // If dist == 0 => already in subgroup H. If fewer than 5 moves left,
+                // forbid phase2 moves in phase1 (mirroring the original logic).
                 if dist == 0
                     && togo_phase1 < 5
                     && matches!(
@@ -329,6 +335,7 @@ impl Solver {
             }
         }
     }
+    /// The main solver routine (originally `run` in Python).
     pub fn run(&mut self) {
         let mut depth_expanded: usize = 0;
 
@@ -400,7 +407,8 @@ pub fn solve(
     from_scramble: bool,
     use_ida: bool,
     ida_depth: Option<usize>,
-) -> String {
+) -> Vec<String> {
+    // 1) Convert the input string into a cube representation.
     let cc = if from_scramble {
         cubie::CubieCube::from_scramble(cubescramble)
     } else {
@@ -409,53 +417,52 @@ pub fn solve(
         fc.to_cubie_cube()
     };
 
+    // 2) Start timing.
     let start_time = Instant::now();
 
-    // Use IDA*-presolver to find candidate solutions up to depth n
+    // 3) Try using the IDA* solver if requested.
     if use_ida {
-        //println!("Running IDA* for depth {}...", ida_depth.unwrap());
-        if let Some(best_solution) = ida_star_solver(&cc, ida_depth.unwrap()) {
-            //println!("Solution found by IDA*: {:?}", best_solution);
-            //println!("Elapsed time: {:?}", start_time.elapsed());
-            let mut s = String::new();
+        // Make sure ida_depth is provided if using IDA*
+        let depth = ida_depth.expect("ida_depth must be provided when use_ida is true");
+        if let Some(best_solution) = ida_star_solver(&cc, depth) {
+            let mut solution_str = String::new();
             for &mv in &best_solution {
-                s.push_str(mv.name()); // or format!("{:?}", mv) if debug
-                s.push(' ');
+                solution_str.push_str(mv.name());
+                solution_str.push(' ');
             }
-            s = s.replace('3', "'").replace('1', "");
-            let moves_count = best_solution.len();
-            let formatted_string = format!("{}({}f)", s.trim_end(), moves_count);
+            // Replace notation: convert '3' to '\'' and remove '1'
+            let solution_str = solution_str.replace('3', "'").replace('1', "");
 
-            // Replace occurrences of '3' with '\''
-            return formatted_string.to_string();
+            return solution_str
+                .trim_end()
+                .split_whitespace()
+                .map(String::from)
+                .collect();
         }
-        //println!(
-        //"No solution found by IDA* after {:?}, proceeding to two-phase solver...",
-        //   start_time.elapsed()
-        //);
     }
 
+    // 4) Run the two-phase solver.
     let mut solver: Solver = Solver::new(cc, 0, 0, max_length, timeout, start_time);
     solver.run();
-    //println!("Total elapsed time: {:?}", start_time.elapsed());
-    //println!(
-    //    "two-phase elapsed time: {:?}",
-    //    start_time_two_phase.elapsed()
-    //);
-    // Construct the final solution string
-    if !solver.solutions.is_empty() {
-        // The last solution is presumably the shortest, by your code's convention
-        let best_solution = solver.solutions.last().unwrap();
-        let mut s = String::new();
-        for mv in best_solution {
-            s.push_str(mv.name()); // or format!("{:?}", mv) if debug
-            s.push(' ');
-        }
-        s = s.replace('3', "'").replace('1', "");
 
-        // Replace occurrences of '3' with '\''
-        s.trim_end().to_string()
+    // 5) Process and return the solution if one is found.
+    if !solver.solutions.is_empty() {
+        // Assuming the last solution is the shortest (by your code's convention)
+        let best_solution = solver.solutions.last().unwrap();
+        let mut solution_str = String::new();
+        for mv in best_solution {
+            solution_str.push_str(mv.name());
+            solution_str.push(' ');
+        }
+        let solution_str = solution_str.replace('3', "'").replace('1', "");
+
+        return solution_str
+            .trim_end()
+            .split_whitespace()
+            .map(String::from)
+            .collect();
     } else {
-        "No solution found.".to_string()
+        // Instead of returning an error string, we panic.
+        panic!("No solution found.");
     }
 }

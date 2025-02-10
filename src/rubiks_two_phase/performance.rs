@@ -88,7 +88,8 @@ pub fn measure_ida() -> Result<(), Box<dyn Error>> {
 
 /// Measure the performance of two phase solver with IDA* star depending on ida search depth
 /// We are measuring the time performance of the solver with active IDA* option depending on
-/// the IDA* search depth.
+/// the IDA* search depth. We want to find a perfect value for the depth s.t. the solving time
+/// is in 99% of cases lower than 200ms.
 pub fn measure_ida_depth_performance() -> Result<(), Box<dyn Error>> {
     let mut results = Vec::new();
     // Load tables
@@ -224,15 +225,12 @@ pub fn measure_two_phase() -> Result<(), Box<dyn Error>> {
         println!("it: {}", i);
         for scramble_length in 1..=20 {
             // Generate a scramble of the given length
-
             let scramble = generate_scramble(scramble_length);
             let start_time = Instant::now();
             let solution = solve(&scramble, 20, 2.0, true, false, Some(8));
             let end_time = start_time.elapsed();
-            let trimmed_solution = solution
-                .rsplit_once('(')
-                .map_or(solution.clone(), |(before, _)| before.trim().to_string());
-            let solution_string = trimmed_solution.trim().to_string();
+
+            let solution_string = solution.join(" ").trim().to_string();
             let solution_length = solution_string.split_whitespace().count();
             results.push((scramble_length, solution_length, end_time.as_secs_f64()));
         }
@@ -277,11 +275,8 @@ pub fn measure_two_phase_ida() -> Result<(), Box<dyn Error>> {
             let start_time = Instant::now();
             let solution = solve(&scramble, 20, 2.0, true, true, Some(6));
             let end_time = start_time.elapsed();
-            let trimmed_solution = solution
-                .rsplit_once('(')
-                .map_or(solution.clone(), |(before, _)| before.trim().to_string());
-            let solution_string = trimmed_solution.trim().to_string();
-            //println!("{}", solution_string);
+
+            let solution_string = solution.join(" ").trim().to_string();
             let solution_length = solution_string.split_whitespace().count();
             results.push((scramble_length, solution_length, end_time.as_secs_f64()));
         }
@@ -326,10 +321,8 @@ pub fn two_phase_len_performance() -> Result<(), Box<dyn Error>> {
         let start_time = Instant::now();
         let solution = solve(&scramble, 20, 2.0, true, false, Some(8));
         let end_time = start_time.elapsed();
-        let trimmed_solution = solution
-            .rsplit_once('(')
-            .map_or(solution.clone(), |(before, _)| before.trim().to_string());
-        let solution_string = trimmed_solution.trim().to_string();
+
+        let solution_string = solution.join("").trim().to_string();
         let solution_length = solution_string.split_whitespace().count();
         results.push((solution_length, end_time.as_secs_f64()));
     }

@@ -269,9 +269,9 @@ pub const TURN_B: CubieCube = CubieCube {
 pub const CUBE_OK: bool = true;
 
 // Constants
-pub const N_PERM_4: usize = 24; // Number of possible permutations of 4 cubies (UD-Slice Phase 2)
-pub const N_CHOOSE_8_4: usize = 70; // Possible permutations of 4 pieces on 8 slots (used in phase2_edgemerge table)
-pub const N_MOVE: usize = 18; // Number of possible HTM moves
+pub const N_PERM_4: usize = 24;
+pub const N_CHOOSE_8_4: usize = 70;
+pub const N_MOVE: usize = 18;
 
 pub const N_TWIST: usize = 2187; // 3^7 possible corner orientations in phase 1
 pub const N_FLIP: usize = 2048; // 2^11 possible edge orientations in phase 1

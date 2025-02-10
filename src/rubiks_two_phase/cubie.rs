@@ -139,7 +139,7 @@ impl CubieCube {
 
     pub fn corner_multiply(&mut self, b: &CubieCube) {
         // Temporary arrays to hold the new permutation/orientation
-        let mut c_perm: [Co; 8] = [Co::URF; 8];
+        let mut c_perm = [Co::URF; 8];
         let mut c_ori = [0u8; 8];
 
         // For each corner index c in 0..8
