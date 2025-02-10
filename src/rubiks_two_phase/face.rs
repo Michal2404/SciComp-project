@@ -3,7 +3,7 @@
 use super::cubie::CubieCube;
 use super::defs::{CORNER_COLOR, CORNER_FACELET, EDGE_COLOR, EDGE_FACELET};
 use super::enums::{Color, Corner as Co, Edge as Ed};
-use crate::rubiks::cubie::FromUsize;
+use crate::rubiks_two_phase::cubie::FromUsize;
 use std::fmt;
 
 #[derive(Debug, Clone)]

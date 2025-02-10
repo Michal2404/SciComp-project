@@ -1,4 +1,4 @@
-use crate::rubiks::solver::solve;
+use crate::rubiks_two_phase::solver::solve;
 
 use super::bfs::{ida_star_solver, iddfs_solver};
 use super::cubie::{generate_scramble, CubieCube};
@@ -88,8 +88,7 @@ pub fn measure_ida() -> Result<(), Box<dyn Error>> {
 
 /// Measure the performance of two phase solver with IDA* star depending on ida search depth
 /// We are measuring the time performance of the solver with active IDA* option depending on
-/// the IDA* search depth. We want to find a perfect value for the depth s.t. the solving time
-/// is in 99% of cases lower than 200ms.
+/// the IDA* search depth.
 pub fn measure_ida_depth_performance() -> Result<(), Box<dyn Error>> {
     let mut results = Vec::new();
     // Load tables
@@ -282,6 +281,7 @@ pub fn measure_two_phase_ida() -> Result<(), Box<dyn Error>> {
                 .rsplit_once('(')
                 .map_or(solution.clone(), |(before, _)| before.trim().to_string());
             let solution_string = trimmed_solution.trim().to_string();
+            //println!("{}", solution_string);
             let solution_length = solution_string.split_whitespace().count();
             results.push((scramble_length, solution_length, end_time.as_secs_f64()));
         }

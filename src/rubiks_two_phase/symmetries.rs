@@ -1,6 +1,7 @@
-use crate::rubiks::defs;
+use crate::rubiks_two_phase::defs;
 
 // Symmetry related functions- Symmetry considerations increase the performance of the solver
+// Here we are just loading precomputed tables from Python's Code by Herbert Kociemba.
 use super::cubie::{self as cb, MOVE_CUBE};
 use super::defs::{
     N_CORNERS, N_CORNERS_CLASS, N_FLIP, N_FLIPSLICE_CLASS, N_MOVE, N_SLICE, N_SYM, N_SYM_D4H,
@@ -191,8 +192,6 @@ pub static INV_IDX: Lazy<[u8; N_SYM]> = Lazy::new(|| {
             cc.corner_multiply(&SYM_CUBE[i]);
 
             // Check if the corners URF, UFL, ULB are in their solved positions.
-            // (In Python: `if cc.cp[Co.URF] == Co.URF ...`)
-            // In Rust, if `cc.cp` is `[u8; 8]`, we compare to `Corner::URF as u8`.
             if cc.cp[Co::URF as usize] == Co::URF
                 && cc.cp[Co::UFL as usize] == Co::UFL
                 && cc.cp[Co::ULB as usize] == Co::ULB
@@ -214,13 +213,10 @@ pub static MULT_SYM: Lazy<[u8; N_SYM * N_SYM]> = Lazy::new(|| {
     // then find k such that it equals SYM_CUBE[k].
     for j in 0..N_SYM {
         for i in 0..N_SYM {
-            // Make a copy of SYM_CUBE[i]
             let mut cc = SYM_CUBE[i];
-            // Multiply by SYM_CUBE[j]
             cc.multiply(&SYM_CUBE[j]);
 
             // Find k such that cc == SYM_CUBE[k]
-            // This is the same as "SymCube[i]*SymCube[j] == SymCube[k]" in Python
             for k in 0..N_SYM {
                 if cc == SYM_CUBE[k] {
                     table[i * N_SYM + j] = k as u8;
@@ -233,6 +229,7 @@ pub static MULT_SYM: Lazy<[u8; N_SYM * N_SYM]> = Lazy::new(|| {
     table
 });
 
+/// Generate the table for the conjugation of a move m by a symmetry s. CONJ_MOVE[N_MOVE*s + m] = s*m*s^-1
 pub static CONJ_MOVE: Lazy<[u16; N_MOVE * N_SYM]> = Lazy::new(|| {
     let mut table = [0u16; N_MOVE * N_SYM];
 
@@ -253,7 +250,7 @@ pub static CONJ_MOVE: Lazy<[u16; N_MOVE * N_SYM]> = Lazy::new(|| {
     table
 });
 
-/// `TWIST_CONJ[t * N_SYM_D4H + s] = s*t*s^-1` in phase 1 (stored as `u16`).
+/// Generate the phase 1 table for the conjugation of the twist t by a symmetry s. twist_conj[t, s] = s*t*s^-1
 pub static TWIST_CONJ: Lazy<Vec<u16>> = Lazy::new(|| {
     // Build the file path
 

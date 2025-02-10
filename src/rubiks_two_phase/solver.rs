@@ -1,7 +1,7 @@
 use std::time::Instant;
 
-use crate::rubiks::bfs::ida_star_solver;
-use crate::rubiks::face::FaceCube;
+use crate::rubiks_two_phase::bfs::ida_star_solver;
+use crate::rubiks_two_phase::face::FaceCube;
 
 use super::coord::{self, U_EDGES_PLUS_D_EDGES_TO_UD_EDGES};
 use super::cubie;
@@ -70,9 +70,6 @@ impl Solver {
         dist: usize,
         togo_phase2: usize,
     ) {
-        //println!("starting searcH_phase2");
-        //println!("Moves in phase 1 so far: {:?}", self.sofar_phase1);
-
         // Check for termination or if phase 2 is already done
         if self.terminated || self.phase2_done {
             return;
@@ -216,8 +213,6 @@ impl Solver {
             let last_move = self.sofar_phase1.last().copied().unwrap_or(Move::U1);
 
             if matches!(last_move, Move::R3 | Move::F3 | Move::L3 | Move::B3) {
-                // corners = corners_move[18 * self.cornersave + (last_move.id() - 1)];
-                // Because python uses R3 => R2? Actually, be careful. This logic is from your code.
                 corners = CORNERS_MOVE[18 * self.cornersave + (last_move.id() - 1)] as usize;
             } else {
                 corners = self.co_cube.as_ref().unwrap().corners;
@@ -271,7 +266,6 @@ impl Solver {
 
             for m in Move::iterator() {
                 // If dist == 0 => already in subgroup H. If fewer than 5 moves left,
-                // forbid phase2 moves in phase1 (mirroring the original logic).
                 if dist == 0
                     && togo_phase1 < 5
                     && matches!(
@@ -335,7 +329,6 @@ impl Solver {
             }
         }
     }
-    /// The main solver routine (originally `run` in Python).
     pub fn run(&mut self) {
         let mut depth_expanded: usize = 0;
 
@@ -416,10 +409,9 @@ pub fn solve(
         fc.to_cubie_cube()
     };
 
-    // 3) Start timing
     let start_time = Instant::now();
 
-    // Use BFS to find candidate solutions up to depth n
+    // Use IDA*-presolver to find candidate solutions up to depth n
     if use_ida {
         //println!("Running IDA* for depth {}...", ida_depth.unwrap());
         if let Some(best_solution) = ida_star_solver(&cc, ida_depth.unwrap()) {
@@ -450,7 +442,7 @@ pub fn solve(
     //    "two-phase elapsed time: {:?}",
     //    start_time_two_phase.elapsed()
     //);
-    // 4) Construct the final solution string
+    // Construct the final solution string
     if !solver.solutions.is_empty() {
         // The last solution is presumably the shortest, by your code's convention
         let best_solution = solver.solutions.last().unwrap();
@@ -460,11 +452,9 @@ pub fn solve(
             s.push(' ');
         }
         s = s.replace('3', "'").replace('1', "");
-        let moves_count = best_solution.len();
-        let formatted_string = format!("{}({}f)", s.trim_end(), moves_count);
 
         // Replace occurrences of '3' with '\''
-        formatted_string.to_string()
+        s.trim_end().to_string()
     } else {
         "No solution found.".to_string()
     }

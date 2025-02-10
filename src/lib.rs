@@ -1,2 +1,2 @@
 pub mod gui;
-pub mod rubiks;
+pub mod rubiks_two_phase;

@@ -1,11 +1,11 @@
 /// Here is the implementation of the UI to test and play with the solver
 use std::time::Instant;
 
-use crate::rubiks::cubie::generate_scramble;
-use crate::rubiks::cubie::generate_states;
-use crate::rubiks::cubie::CubieCube;
-use crate::rubiks::face::FaceCube;
-use crate::rubiks::solver as sv;
+use crate::rubiks_two_phase::cubie::generate_scramble;
+use crate::rubiks_two_phase::cubie::generate_states;
+use crate::rubiks_two_phase::cubie::CubieCube;
+use crate::rubiks_two_phase::face::FaceCube;
+use crate::rubiks_two_phase::solver as sv;
 
 use eframe::egui;
 use eframe::egui::{Align2, Color32, FontId, Painter, Pos2, Rect, Vec2};

@@ -1,9 +1,9 @@
 // The pruning tables cut the search tree during search
 // The pruning values are stored module 3 which saves a lot of memory.
 
-use crate::rubiks::defs::N_CORNERS_CLASS;
-use crate::rubiks::defs::N_FLIPSLICE_CLASS;
-use crate::rubiks::defs::N_PERM_4;
+use crate::rubiks_two_phase::defs::N_CORNERS_CLASS;
+use crate::rubiks_two_phase::defs::N_FLIPSLICE_CLASS;
+use crate::rubiks_two_phase::defs::N_PERM_4;
 
 use super::defs;
 use super::defs::{N_CORNERS, N_TWIST, N_UD_EDGES};

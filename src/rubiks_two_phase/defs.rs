@@ -269,9 +269,9 @@ pub const TURN_B: CubieCube = CubieCube {
 pub const CUBE_OK: bool = true;
 
 // Constants
-pub const N_PERM_4: usize = 24;
-pub const N_CHOOSE_8_4: usize = 70;
-pub const N_MOVE: usize = 18;
+pub const N_PERM_4: usize = 24; // Number of possible permutations of 4 cubies (UD-Slice Phase 2)
+pub const N_CHOOSE_8_4: usize = 70; // Possible permutations of 4 pieces on 8 slots (used in phase2_edgemerge table)
+pub const N_MOVE: usize = 18; // Number of possible HTM moves
 
 pub const N_TWIST: usize = 2187; // 3^7 possible corner orientations in phase 1
 pub const N_FLIP: usize = 2048; // 2^11 possible edge orientations in phase 1
@@ -287,12 +287,15 @@ pub const N_UD_EDGES: usize = 40320; // 8! U-face and D-face edge permutations i
 
 pub const N_SYM: usize = 48; // Cube symmetries of group Oh
 pub const N_SYM_D4H: usize = 16; // Subgroup D4h symmetries
-pub const FOLDER: &str = "rubiks/twophase"; // Folder for generated tables
+pub const FOLDER: &str = "rubiks_two_phase/twophase"; // Folder for generated tables
 
 // Dynamically resolve the path  the rubiks/twophase folder
 pub fn get_folder_path() -> PathBuf {
     let project_root = std::env::current_dir().expect("Failed to get current directory");
-    project_root.join("src").join("rubiks").join("twophase")
+    project_root
+        .join("src")
+        .join("rubiks_two_phase")
+        .join("twophase")
 }
 
 // Get the full path to a specific file in the rubiks/twophase folder
