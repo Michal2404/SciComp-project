@@ -223,6 +223,36 @@ pub enum Move {
     B3 = 17, // Back face turns
 }
 impl Move {
+    pub fn to_string(&self) -> String {
+        let (face, count) = match self {
+            Move::U1 => ("U", 1),
+            Move::U2 => ("U", 2),
+            Move::U3 => ("U", 3),
+            Move::R1 => ("R", 1),
+            Move::R2 => ("R", 2),
+            Move::R3 => ("R", 3),
+            Move::F1 => ("F", 1),
+            Move::F2 => ("F", 2),
+            Move::F3 => ("F", 3),
+            Move::D1 => ("D", 1),
+            Move::D2 => ("D", 2),
+            Move::D3 => ("D", 3),
+            Move::L1 => ("L", 1),
+            Move::L2 => ("L", 2),
+            Move::L3 => ("L", 3),
+            Move::B1 => ("B", 1),
+            Move::B2 => ("B", 2),
+            Move::B3 => ("B", 3),
+        };
+
+        match count {
+            1 => face.to_string(),
+            2 => format!("{}2", face),
+            3 => format!("{}'", face),
+            _ => unreachable!(),
+        }
+    }
+
     pub fn from_id(id: usize) -> Self {
         match id {
             0 => Move::U1,

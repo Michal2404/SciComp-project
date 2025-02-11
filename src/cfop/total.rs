@@ -17,6 +17,9 @@ pub fn cfop_solver(scramble: &str, mut cube: RubiksCube) -> Vec<String> {
     // Determine the color of the bottom and top face
     let bottom = cube.faces[1][4];
     let top = cube.faces[0][4];
+
+    println!("------scramble------");
+    println!("{}", scramble);
     
     // Step 1: Solve the cross
     println!("-------------cross-------------");

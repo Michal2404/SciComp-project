@@ -3,9 +3,11 @@ use std::f32::consts::{FRAC_PI_2, PI, TAU};
 
 // // This file performs rotation to the cube depending on the move
 use bevy::prelude::*;
-use crate::rubiks::cube;
+// use crate::rubiks::cube;
 use crate::ui::pieces::Cubie;
 use crate::ui::app::CubeSettings;
+use crate::ui::design::SolveData;
+use crate::ui::design::SolverInformation;
 
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -182,6 +184,7 @@ pub fn plan_move(
 
 pub fn piece_translation_round(
     mut cube: Query<(&mut Transform, &mut Cubie), Without<Parent>>,
+    // mut solve_data: ResMut<SolveData>,
     // mut cube: Query<(&mut Transform, &mut Cubie)>,
 ) {
     /*
@@ -223,7 +226,7 @@ pub fn rotate_cube(
     */
     if !rotation.completed {
         rotation.rotate(&time, &mut query, &cube_settings);
-    }
+    } 
 }
 
 fn moves(notation: &str) -> Rotation {

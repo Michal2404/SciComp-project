@@ -98,25 +98,27 @@ pub fn run_visualization(run: bool) {
     .add_systems(Startup, 
         (
             spawn_camera, 
-            spawn_rubiks_cube
+            spawn_rubiks_cube,
+            load_initial_table,
         ))
-    .add_systems(PreUpdate,
-    (
-        plan_move,
-        ).run_if(check_field)
-    )
-    .add_systems(Update, 
-        (
-            zoom_camera,
-            move_camera,
-            // handle_keyboard_input,
-            // update_camera_position,
-            game_ui,
-            rotate_cube,
-            scramble_cube,
-            reset_cube,
-            solve_cube,
-            poll_solve_task,
+        .add_systems(PreUpdate,
+            (
+                plan_move,
+            ).run_if(check_field)
+        )
+        .add_systems(Update, 
+            (
+                zoom_camera,
+                move_camera,
+                // handle_keyboard_input,
+                // update_camera_position,
+                game_ui,
+                rotate_cube,
+                scramble_cube,
+                reset_cube,
+                solve_cube,
+                poll_solve_task,
+                load_table,
         ))
     .add_systems(PostUpdate,
         (
