@@ -1,11 +1,15 @@
 use super::color::Color;
-// use crate::ui::app::MyApp;
-// use eframe::NativeOptions;
 
 // Define main data structure for the cube
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct RubiksCube {
     pub faces: [[Color; 9]; 6], // 6 faces, each with 9 stickers
+}
+
+impl Default for RubiksCube {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl RubiksCube {
@@ -23,21 +27,6 @@ impl RubiksCube {
         }
     }
 
-    // pub fn to_string(&self) -> String {
-    //     self.faces
-    //         .iter()
-    //         .flat_map(|face| face.iter())
-    //         .map(|color| match color {
-    //             Color::W => 'W',
-    //             Color::Y => 'Y',
-    //             Color::G => 'G',
-    //             Color::B => 'B',
-    //             Color::R => 'R',
-    //             Color::O => 'O',
-    //         })
-    //         .collect()
-    // }
-
     pub fn all_moves(&mut self) -> Vec<(&'static str, fn(&mut Self))> {
         vec![
             ("U", RubiksCube::u_clockwise),
@@ -52,12 +41,10 @@ impl RubiksCube {
             ("L'", RubiksCube::l_counterclockwise),
             ("R", RubiksCube::r_clockwise),
             ("R'", RubiksCube::r_counterclockwise),
-            // ("y", RubiksCube::y_clockwise),
-            // ("y'", RubiksCube::y_counterclockwise),
         ]
     }
 
-    // Apple scramble to the sube using the standard notation:
+    // Apply scramble to the sube using the standard notation:
     // R:  move right face clockwise
     // R': move right face counterclockwise
     // Same for L: left, U: up, D: down, F: front, B: back
@@ -73,8 +60,6 @@ impl RubiksCube {
                 'B' => Self::b_clockwise,
                 'L' => Self::l_clockwise,
                 'R' => Self::r_clockwise,
-                'M' => Self::m_clockwise,
-                'y' => Self::y_clockwise,
                 _ => continue, // Skip invalid characters
             };
 
@@ -90,8 +75,6 @@ impl RubiksCube {
                             'B' => Self::b_counterclockwise(self),
                             'L' => Self::l_counterclockwise(self),
                             'R' => Self::r_counterclockwise(self),
-                            'M' => Self::m_counterclockwise(self),
-                            'y' => Self::y_counterclockwise(self),
                             _ => {}
                         }
                         continue;
@@ -123,7 +106,7 @@ impl RubiksCube {
     // Apply one of the 12 possible moves to the cube by
     // changing positions of single stickers
     pub fn u_clockwise(&mut self) {
-        let temp = self.faces.clone();
+        let temp = self.faces;
         self.faces[0][0] = temp[0][6];
         self.faces[0][1] = temp[0][3];
         self.faces[0][2] = temp[0][0];
@@ -147,7 +130,7 @@ impl RubiksCube {
     }
 
     pub fn u_counterclockwise(&mut self) {
-        let temp = self.faces.clone();
+        let temp = self.faces;
         self.faces[0][0] = temp[0][2];
         self.faces[0][1] = temp[0][5];
         self.faces[0][2] = temp[0][8];
@@ -171,7 +154,7 @@ impl RubiksCube {
     }
 
     pub fn d_clockwise(&mut self) {
-        let temp = self.faces.clone();
+        let temp = self.faces;
         self.faces[1][0] = temp[1][6];
         self.faces[1][1] = temp[1][3];
         self.faces[1][2] = temp[1][0];
@@ -195,7 +178,7 @@ impl RubiksCube {
     }
 
     pub fn d_counterclockwise(&mut self) {
-        let temp = self.faces.clone();
+        let temp = self.faces;
         self.faces[1][0] = temp[1][2];
         self.faces[1][1] = temp[1][5];
         self.faces[1][2] = temp[1][8];
@@ -219,7 +202,7 @@ impl RubiksCube {
     }
 
     pub fn f_clockwise(&mut self) {
-        let temp = self.faces.clone();
+        let temp = self.faces;
         self.faces[2][0] = temp[2][6];
         self.faces[2][1] = temp[2][3];
         self.faces[2][2] = temp[2][0];
@@ -243,7 +226,7 @@ impl RubiksCube {
     }
 
     pub fn f_counterclockwise(&mut self) {
-        let temp = self.faces.clone();
+        let temp = self.faces;
         self.faces[2][0] = temp[2][2];
         self.faces[2][1] = temp[2][5];
         self.faces[2][2] = temp[2][8];
@@ -267,7 +250,7 @@ impl RubiksCube {
     }
 
     pub fn b_clockwise(&mut self) {
-        let temp = self.faces.clone();
+        let temp = self.faces;
         self.faces[3][0] = temp[3][6];
         self.faces[3][1] = temp[3][3];
         self.faces[3][2] = temp[3][0];
@@ -291,7 +274,7 @@ impl RubiksCube {
     }
 
     pub fn b_counterclockwise(&mut self) {
-        let temp = self.faces.clone();
+        let temp = self.faces;
         self.faces[3][0] = temp[3][2];
         self.faces[3][1] = temp[3][5];
         self.faces[3][2] = temp[3][8];
@@ -315,7 +298,7 @@ impl RubiksCube {
     }
 
     pub fn r_clockwise(&mut self) {
-        let temp = self.faces.clone();
+        let temp = self.faces;
         self.faces[4][0] = temp[4][6];
         self.faces[4][1] = temp[4][3];
         self.faces[4][2] = temp[4][0];
@@ -339,7 +322,7 @@ impl RubiksCube {
     }
 
     pub fn r_counterclockwise(&mut self) {
-        let temp = self.faces.clone();
+        let temp = self.faces;
         self.faces[4][0] = temp[4][2];
         self.faces[4][1] = temp[4][5];
         self.faces[4][2] = temp[4][8];
@@ -363,7 +346,7 @@ impl RubiksCube {
     }
 
     pub fn l_clockwise(&mut self) {
-        let temp = self.faces.clone();
+        let temp = self.faces;
         self.faces[5][0] = temp[5][6];
         self.faces[5][1] = temp[5][3];
         self.faces[5][2] = temp[5][0];
@@ -387,7 +370,7 @@ impl RubiksCube {
     }
 
     pub fn l_counterclockwise(&mut self) {
-        let temp = self.faces.clone();
+        let temp = self.faces;
         self.faces[5][0] = temp[5][2];
         self.faces[5][1] = temp[5][5];
         self.faces[5][2] = temp[5][8];
@@ -408,54 +391,6 @@ impl RubiksCube {
         self.faces[3][2] = temp[0][6];
         self.faces[3][5] = temp[0][3];
         self.faces[3][8] = temp[0][0];
-    }
-    
-    pub fn y_clockwise(&mut self) {
-        let temp = self.faces.clone();
-        self.faces[2] = temp[4];
-        self.faces[5] = temp[2];
-        self.faces[3] = temp[5];
-        self.faces[4] = temp[3];
-    }
-
-    pub fn y_counterclockwise(&mut self) {
-        let temp = self.faces.clone();
-        self.faces[4] = temp[2];
-        self.faces[3] = temp[4];
-        self.faces[5] = temp[3];
-        self.faces[2] = temp[5];
-    }
-    
-    pub fn m_clockwise(&mut self) {
-        let temp = self.faces.clone();
-        self.faces[0][1] = temp[2][1];
-        self.faces[0][4] = temp[2][4];
-        self.faces[0][7] = temp[2][7];
-        self.faces[1][1] = temp[3][7];
-        self.faces[1][4] = temp[3][4];
-        self.faces[1][7] = temp[3][1];
-        self.faces[2][1] = temp[1][1];
-        self.faces[2][4] = temp[1][4];
-        self.faces[2][7] = temp[1][7];
-        self.faces[3][1] = temp[0][7];
-        self.faces[3][4] = temp[0][4];
-        self.faces[3][7] = temp[0][1];
-    }
-    
-    pub fn m_counterclockwise(&mut self) {
-        let temp = self.faces.clone();
-        self.faces[0][1] = temp[3][7];
-        self.faces[0][4] = temp[3][4];
-        self.faces[0][7] = temp[3][1];
-        self.faces[1][1] = temp[2][1];
-        self.faces[1][4] = temp[2][4];
-        self.faces[1][7] = temp[2][7];
-        self.faces[2][1] = temp[0][1];
-        self.faces[2][4] = temp[0][4];
-        self.faces[2][7] = temp[0][7];
-        self.faces[3][1] = temp[1][7];
-        self.faces[3][4] = temp[1][4];
-        self.faces[3][7] = temp[1][1];
     }
 
 }

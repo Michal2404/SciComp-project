@@ -8,6 +8,7 @@ use crate::rubiks::cube::RubiksCube;
 use crate::rubiks_two_phase::cubie::CubieCube;
 use crate::ui::app::CubeSettings;
 use crate::ui::rotate::MoveQueue;
+// use crate::ui::rotate::Rotation;
 use crate::cfop::total::cfop_solver;
 use crate::rubiks_two_phase::solver::solve;
 use crate::rubiks_two_phase::bfs::bfs_solver;
@@ -22,6 +23,7 @@ use rand::Rng;
 use rand::seq::SliceRandom;
 
 use futures_lite::future;
+
 
 // Interacting with egui
 #[derive(Debug, Default, Event)]
@@ -86,7 +88,8 @@ impl Default for SolverInformation {
 impl SolverInformation {
     fn uncheck_all_except(&mut self, solver_name: &str) {
         for solver in self.solvers.iter_mut() {
-            solver.checked = solver.name == solver_name.to_string();
+            solver.checked = solver.name == *solver_name;
+            // solver.checked = solver.name == solver_name.to_string();
         }
     }
 }
@@ -142,6 +145,7 @@ pub fn game_ui(
     mut solver_information: ResMut<SolverInformation>,
     mut ui_information: ResMut<UiInformation>,
     mut move_queue: ResMut<MoveQueue>,
+    // mut rotation: ResMut<Rotation>,
     mut scramble_event: EventWriter<ScrambleEvent>,
     mut reset_event: EventWriter<ResetEvent>,
     mut solve_event: EventWriter<SolveEvent>,
@@ -370,7 +374,7 @@ pub fn game_ui(
                         ui.add_space(col_spacing);
                         if ui.add(egui::Button::new("Next")).clicked() && !solve_data.solve_sequence.is_empty(){
                             // if solve_data.index is at the solution length, we continue
-                            if solve_data.index <= solve_data.solve_sequence.len() - 1 {
+                            if solve_data.index < solve_data.solve_sequence.len() {
                                 // we push the first value to the back
                                 move_queue.0.push_back(solve_data.solve_sequence[solve_data.index].clone());
                                 // look at next index
@@ -416,22 +420,17 @@ pub fn game_ui(
         
         // Display current solve sequence
         ui.horizontal_wrapped(|ui| {
-            // ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
-                // ui.add_space(col_spacing);
-                for (i, move_) in solve_data.solve_sequence.iter().enumerate() {
-                    let text = if i as isize == solve_data.index as isize - 1 {
-                        egui::RichText::new(move_.clone()).color(egui::Color32::GREEN)
-                    } else {
-                        egui::RichText::new(move_.clone())
-                    };
-                    ui.add(egui::Label::new(text
-                        .font(egui::FontId::proportional(font_size)))
-                        .wrap()
-                    );
-                }
-                // ui.add_space(col_spacing);
-            // });
-            // ui.add_space(col_spacing);
+            for (i, move_) in solve_data.solve_sequence.iter().enumerate() {
+                let text = if i as isize == solve_data.index as isize - 1 {
+                    egui::RichText::new(move_.clone()).color(egui::Color32::GREEN)
+                } else {
+                    egui::RichText::new(move_.clone())
+                };
+                ui.add(egui::Label::new(text
+                    .font(egui::FontId::proportional(font_size)))
+                    .wrap()
+                );
+            }
         });
 
         ui.end_row();
@@ -479,8 +478,8 @@ fn generate_random_scramble(
     /*
     This function generates a random scramble that is 20 characters long
      */
-    let possible_moves = vec!["U", "D", "F", "B", "L", "R"];
-    let possible_directions = vec!["", "'", "2"];
+    let possible_moves = ["U", "D", "F", "B", "L", "R"];
+    let possible_directions = ["", "'", "2"];
 
     // initialize text
     let mut text = String::new();
@@ -520,7 +519,8 @@ fn generate_random_scramble(
         
         // if its not the very last move, we add a white space at the end
         if i != cube_settings.num_scramble_moves-1{ 
-            text.push_str(" ");
+            text.push(' ');
+            // text.push_str(" ");
         }
     }
     text
@@ -546,7 +546,7 @@ pub fn scramble_cube(
         scramble.scramble_content.push_str(&temp);
 
         // separate based on white space
-        let output_list: Vec<String> = vec![scramble.scramble_content.clone()].iter().flat_map(|s| s.split_whitespace()).map(|s| s.to_string()).collect();
+        let output_list: Vec<String> = [scramble.scramble_content.clone()].iter().flat_map(|s| s.split_whitespace()).map(|s| s.to_string()).collect();
         
         // clear text_input
         scramble.input_text.clear();
@@ -601,12 +601,10 @@ pub fn poll_solve_task(
             // add the sequence to solve data
             solve_data.solve_content = output_list.clone().join(" ");
 
-            let index = solve_data.index.clone();
-
             // if step by step is enabled, we dont perfrom this
             if !ui_information.step_by_step {
                 // we push the moves to the move_queue starting from solve_data.index
-                for i in index..output_list.len() {
+                for i in solve_data.index..output_list.len() {
                     move_queue.0.push_back(output_list[i].clone());
                     solve_data.index += 1;
                 }
@@ -683,8 +681,8 @@ pub fn solve_cube(
         // Clone necessary data for the async task
         let scramble_sequence_clone = scramble_sequence.clone();
 
-        let use_ida = solver_information.use_ida.clone();
-        let ida_length = solver_information.ida_length.clone();
+        let use_ida = solver_information.use_ida;
+        let ida_length = solver_information.ida_length;
         
         // Spawn a task on Bevy's thread pool
         let task_pool = AsyncComputeTaskPool::get();
@@ -692,32 +690,28 @@ pub fn solve_cube(
             match solver.name.as_str() {
                 "CFOP Solver" => {
                     let result = task_pool.spawn(async move {
-                        // solve_data_clone.time_taken.tick(time_clone.delta());
-                        cfop_solver(&scramble_sequence_clone.as_str(), cube)
+                        cfop_solver(scramble_sequence_clone.as_str(), cube)
                     });
                     // Store the task in the resource
                     solve_task.0 = Some(result);
                 }
                 "BFS Solver" => {
                     let result = task_pool.spawn(async move {
-                        // solve_data_clone.time_taken.tick(time_clone.delta());
-                        bfs_solver(&CubieCube::from_scramble(&scramble_sequence_clone.as_str()), 10).unwrap().iter().map(|m| m.to_string()).collect()
+                        bfs_solver(&CubieCube::from_scramble(scramble_sequence_clone.as_str()), 10).unwrap().iter().map(|m| m.to_string()).collect()
                     });
                     // Store the task in the resource
                     solve_task.0 = Some(result);
                 }
                 "IDA Solver" => {
                     let result = task_pool.spawn(async move {
-                        // solve_data_clone.time_taken.tick(time_clone.delta());
-                        ida_star_solver(&CubieCube::from_scramble(&scramble_sequence_clone.as_str()), 10).unwrap().iter().map(|m| m.to_string()).collect()
+                        ida_star_solver(&CubieCube::from_scramble(scramble_sequence_clone.as_str()), 10).unwrap().iter().map(|m| m.to_string()).collect()
                     });
                     // Store the task in the resource
                     solve_task.0 = Some(result);
                 }
                 "Two Phase Solver" => {
                     let result = task_pool.spawn(async move {
-                        // solve_data_clone.time_taken.tick(time_clone.delta());
-                        solve(&scramble_sequence_clone.as_str(), 20, 2.0, true, use_ida, Some(ida_length))
+                        solve(scramble_sequence_clone.as_str(), 20, 2.0, true, use_ida, Some(ida_length))
                     });
                     // Store the task in the resource
                     solve_task.0 = Some(result);

@@ -9,15 +9,15 @@ pub fn find_edges_with_color(cube: &RubiksCube, target: &Color) -> Vec<(usize, u
      */
     let mut edges: Vec<(usize, usize)> = Vec::new();
     // loop through all positions
-    for i in 0..6 as usize {
-        for j in 0..9 as usize {
+    for i in 0..6_usize {
+        for j in 0..9_usize {
             // if the edge has the target color, we return this
             if cube.faces[i][j] == *target && (j == 1 || j == 3 || j == 5 || j == 7) {
                 edges.push((i, j));
             }
         }
     }
-    return edges
+    edges
 }
 
 pub fn find_corner_with_color(cube: &RubiksCube, target: &Color) -> Vec<(usize, usize)> {
@@ -26,15 +26,15 @@ pub fn find_corner_with_color(cube: &RubiksCube, target: &Color) -> Vec<(usize, 
      */
     let mut corner: Vec<(usize, usize)> = Vec::new();
     // loop through all positions
-    for i in 0..6 as usize {
-        for j in 0..9 as usize {
+    for i in 0..6_usize {
+        for j in 0..9_usize {
             // if the edge has the target color, we return this
             if cube.faces[i][j] == *target && (j == 0 || j == 2 || j == 6 || j == 8) {
                 corner.push((i, j));
             }
         }
     }
-    return corner
+    corner
 }
 
 pub fn parse_vec_color(content: &str) -> Vec<Color> {
@@ -132,7 +132,8 @@ pub fn cleanup_moves(output_list: Vec<String>) -> Vec<String>{
         // Simplify based on the count modulo 4
         match i32::abs(count % 4) {
             1 => {
-                if count < 0 { simplified_output_list.push(format!("{}'", move_notation)) } else { simplified_output_list.push(format!("{}", move_notation)) }
+                // if count < 0 { simplified_output_list.push(format!("{}'", move_notation)) } else { simplified_output_list.push(format!("{}", move_notation)) }
+                if count < 0 { simplified_output_list.push(format!("{}'", move_notation)) } else { simplified_output_list.push(move_notation.to_string()) }
                 
             }, // Single move
             2 => {
@@ -141,7 +142,8 @@ pub fn cleanup_moves(output_list: Vec<String>) -> Vec<String>{
             }
             3 => {
                 // Everything becomes the opposite
-                if count < 0 { simplified_output_list.push(format!("{}", move_notation)) } else { simplified_output_list.push(format!("{}'", move_notation)) }
+                // if count < 0 { simplified_output_list.push(format!("{}", move_notation)) } else { simplified_output_list.push(format!("{}'", move_notation)) }
+                if count < 0 { simplified_output_list.push(move_notation.to_string()) } else { simplified_output_list.push(format!("{}'", move_notation)) }
             }
             _ => {} // Do nothing for a multiple of 4
         }
@@ -180,9 +182,11 @@ pub fn local_to_global(a: usize, b: usize) -> (usize, usize, usize) {
         0 => if x == 2 || y == 0 || z == 2 {(0, 2)} else if z == 0 {(0, 0)} else {(2, 2)},
         1 => (1, 2),
         2 => if x == 2 || y == 0 || z == 2 {(2, 2)} else if z == 0 {(2, 0)} else {(0, 2)},
-        3 => if x == 2 || y == 0 || z == 2 {(0, 1)} else if z == 0 {(0, 1)} else {(2, 1)}
+        // 3 => if x == 2 || y == 0 || z == 2 {(0, 1)} else if z == 0 {(0, 1)} else {(2, 1)}
+        3 => if x == 2 || y == 0 || z == 2 || z == 0 {(0, 1)} else {(2, 1)}
         4 => (1, 1),
-        5 => if x == 2 || y == 0 || z == 2 {(2, 1)} else if z == 0 {(2, 1)} else {(0, 1)},
+        // 5 => if x == 2 || y == 0 || z == 2 {(2, 1)} else if z == 0 {(2, 1)} else {(0, 1)},
+        5 => if x == 2 || y == 0 || z == 2 || z == 0 {(2, 1)} else {(0, 1)},
         6 => if x == 2 || y == 0 || z == 2 {(0, 0)} else if z == 0 {(0, 2)} else {(2, 0)},
         7 => (1, 0),
         8 => if x == 2 || y == 0 || z == 2 {(2, 0)} else if z == 0 {(2, 2)} else {(0, 0)},

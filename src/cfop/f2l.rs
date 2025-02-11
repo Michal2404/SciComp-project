@@ -43,7 +43,7 @@ pub fn solve_f2l(cube: &mut RubiksCube, target: &Color) -> Vec<String> {
         // first loop through each color in the vector
         for color in colors.clone() {
             // find corner and edge piece locations
-            let corner = corner_piece_location(cube, &target, &color[0], &color[1]);
+            let corner = corner_piece_location(cube, target, &color[0], &color[1]);
             let edge = edge_piece_location(cube, &color[0], &color[1]);
             
             // check if they are already solved and if it is, we move onto the next color
@@ -82,7 +82,7 @@ pub fn solve_f2l(cube: &mut RubiksCube, target: &Color) -> Vec<String> {
         // if count is 4, that means we did a full loop without finding algorithm, therefore we must take trouble piece out of slot
         if count == 4 {
             // locate troubled piece
-            let corner = corner_piece_location(cube, &target, &colors[0][0], &colors[0][1]);
+            let corner = corner_piece_location(cube, target, &colors[0][0], &colors[0][1]);
             let edge = edge_piece_location(cube, &colors[0][0], &colors[0][1]);
             
             // convert local to global
@@ -141,7 +141,7 @@ pub fn solve_f2l(cube: &mut RubiksCube, target: &Color) -> Vec<String> {
     // once all done, we will return out the list
     let moves = output_list.iter().flat_map(|s| s.split_whitespace()).map(|s| s.to_string()).collect();
 
-    return cleanup_moves(moves)
+    cleanup_moves(moves)
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
@@ -215,7 +215,7 @@ fn edge_piece_location(cube: &RubiksCube, edge_1: &Color, edge_2: &Color) -> Vec
     }
     
     // otherwise, we return (3, 9) and this will give an error later
-    return vec![(3, 9)]
+    vec![(3, 9)]
     
 }
 
@@ -229,7 +229,6 @@ fn corner_piece_location(cube: &RubiksCube, target: &Color, corner_1: &Color, co
     
     // next we determine the color of the other 2 colors on the corner piece
     // to do this, we convert the local coordinate system into global, then back again into local
-    // let mut location: HashMap<Vec<Color>, Vec<(usize, usize)>> = HashMap::new();
     for i in 0..location.len() {
         // convert local into global
         let (x, y, z) = local_to_global(location[i].0, location[i].1);
@@ -244,8 +243,7 @@ fn corner_piece_location(cube: &RubiksCube, target: &Color, corner_1: &Color, co
             return vec![location[i], local_positions[1]]
         }
     }
-    // return location
-    return vec![(3, 9)]
+    vec![(3, 9)]
     
     
 }

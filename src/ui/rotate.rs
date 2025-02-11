@@ -62,16 +62,25 @@ impl Rotation {
                     let mut angle = angle_constant.unwrap() * cube_settings.rotate_speed * TAU * time.delta_secs();
                     let mut new_left_angle = cubie.left_angle + angle;
                     // if we exceeded movement, we stop
-                    // for condition 1
+                    // // for condition 1
+                    // if ((self.direction == Direction::Clockwise90 || self.direction == Direction::Clockwise180) && self.position == -1.0 && new_left_angle >= 0.0) ||
+                    // (self.direction == Direction::Counterclockwise90 && self.position == 1.0 && new_left_angle >= 0.0)
+                    // {
+                    //     angle = cubie.left_angle;
+                    //     new_left_angle = 0.0;
+                    //     self.completed = true;
+                    // }
+                    // // for condition 2
+                    // else if (self.direction == Direction::Counterclockwise90 && self.position == -1.0 && new_left_angle <= 0.0) ||
+                    // ((self.direction == Direction::Clockwise90 || self.direction == Direction::Clockwise180) && self.position == 1.0 && new_left_angle <= 0.0)
+                    // {
+                    //     angle = cubie.left_angle;
+                    //     new_left_angle = 0.0;
+                    //     self.completed = true;
+                    // }
                     if ((self.direction == Direction::Clockwise90 || self.direction == Direction::Clockwise180) && self.position == -1.0 && new_left_angle >= 0.0) ||
-                    (self.direction == Direction::Counterclockwise90 && self.position == 1.0 && new_left_angle >= 0.0)
-                    {
-                        angle = cubie.left_angle;
-                        new_left_angle = 0.0;
-                        self.completed = true;
-                    }
-                    // for condition 2
-                    else if (self.direction == Direction::Counterclockwise90 && self.position == -1.0 && new_left_angle <= 0.0) ||
+                    (self.direction == Direction::Counterclockwise90 && self.position == 1.0 && new_left_angle >= 0.0) ||
+                    (self.direction == Direction::Counterclockwise90 && self.position == -1.0 && new_left_angle <= 0.0) ||
                     ((self.direction == Direction::Clockwise90 || self.direction == Direction::Clockwise180) && self.position == 1.0 && new_left_angle <= 0.0)
                     {
                         angle = cubie.left_angle;
@@ -121,22 +130,22 @@ impl Rotation {
         if (self.direction == Direction::Clockwise90 && self.position == -1.0) ||
         (self.direction == Direction::Counterclockwise90 && self.position == 1.0)
         {
-            return -FRAC_PI_2
+            -FRAC_PI_2
         }
         // for condition 2
         else if (self.direction == Direction::Counterclockwise90 && self.position == -1.0) ||
         (self.direction == Direction::Clockwise90 && self.position == 1.0)
         {
-            return FRAC_PI_2
+            FRAC_PI_2
         }
         else if self.direction == Direction::Clockwise180 && self.position == -1.0 {
-            return -PI
+            -PI
         }
         else if self.direction == Direction::Clockwise180 && self.position == 1.0 {
-            return PI
+            PI
         }
         else {
-            return 0.0
+            0.0
         }
 
     }
@@ -153,7 +162,6 @@ pub fn plan_move(
     // first we see if the query isn't empty
     if !side_move_queue.0.is_empty(){
         // pop the first move
-        // let temp = side_move_queue.0[0].clone();
         let temp = side_move_queue.0.pop_front().unwrap();
         let notation = temp.as_str();
         // convert into rotation to see which cubie we need to update the agle
@@ -172,8 +180,6 @@ pub fn plan_move(
 
 pub fn piece_translation_round(
     mut cube: Query<(&mut Transform, &mut Cubie), Without<Parent>>,
-    // mut solve_data: ResMut<SolveData>,
-    // mut cube: Query<(&mut Transform, &mut Cubie)>,
 ) {
     /*
     This function cleans up moves after transformation

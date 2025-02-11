@@ -31,36 +31,48 @@ pub fn zoom_camera(
         match ev.unit {
             MouseScrollUnit::Line => {
                 if ev.x + ev.y > 0.0 {
-                    transform.translation.x =
-                        cube_settings.camera_zoom_speed * transform.translation.x;
-                    transform.translation.y =
-                        cube_settings.camera_zoom_speed * transform.translation.y;
-                    transform.translation.z =
-                        cube_settings.camera_zoom_speed * transform.translation.z;
+                    transform.translation.x *= cube_settings.camera_zoom_speed;
+                    transform.translation.y *= cube_settings.camera_zoom_speed;
+                    transform.translation.z *= cube_settings.camera_zoom_speed;
+                    // transform.translation.x =
+                    //     cube_settings.camera_zoom_speed * transform.translation.x;
+                    // transform.translation.y =
+                    //     cube_settings.camera_zoom_speed * transform.translation.y;
+                    // transform.translation.z =
+                    //     cube_settings.camera_zoom_speed * transform.translation.z;
                 } else {
-                    transform.translation.x =
-                        transform.translation.x / cube_settings.camera_zoom_speed;
-                    transform.translation.y =
-                        transform.translation.y / cube_settings.camera_zoom_speed;
-                    transform.translation.z =
-                        transform.translation.z / cube_settings.camera_zoom_speed;
+                    transform.translation.x /= cube_settings.camera_zoom_speed;
+                    transform.translation.y /= cube_settings.camera_zoom_speed;
+                    transform.translation.z /= cube_settings.camera_zoom_speed;
+                    // transform.translation.x =
+                    //     transform.translation.x / cube_settings.camera_zoom_speed;
+                    // transform.translation.y =
+                    //     transform.translation.y / cube_settings.camera_zoom_speed;
+                    // transform.translation.z =
+                    //     transform.translation.z / cube_settings.camera_zoom_speed;
                 }
             }
             MouseScrollUnit::Pixel => {
                 if ev.x + ev.y > 0.0 {
-                    transform.translation.x =
-                        cube_settings.camera_zoom_speed * transform.translation.x;
-                    transform.translation.y =
-                        cube_settings.camera_zoom_speed * transform.translation.y;
-                    transform.translation.z =
-                        cube_settings.camera_zoom_speed * transform.translation.z;
+                    transform.translation.x *= cube_settings.camera_zoom_speed;
+                    transform.translation.y *= cube_settings.camera_zoom_speed;
+                    transform.translation.z *= cube_settings.camera_zoom_speed;
+                    // transform.translation.x =
+                    //     cube_settings.camera_zoom_speed * transform.translation.x;
+                    // transform.translation.y =
+                    //     cube_settings.camera_zoom_speed * transform.translation.y;
+                    // transform.translation.z =
+                    //     cube_settings.camera_zoom_speed * transform.translation.z;
                 } else {
-                    transform.translation.x =
-                        transform.translation.x / cube_settings.camera_zoom_speed;
-                    transform.translation.y =
-                        transform.translation.y / cube_settings.camera_zoom_speed;
-                    transform.translation.z =
-                        transform.translation.z / cube_settings.camera_zoom_speed;
+                    transform.translation.x /= cube_settings.camera_zoom_speed;
+                    transform.translation.y /= cube_settings.camera_zoom_speed;
+                    transform.translation.z /= cube_settings.camera_zoom_speed;
+                    // transform.translation.x =
+                    //     transform.translation.x / cube_settings.camera_zoom_speed;
+                    // transform.translation.y =
+                    //     transform.translation.y / cube_settings.camera_zoom_speed;
+                    // transform.translation.z =
+                    //     transform.translation.z / cube_settings.camera_zoom_speed;
                 }
             }
         }

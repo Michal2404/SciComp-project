@@ -34,7 +34,8 @@ pub fn solve_cross(cube: &mut RubiksCube, target: &Color) -> Vec<String>{
         // if we made the cross, we stop and return the moves
         if solved_state(&current_cube, target).0 {
             let mut i: (usize, RubiksCube, String) = current.clone();
-            while i.2 != ""{
+            while !i.2.is_empty(){
+            // while i.2 != ""{
                 output_list.push(i.2.clone());
                 i = came_from[&i].clone();
             }
@@ -63,18 +64,14 @@ pub fn solve_cross(cube: &mut RubiksCube, target: &Color) -> Vec<String>{
             if tentative_g_score < *g_score.get(&temp).unwrap_or(&usize::MAX) {
                 // Insert into g_score and came_from with owned types
                 g_score.insert(temp.clone(), tentative_g_score);
-                f_score.insert(temp.clone(), tentative_g_score + heuristics(&temp, &target));
+                f_score.insert(temp.clone(), tentative_g_score + heuristics(&temp, target));
                 came_from.insert((*f_score.get(&temp).unwrap(), temp.clone(), i.0.to_string()), (current.0, current_cube.clone(), current.2.clone()));
                 open_set.push(Reverse((*f_score.get(&temp).unwrap(), temp.clone(), i.0.to_string())));
             }
         }
-
-        
     }
 
-    return output_list
-    
-    // return cube.clone();
+    output_list   
 }
 
 pub fn solved_state(cube: &RubiksCube, target: &Color) -> (bool, usize) {
@@ -111,7 +108,7 @@ fn location_side_colors(cube: &RubiksCube, target: &Color) -> Vec<((usize, usize
 
     // loop through all positions
     let face_target = find_nested_index(cube, target);
-    for i in 0..6 as usize {
+    for i in 0..6_usize {
         // determine which one is the opposite from target color, and we will not include that
         let face_opposite = opposite_face(face_target);
         if i == face_opposite || i == face_target {

@@ -290,7 +290,7 @@ pub fn spawn_rubiks_cube(
 
                 // initialize cubie
                 let cubie = Cubie {
-                    id: id,
+                    id,
                     original_position: Vec3::new(x, y, z),
                     current_position: Vec3::new(x, y, z),
                     left_angle: 0.0

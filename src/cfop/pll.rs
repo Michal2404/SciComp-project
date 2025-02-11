@@ -60,7 +60,7 @@ pub fn solve_pll(cube: &mut RubiksCube) -> Vec<String>{
     // once all done, we will print out the list
     let moves = output_list.iter().flat_map(|s| s.split_whitespace()).map(|s| s.to_string()).collect();
 
-    return cleanup_moves(moves)
+    cleanup_moves(moves)
 }
 
 
@@ -70,15 +70,15 @@ fn piece_location(cube: &RubiksCube, target: &Color) -> Vec<(usize, usize)> {
      */
     let mut position: Vec<(usize, usize)> = Vec::new();
     // loop through all positions
-    for i in 2..6 as usize {
-        for j in 0..3 as usize {
+    for i in 2..6_usize {
+        for j in 0..3_usize {
             // if the edge has the target color, we return this
             if cube.faces[i][j] == *target {
                 position.push((i, j));
             }
         }
     }
-    return position
+    position
 }
 
 fn read_file(filename: &str) -> HashMap<String, Vec<Vec<(usize, usize)>>> {

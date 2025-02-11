@@ -118,10 +118,10 @@ pub fn run_visualization(run: bool) {
 }
 
 fn check_field(resource: Res<Rotation>) -> bool {
-    if resource.completed == true {
-        return true
+    if resource.completed {
+        true
     }
     else {
-        return false
+        false
     }
 }
