@@ -3,24 +3,6 @@
 version = 4
 
 [[package]]
-name = "SciComp-project"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "bevy-inspector-egui",
- "bevy_egui",
- "csv",
- "eframe",
- "egui_flex",
- "futures-lite",
- "lazy_static",
- "num",
- "once_cell",
- "rand",
- "umya-spreadsheet",
-]
-
-[[package]]
 name = "ab_glyph"
 version = "0.2.29"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4904,6 +4886,24 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "93fc1dc3aaa9bfed95e02e6eadabb4baf7e3078b0bd1b4d7b6b0b68378900502"
 dependencies = [
  "winapi-util",
+]
+
+[[package]]
+name = "scicomp-project"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy-inspector-egui",
+ "bevy_egui",
+ "csv",
+ "eframe",
+ "egui_flex",
+ "futures-lite",
+ "lazy_static",
+ "num",
+ "once_cell",
+ "rand",
+ "umya-spreadsheet",
 ]
 
 [[package]]

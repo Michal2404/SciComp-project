@@ -1,5 +1,5 @@
 // This file configures the cubie pieces and displays it
-use crate::{rubiks::cube, ui::app::CubeSettings};
+use crate::ui::app::CubeSettings;
 
 use bevy::prelude::*;
 use std::f32::consts::{PI, FRAC_PI_2};
@@ -23,7 +23,7 @@ impl Cubie {
         meshes: &mut ResMut<Assets<Mesh>>,
         materials: &mut ResMut<Assets<StandardMaterial>>,
         cube_settings: &Res<CubeSettings>,
-        child: &bool,
+        // child: &bool,
     ){
         /*
         This function spawns in the cubie
@@ -37,7 +37,7 @@ impl Cubie {
         // let b = 1.0;
         let a = 0.1;
         // create cubie
-        if *child{
+        // if *child{
             commands
                 .spawn((
                     Mesh3d(meshes.add(Cuboid::new(cube_settings.piece_size, cube_settings.piece_size, cube_settings.piece_size).mesh())),
@@ -55,23 +55,23 @@ impl Cubie {
                 .with_children(|parent| {
                     self.spawn_stickers(parent, meshes, materials, cube_settings);
                 });
-            }
-            else {
-            commands
-                .spawn((
-                    Mesh3d(meshes.add(Cuboid::new(cube_settings.piece_size, cube_settings.piece_size, cube_settings.piece_size).mesh())),
-                    // MeshMaterial3d(materials.add(Color::BLACK)),
-                    MeshMaterial3d(materials.add(Color::srgba(r, g, b, a))),
-                    Transform::from_translation(Vec3::new(self.original_position[0], self.original_position[1], self.original_position[2])),
-                    Cubie{
-                        id: self.id,
-                        original_position: self.original_position,
-                        current_position: self.current_position,
-                        left_angle: self.left_angle
-                    },
-                    RayCastPickable,
-                ));
-        }
+            // }
+            // else {
+            // commands
+            //     .spawn((
+            //         Mesh3d(meshes.add(Cuboid::new(cube_settings.piece_size, cube_settings.piece_size, cube_settings.piece_size).mesh())),
+            //         // MeshMaterial3d(materials.add(Color::BLACK)),
+            //         MeshMaterial3d(materials.add(Color::srgba(r, g, b, a))),
+            //         Transform::from_translation(Vec3::new(self.original_position[0], self.original_position[1], self.original_position[2])),
+            //         Cubie{
+            //             id: self.id,
+            //             original_position: self.original_position,
+            //             current_position: self.current_position,
+            //             left_angle: self.left_angle
+            //         },
+            //         RayCastPickable,
+            //     ));
+        // }
         
         
     }
@@ -83,7 +83,8 @@ impl Cubie {
         materials: &mut ResMut<Assets<StandardMaterial>>,
         cube_settings: &CubeSettings,
     ) {    
-        if self.has_up_face(cube_settings) {
+        if self.has_up_face() {
+        // if self.has_up_face(cube_settings) {
             let mut transform = Transform::from_translation(Vec3::new(
                 0.0, 
                 0.5 * cube_settings.piece_size + 0.01, 
@@ -101,7 +102,8 @@ impl Cubie {
             ));
         }
     
-        if self.has_down_face(cube_settings) {
+        if self.has_down_face() {
+        // if self.has_down_face(cube_settings) {
             let mut transform = Transform::from_translation(Vec3::new(
                 0.0,
                 -0.5 * cube_settings.piece_size - 0.01,
@@ -118,7 +120,8 @@ impl Cubie {
                 transform,
             ));
         }
-        if self.has_left_face(cube_settings) {
+        if self.has_left_face() {
+        // if self.has_left_face(cube_settings) {
             let mut transform = Transform::from_translation(Vec3::new(
                 -0.5 * cube_settings.piece_size - 0.01,
                 0.0,
@@ -136,7 +139,8 @@ impl Cubie {
             ));
         }
     
-        if self.has_right_face(cube_settings) {
+        if self.has_right_face() {
+        // if self.has_right_face(cube_settings) {
             let mut transform = Transform::from_translation(Vec3::new(
                 0.5 * cube_settings.piece_size + 0.01, 
                 0.0, 
@@ -154,7 +158,8 @@ impl Cubie {
             ));
         }
     
-        if self.has_front_face(cube_settings) {
+        if self.has_front_face() {
+        // if self.has_front_face(cube_settings) {
             let mut transform = Transform::from_translation(Vec3::new(
                 0.0, 
                 0.0, 
@@ -172,7 +177,8 @@ impl Cubie {
             ));
         }
     
-        if self.has_back_face(cube_settings) {
+        if self.has_back_face() {
+        // if self.has_back_face(cube_settings) {
             let mut transform = Transform::from_translation(Vec3::new(
                 0.0,
                 0.0,
@@ -191,38 +197,50 @@ impl Cubie {
         }
     }
 
-    pub fn has_up_face(&self, cube_settings: &CubeSettings) -> bool {
-        self.original_position[1] == 1.0 + cube_settings.cube_y
+    pub fn has_up_face(&self) -> bool {
+    // pub fn has_up_face(&self, cube_settings: &CubeSettings) -> bool {
+        // self.original_position[1] == 1.0 + cube_settings.cube_y
+        self.original_position[1] == 1.0
     }
-    pub fn has_down_face(&self, cube_settings: &CubeSettings) -> bool {
-        self.original_position[1] == -1.0 + cube_settings.cube_y
+    pub fn has_down_face(&self) -> bool {
+        // pub fn has_down_face(&self, cube_settings: &CubeSettings) -> bool {
+        // self.original_position[1] == -1.0 + cube_settings.cube_y
+        self.original_position[1] == -1.0
     }
-    pub fn has_left_face(&self, cube_settings: &CubeSettings) -> bool {
+    pub fn has_left_face(&self) -> bool {
+        // pub fn has_left_face(&self, cube_settings: &CubeSettings) -> bool {
         // if self.original_position[0] == -1.0 && self.original_position[1] == 0.0 && self.original_position[2] == 0.0 {
         //     return true;
         // }
-        self.original_position[0] == -1.0 + cube_settings.cube_x
+        // self.original_position[0] == -1.0 + cube_settings.cube_x
+        self.original_position[0] == -1.0
         // false
     }
-    pub fn has_right_face(&self, cube_settings: &CubeSettings) -> bool {
+    pub fn has_right_face(&self) -> bool {
+    // pub fn has_right_face(&self, cube_settings: &CubeSettings) -> bool {
         // if self.original_position[0] == 1.0 && self.original_position[1] == 0.0 && self.original_position[2] == 0.0 {
         //     return true;
         // }
-        self.original_position[0] == 1.0 + cube_settings.cube_x
+        // self.original_position[0] == 1.0 + cube_settings.cube_x
+        self.original_position[0] == 1.0
         // false
     }
-    pub fn has_front_face(&self, cube_settings: &CubeSettings) -> bool {
+    pub fn has_front_face(&self) -> bool {
+    // pub fn has_front_face(&self, cube_settings: &CubeSettings) -> bool {
         // if self.original_position[2] == 1.0 && self.original_position[0] == 0.0 && self.original_position[1] == 0.0 {
         //     return true;
         // }
-        self.original_position[2] == 1.0 + cube_settings.cube_z
+        // self.original_position[2] == 1.0 + cube_settings.cube_z
+        self.original_position[2] == 1.0
         // false
     }
-    pub fn has_back_face(&self, cube_settings: &CubeSettings) -> bool {
+    pub fn has_back_face(&self) -> bool {
+    // pub fn has_back_face(&self, cube_settings: &CubeSettings) -> bool {
         // if self.original_position[2] == -1.0 && self.original_position[0] == 0.0 && self.original_position[1] == 0.0 {
         //     return true;
         // }
-        self.original_position[2] == -1.0 + cube_settings.cube_z
+        // self.original_position[2] == -1.0 + cube_settings.cube_z
+        self.original_position[2] == -1.0
         // false
     }
 }
@@ -238,11 +256,14 @@ pub fn spawn_rubiks_cube(
     */
     // initialize cubie id
     let mut id = 0;
-    let mut child = true;
+    // let mut child = true;
     // we loop through each cubie
-    for x in [-1.0+cube_settings.cube_x, 0.0+cube_settings.cube_x, 1.0+cube_settings.cube_x] {
-        for y in [-1.0+cube_settings.cube_y, 0.0+cube_settings.cube_y, 1.0+cube_settings.cube_y] {
-            for z in [-1.0+cube_settings.cube_z, 0.0+cube_settings.cube_z, 1.0+cube_settings.cube_z] {
+    for x in [-1.0, 0.0, 1.0] {
+        for y in [-1.0, 0.0, 1.0] {
+            for z in [-1.0, 0.0, 1.0] {
+    // for x in [-1.0+cube_settings.cube_x, 0.0+cube_settings.cube_x, 1.0+cube_settings.cube_x] {
+        // for y in [-1.0+cube_settings.cube_y, 0.0+cube_settings.cube_y, 1.0+cube_settings.cube_y] {
+            // for z in [-1.0+cube_settings.cube_z, 0.0+cube_settings.cube_z, 1.0+cube_settings.cube_z] {
                 // if x == 0.0 && y == 0.0 && z == 0.0 {
                 //     continue;
                 // }
@@ -275,7 +296,8 @@ pub fn spawn_rubiks_cube(
                     left_angle: 0.0
                 };
                 // create cubie
-                cubie.spawn(&mut commands, &mut meshes, &mut materials, &cube_settings, &child);
+                // cubie.spawn(&mut commands, &mut meshes, &mut materials, &cube_settings, &child);
+                cubie.spawn(&mut commands, &mut meshes, &mut materials, &cube_settings);
 
                 // update id
                 id += 1

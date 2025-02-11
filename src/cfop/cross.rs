@@ -67,13 +67,6 @@ pub fn solve_cross(cube: &mut RubiksCube, target: &Color) -> Vec<String>{
                 came_from.insert((*f_score.get(&temp).unwrap(), temp.clone(), i.0.to_string()), (current.0, current_cube.clone(), current.2.clone()));
                 open_set.push(Reverse((*f_score.get(&temp).unwrap(), temp.clone(), i.0.to_string())));
             }
-
-            // println!("{:?}", heuristics(&temp, &target));
-            
-            
-            // println!("{:?}", tentative_g_score);
-            // println!("{:?}", *g_score.get(&temp).unwrap_or(&usize::MAX));
-            // let tentative_g_score = g_score[&temp] + 1; // Assume uniform cost
         }
 
         
@@ -127,7 +120,6 @@ fn location_side_colors(cube: &RubiksCube, target: &Color) -> Vec<((usize, usize
         center.push(((i, 4), cube.faces[i][4]))
     }
 
-    // println!("{:?}", center);
     center
 }
 
@@ -138,7 +130,6 @@ fn heuristics(cube: &RubiksCube, target:&Color) -> usize {
     // we will calculate heuristics based on number of misplaced edges
     let (_, misplaced) = solved_state(cube, target);
     misplaced
-    // 0
 }
 
 

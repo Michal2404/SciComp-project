@@ -58,7 +58,6 @@ pub fn solve_pll(cube: &mut RubiksCube) -> Vec<String>{
         cube.apply_scramble("U");
     }
     // once all done, we will print out the list
-    // println!("{}", output_list.join(" "));
     let moves = output_list.iter().flat_map(|s| s.split_whitespace()).map(|s| s.to_string()).collect();
 
     return cleanup_moves(moves)

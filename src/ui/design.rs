@@ -43,7 +43,7 @@ pub struct SolveData {
 }
 
 // UI information resource for solver
-struct Solver {
+pub struct Solver {
     name: String,
     checked: bool,
 }

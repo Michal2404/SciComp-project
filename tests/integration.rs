@@ -1,11 +1,11 @@
-use SciComp_project::cfop::total::cfop_solver;
-use SciComp_project::cfop::cross::solved_state;
-use SciComp_project::rubiks::cube::RubiksCube;
-use SciComp_project::cfop::cross::solve_cross;
-use SciComp_project::cfop::f2l::solve_f2l;
-use SciComp_project::cfop::oll::solve_oll;
-use SciComp_project::cfop::pll::solve_pll;
-use SciComp_project::helper::utils::*;
+use scicomp_project::cfop::total::cfop_solver;
+use scicomp_project::cfop::cross::solved_state;
+use scicomp_project::rubiks::cube::RubiksCube;
+use scicomp_project::cfop::cross::solve_cross;
+use scicomp_project::cfop::f2l::solve_f2l;
+use scicomp_project::cfop::oll::solve_oll;
+use scicomp_project::cfop::pll::solve_pll;
+use scicomp_project::helper::utils::*;
 
 fn flip_and_toggle_moves(input: &str) -> String {
     input

@@ -70,13 +70,16 @@ pub fn cfop_solver(scramble: &str, mut cube: RubiksCube) -> Vec<String> {
     println!("{}", total_moves_cleaned.join(" "));
     println!("Number of Moves: {}", total_moves_cleaned.len());
     
-    // // Output data into excel file
-    // let _ = output_data((scramble, scramble.split(" ").collect::<Vec<&str>>().len()), 
-    // (cross_moves.clone(), cross_moves.len(), cross_elapsed_time),
-    // (f2l_moves.clone(), f2l_moves.len(), f2l_elapsed_time),
-    // (oll_moves.clone(), oll_moves.len(), oll_elapsed_time),
-    // (pll_moves.clone(), pll_moves.len(), pll_elapsed_time),
-    // (total_moves_cleaned.clone(), total_moves_cleaned.len(), cross_elapsed_time+f2l_elapsed_time+oll_elapsed_time+pll_elapsed_time));
+    // Output data into excel file
+    let output = false;
+    if output{
+        let _ = output_data((scramble, scramble.split(" ").collect::<Vec<&str>>().len()), 
+        (cross_moves.clone(), cross_moves.len(), cross_elapsed_time),
+        (f2l_moves.clone(), f2l_moves.len(), f2l_elapsed_time),
+        (oll_moves.clone(), oll_moves.len(), oll_elapsed_time),
+        (pll_moves.clone(), pll_moves.len(), pll_elapsed_time),
+        (total_moves_cleaned.clone(), total_moves_cleaned.len(), cross_elapsed_time+f2l_elapsed_time+oll_elapsed_time+pll_elapsed_time));
+    }
     
     total_moves_cleaned
 }
@@ -99,11 +102,9 @@ fn output_data(scramble: (&str, usize),
 
     // Specify the sheet name to read
     // Step 2: Access a specific worksheet
-    // let sheet = workbook.get_sheet_by_name_mut("raw data").unwrap();
     let sheet = workbook.get_sheet_by_name_mut("dijkstra").unwrap();
 
     // Iterate over rows and check for non-empty rows
-    // for (index, row) in sheet.get_row_collection().enumerate() {
     for row_num in 1..=u32::MAX {
         let default = Cell::default();
         let first_cell = sheet.get_cell_by_column_and_row(1, row_num).unwrap_or(&default);

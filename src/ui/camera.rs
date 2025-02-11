@@ -18,8 +18,6 @@ pub fn spawn_camera(
     commands.spawn((
             Camera3d::default(),
             Transform::from_xyz(cube_settings.camera_x, cube_settings.camera_y, cube_settings.camera_z).looking_at(Vec3::ZERO, Vec3::Y),
-            // Transform::from_xyz(cube_settings.camera_x, cube_settings.camera_y, cube_settings.camera_z).looking_at(Vec3::new(3.0, 0.0, -3.0), Vec3::new(3.0, 1.0, -3.0)),
-
     ));
 }
 
@@ -74,23 +72,14 @@ pub fn zoom_camera(
 pub struct MouseDraggingRecorder {
     pub start_pos: Option<Vec3>,
     pub piece: Option<Entity>,
-    // pub triggered: bool,
 }
 
-// impl MouseDraggingRecorder {
-//     pub fn clear(&mut self) {
-//         self.start_pos = None;
-//         self.piece = None;
-//         self.triggered = false;
-//     }
-// }
 pub fn move_camera(
     mut q_camera: Query<&mut Transform, With<Camera>>,
     mut motion_evr: EventReader<MouseMotion>,
     buttons: Res<ButtonInput<MouseButton>>,
     recorder: Res<MouseDraggingRecorder>,
     mut egui_context: EguiContexts,
-    cube_settings: Res<CubeSettings>,
 ) {
     // skip the movement of camera if use is interacting with the egui
     let ctx = egui_context.ctx_mut(); // Access egui's context
@@ -121,8 +110,8 @@ pub fn move_camera(
                             0.0002 * -motion.delta.x * max * TAU, // Multiplying by max is to maintain the same rate as sliding up and down
                             0.0,
                         );
-                        // transform.rotate_around(Vec3::ZERO, quat);
-                        transform.rotate_around(Vec3::new(cube_settings.cube_x, cube_settings.cube_y, cube_settings.cube_z), quat);
+                        transform.rotate_around(Vec3::ZERO, quat);
+                        // transform.rotate_around(Vec3::new(cube_settings.cube_x, cube_settings.cube_y, cube_settings.cube_z), quat);
                     }
                     if motion.delta.y.abs() > 0.001 {
                         // Vertical rotation requires rotation around the x-axis and z-axis at the same time, and the rotation angle is inversely proportional to the angle with the coordinate axis.
@@ -132,8 +121,8 @@ pub fn move_camera(
                             0.0,
                             0.0002 * motion.delta.y * transform.translation.x * TAU,
                         );
-                        // transform.rotate_around(Vec3::ZERO, quat);
-                        transform.rotate_around(Vec3::new(cube_settings.cube_x, cube_settings.cube_y, cube_settings.cube_z), quat);
+                        transform.rotate_around(Vec3::ZERO, quat);
+                        // transform.rotate_around(Vec3::new(cube_settings.cube_x, cube_settings.cube_y, cube_settings.cube_z), quat);
                     }
                 }
             }
@@ -142,29 +131,32 @@ pub fn move_camera(
     motion_evr.clear();
 }
 
-// pub fn handle_keyboard_input(
-//     keyboard_input: Res<ButtonInput<KeyCode>>,
-//     mut cube_settings: ResMut<CubeSettings>,
-// ) {
-//     if keyboard_input.pressed(KeyCode::ArrowLeft) {
-//         cube_settings.shift_view_sideways(-0.1, 0.0);
-//     }
-//     if keyboard_input.pressed(KeyCode::ArrowRight) {
-//         cube_settings.shift_view_sideways(0.1, 0.0);
-//     }
-//     if keyboard_input.pressed(KeyCode::ArrowUp) {
-//         cube_settings.shift_view_sideways(0.0, -0.1);
-//     }
-//     if keyboard_input.pressed(KeyCode::ArrowDown) {
-//         cube_settings.shift_view_sideways(0.0, 0.1);
-//     }
-// }
+pub fn pan_camera_with_keys(
+    keyboard_input: Res<ButtonInput<KeyCode>>,
+    cube_settings: ResMut<CubeSettings>,
+    mut query: Query<&mut Transform, With<Camera>>
+) {
+    for mut transform in query.iter_mut() {
+        // left arrow
+        if keyboard_input.pressed(KeyCode::ArrowLeft) {
+            transform.translation.x += cube_settings.pan_speed;
+            transform.translation.z -= cube_settings.pan_speed;
+        }
+        // right arrow
+        if keyboard_input.pressed(KeyCode::ArrowRight) {
+            transform.translation.x -= cube_settings.pan_speed;
+            transform.translation.z += cube_settings.pan_speed;
+        }
+        // up arrow
+        if keyboard_input.pressed(KeyCode::ArrowUp) {
+            transform.translation.z += cube_settings.pan_speed;
+            transform.translation.x += cube_settings.pan_speed;
+        }
+        // down arrow
+        if keyboard_input.pressed(KeyCode::ArrowDown) {
+            transform.translation.z -= cube_settings.pan_speed;
+            transform.translation.x -= cube_settings.pan_speed;
+        }
 
-// pub fn update_camera_position(
-//     mut q_camera: Query<&mut Transform, With<Camera3d>>,
-//     cube_settings: Res<CubeSettings>,
-// ) {
-//     let mut transform = q_camera.single_mut();
-//     transform.translation.x = cube_settings.camera_x;
-//     transform.translation.y = cube_settings.camera_y;
-// }
+    }
+}

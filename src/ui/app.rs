@@ -8,7 +8,7 @@ use std::collections::VecDeque;
 use bevy::prelude::*;
 use bevy::color::palettes;
 use bevy_egui::EguiPlugin;
-use bevy_inspector_egui::quick::WorldInspectorPlugin;
+// use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
 #[derive(Debug, Resource)]
 pub struct CubeSettings {
@@ -26,9 +26,7 @@ pub struct CubeSettings {
     pub camera_x: f32, // camera position x
     pub camera_y: f32, // camera position y
     pub camera_z: f32, // camera position z
-    pub cube_x: f32, // rubiks cube position x
-    pub cube_y: f32, // rubiks cube position y
-    pub cube_z: f32, // rubiks cube position z
+    pub pan_speed: f32, // speed to pan the camera
 }
 
 impl Default for CubeSettings {
@@ -48,17 +46,8 @@ impl Default for CubeSettings {
             camera_x: 6.0,
             camera_y: 6.0,
             camera_z: 6.0,
-            cube_x: 0.0,
-            cube_y: 0.0,
-            cube_z: 0.0,
+            pan_speed: 0.1,
         }
-    }
-}
-
-impl CubeSettings {
-    pub fn shift_view_sideways(&mut self, delta_x: f32, delta_y: f32) {
-        self.camera_x += delta_x;
-        self.camera_y += delta_y;
     }
 }
 
@@ -89,7 +78,6 @@ pub fn run_visualization(run: bool) {
     .insert_resource(MouseDraggingRecorder {
         start_pos: None,
         piece: None,
-        // triggered: false,
     })
     .register_type::<Cubie>()
     .add_event::<ScrambleEvent>()
@@ -110,8 +98,7 @@ pub fn run_visualization(run: bool) {
             (
                 zoom_camera,
                 move_camera,
-                // handle_keyboard_input,
-                // update_camera_position,
+                pan_camera_with_keys,
                 game_ui,
                 rotate_cube,
                 scramble_cube,
@@ -124,17 +111,8 @@ pub fn run_visualization(run: bool) {
         (
             piece_translation_round.after(TransformSystem::TransformPropagate,)
         )
-        // .after(TransformSystem::TransformPropagate,)
         .run_if(check_field)
     )
-    // .add_systems(
-    //     PostUpdate,
-    //     ((
-    //         piece_translation_round,
-    //         cleanup_movable_pieces.after(piece_translation_round),
-    //     )
-    //         .after(TransformSystem::TransformPropagate),),
-    // )
     .run();
     }
 }
