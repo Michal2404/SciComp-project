@@ -29,13 +29,14 @@ impl Cubie {
         This function spawns in the cubie
          */
 
-        let r = 0.5;
-        let g = 0.5;
-        let b = 0.5;
-        // let r = 1.0;
-        // let g = 1.0;
-        // let b = 1.0;
-        let a = 0.1;
+        // let r = 0.5;
+        // let g = 0.5;
+        // let b = 0.5;
+        let r = 1.0;
+        let g = 1.0;
+        let b = 1.0;
+        let a = 1.0;
+        // let a = 0.1;
         // create cubie
         // if *child{
             commands
