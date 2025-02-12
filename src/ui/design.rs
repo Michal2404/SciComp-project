@@ -421,7 +421,7 @@ pub fn game_ui(
         // Display current solve sequence
         ui.horizontal_wrapped(|ui| {
             for (i, move_) in solve_data.solve_sequence.iter().enumerate() {
-                let text = if i as isize == solve_data.index as isize - 1 {
+                let text = if i as isize == solve_data.index as isize - 1 && ui_information.step_by_step {
                     egui::RichText::new(move_.clone()).color(egui::Color32::GREEN)
                 } else {
                     egui::RichText::new(move_.clone())
