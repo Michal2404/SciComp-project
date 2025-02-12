@@ -50,9 +50,6 @@ impl Cubie {
                 self.spawn_stickers(parent, meshes, materials, cube_settings);
             });
             
-        
-        
-        
     }
 
     pub fn spawn_stickers(
