@@ -41,8 +41,12 @@ impl Default for CubeSettings {
             piece_size: 1.0,
             sticker_size: 0.9,
             camera_zoom_speed: 1.05,
+            // rotate_speed: 0.5,
             rotate_speed: 1.0,
             num_scramble_moves: 5,
+            // camera_x: 0.0,
+            // camera_y: 6.0,
+            // camera_z: 12.0,
             camera_x: 6.0,
             camera_y: 6.0,
             camera_z: 6.0,
@@ -65,7 +69,8 @@ pub fn run_visualization(run: bool) {
         require_markers: true,
         ..Default::default()
     })
-    .insert_resource(ClearColor(Color::srgb(0.9, 0.9, 0.9)))
+    .insert_resource(ClearColor(Color::srgb(1.0, 1.0, 1.0)))
+    // .insert_resource(ClearColor(Color::srgb(0.9, 0.9, 0.9)))
     .insert_resource(CubeSettings::default())
     .insert_resource(Scramble::default())
     .insert_resource(SolveData::default())
