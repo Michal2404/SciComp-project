@@ -70,7 +70,6 @@ pub fn run_visualization(run: bool) {
         ..Default::default()
     })
     .insert_resource(ClearColor(Color::srgb(1.0, 1.0, 1.0)))
-    // .insert_resource(ClearColor(Color::srgb(0.9, 0.9, 0.9)))
     .insert_resource(CubeSettings::default())
     .insert_resource(Scramble::default())
     .insert_resource(SolveData::default())
