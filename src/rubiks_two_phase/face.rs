@@ -74,39 +74,6 @@ impl FaceCube {
         }
     }
 
-    pub fn to_2dstring(&self) -> String {
-        let s = self.to_string();
-        let mut result = String::new();
-        result.push_str(&format!(
-            "   {}\n   {}\n   {}\n",
-            &s[0..3],
-            &s[3..6],
-            &s[6..9]
-        ));
-        result.push_str(&format!(
-            "{}{}{}{}\n{}{}{}{}\n{}{}{}{}\n",
-            &s[36..39],
-            &s[18..21],
-            &s[9..12],
-            &s[45..48],
-            &s[39..42],
-            &s[21..24],
-            &s[12..15],
-            &s[48..51],
-            &s[42..45],
-            &s[24..27],
-            &s[15..18],
-            &s[51..54]
-        ));
-        result.push_str(&format!(
-            "   {}\n   {}\n   {}\n",
-            &s[27..30],
-            &s[30..33],
-            &s[33..36]
-        ));
-        result
-    }
-
     pub fn to_cubie_cube(&self) -> CubieCube {
         let mut cc = CubieCube::new(None, None, None, None);
         for (i, &fac) in CORNER_FACELET.iter().enumerate() {

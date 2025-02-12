@@ -433,11 +433,7 @@ pub fn solve(
             // Replace notation: convert '3' to '\'' and remove '1'
             let solution_str = solution_str.replace('3', "'").replace('1', "");
 
-            return solution_str
-                .trim_end()
-                .split_whitespace()
-                .map(String::from)
-                .collect();
+            return solution_str.split_whitespace().map(String::from).collect();
         }
     }
 
@@ -456,11 +452,7 @@ pub fn solve(
         }
         let solution_str = solution_str.replace('3', "'").replace('1', "");
 
-        return solution_str
-            .trim_end()
-            .split_whitespace()
-            .map(String::from)
-            .collect();
+        return solution_str.split_whitespace().map(String::from).collect();
     } else {
         // Instead of returning an error string, we panic.
         panic!("No solution found.");

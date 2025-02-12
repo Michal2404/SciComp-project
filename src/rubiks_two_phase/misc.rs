@@ -34,7 +34,7 @@ pub fn c_nk(n: usize, k: usize) -> usize {
     s
 }
 
-pub fn factorial(x: usize) -> usize {
+pub fn _factorial(x: usize) -> usize {
     (1..=x).product()
 }
 
@@ -68,11 +68,11 @@ mod tests {
 
     #[test]
     fn test_factorial() {
-        assert_eq!(factorial(2), 2);
-        assert_eq!(factorial(3), 6);
-        assert_eq!(factorial(4), 24);
-        assert_eq!(factorial(5), 120);
-        assert_eq!(factorial(6), 720);
-        assert_eq!(factorial(7), 5040);
+        assert_eq!(_factorial(2), 2);
+        assert_eq!(_factorial(3), 6);
+        assert_eq!(_factorial(4), 24);
+        assert_eq!(_factorial(5), 120);
+        assert_eq!(_factorial(6), 720);
+        assert_eq!(_factorial(7), 5040);
     }
 }

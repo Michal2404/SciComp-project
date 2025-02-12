@@ -1,32 +1,32 @@
-use crate::ui::pieces::*;
 use crate::ui::camera::*;
-use crate::ui::rotate::*;
 use crate::ui::design::*;
+use crate::ui::pieces::*;
+use crate::ui::rotate::*;
 
 use std::collections::VecDeque;
 
-use bevy::prelude::*;
 use bevy::color::palettes;
+use bevy::prelude::*;
 use bevy_egui::EguiPlugin;
 // use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
 #[derive(Debug, Resource)]
 pub struct CubeSettings {
-    pub front_color: Color, // color of front side on rubiks cube
-    pub back_color: Color, // color of back side on rubiks cube 
-    pub left_color: Color, // color of left side on rubiks cube
-    pub right_color: Color, // color of right side on rubiks cube
-    pub up_color: Color, // color of up side on rubiks cube
-    pub down_color: Color, // color of down side on rubiks cube
-    pub piece_size: f32, // piece size of rubiks cube
-    pub sticker_size: f32, // sticker size of rubiks cube
-    pub camera_zoom_speed: f32, // speed to zoom in/out
-    pub rotate_speed: f32, // speed of rubiks cube rotation
+    pub front_color: Color,        // color of front side on rubiks cube
+    pub back_color: Color,         // color of back side on rubiks cube
+    pub left_color: Color,         // color of left side on rubiks cube
+    pub right_color: Color,        // color of right side on rubiks cube
+    pub up_color: Color,           // color of up side on rubiks cube
+    pub down_color: Color,         // color of down side on rubiks cube
+    pub piece_size: f32,           // piece size of rubiks cube
+    pub sticker_size: f32,         // sticker size of rubiks cube
+    pub camera_zoom_speed: f32,    // speed to zoom in/out
+    pub rotate_speed: f32,         // speed of rubiks cube rotation
     pub num_scramble_moves: usize, // number of scramble moves
-    pub camera_x: f32, // camera position x
-    pub camera_y: f32, // camera position y
-    pub camera_z: f32, // camera position z
-    pub pan_speed: f32, // speed to pan the camera
+    pub camera_x: f32,             // camera position x
+    pub camera_y: f32,             // camera position y
+    pub camera_z: f32,             // camera position z
+    pub pan_speed: f32,            // speed to pan the camera
 }
 
 impl Default for CubeSettings {
@@ -57,71 +57,61 @@ pub fn run_visualization(run: bool) {
      */
 
     if run {
-    // Visualize scrambled cube
-    App::new()
-    .add_plugins((DefaultPlugins, MeshPickingPlugin, EguiPlugin))
-    // .add_plugins(WorldInspectorPlugin::new())
-    .insert_resource(MeshPickingSettings {
-        require_markers: true,
-        ..Default::default()
-    })
-    .insert_resource(ClearColor(Color::srgb(0.9, 0.9, 0.9)))
-    .insert_resource(CubeSettings::default())
-    .insert_resource(Scramble::default())
-    .insert_resource(SolveData::default())
-    .insert_resource(SolverInformation::default())
-    .insert_resource(UiInformation::default())
-    .insert_resource(SolveTask(None))
-    .insert_resource(MoveQueue(VecDeque::new()))
-    .insert_resource(Rotation::default())
-    .insert_resource(TimekeepingTimer::default())
-    .insert_resource(MouseDraggingRecorder {
-        start_pos: None,
-        piece: None,
-    })
-    .register_type::<Cubie>()
-    .add_event::<ScrambleEvent>()
-    .add_event::<ResetEvent>()
-    .add_event::<SolveEvent>()
-    .add_systems(Startup, 
-        (
-            spawn_camera, 
-            spawn_rubiks_cube,
-            load_initial_table,
-        ))
-        .add_systems(PreUpdate,
-            (
-                plan_move,
-            ).run_if(check_field)
-        )
-        .add_systems(Update, 
-            (
-                zoom_camera,
-                move_camera,
-                pan_camera_with_keys,
-                game_ui,
-                rotate_cube,
-                scramble_cube,
-                reset_cube,
-                solve_cube,
-                poll_solve_task,
-                load_table,
-        ))
-    .add_systems(PostUpdate,
-        (
-            piece_translation_round.after(TransformSystem::TransformPropagate,)
-        )
-        .run_if(check_field)
-    )
-    .run();
+        // Visualize scrambled cube
+        App::new()
+            .add_plugins((DefaultPlugins, MeshPickingPlugin, EguiPlugin))
+            // .add_plugins(WorldInspectorPlugin::new())
+            .insert_resource(MeshPickingSettings {
+                require_markers: true,
+                ..Default::default()
+            })
+            .insert_resource(ClearColor(Color::srgb(0.9, 0.9, 0.9)))
+            .insert_resource(CubeSettings::default())
+            .insert_resource(Scramble::default())
+            .insert_resource(SolveData::default())
+            .insert_resource(SolverInformation::default())
+            .insert_resource(UiInformation::default())
+            .insert_resource(SolveTask(None))
+            .insert_resource(MoveQueue(VecDeque::new()))
+            .insert_resource(Rotation::default())
+            .insert_resource(TimekeepingTimer::default())
+            .insert_resource(MouseDraggingRecorder {
+                start_pos: None,
+                piece: None,
+            })
+            .register_type::<Cubie>()
+            .add_event::<ScrambleEvent>()
+            .add_event::<ResetEvent>()
+            .add_event::<SolveEvent>()
+            .add_systems(
+                Startup,
+                (spawn_camera, spawn_rubiks_cube, load_initial_table),
+            )
+            .add_systems(PreUpdate, (plan_move,).run_if(check_field))
+            .add_systems(
+                Update,
+                (
+                    zoom_camera,
+                    move_camera,
+                    pan_camera_with_keys,
+                    game_ui,
+                    rotate_cube,
+                    scramble_cube,
+                    reset_cube,
+                    solve_cube,
+                    poll_solve_task,
+                    load_table,
+                ),
+            )
+            .add_systems(
+                PostUpdate,
+                (piece_translation_round.after(TransformSystem::TransformPropagate))
+                    .run_if(check_field),
+            )
+            .run();
     }
 }
 
 fn check_field(resource: Res<Rotation>) -> bool {
-    if resource.completed {
-        true
-    }
-    else {
-        false
-    }
+    resource.completed
 }

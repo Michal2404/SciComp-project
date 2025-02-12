@@ -13,11 +13,11 @@ use super::{
 
 /// The public iterative deepening search solver.
 /// Tries increasing depths up to `max_depth` and returns the first solution found.
-pub fn iddfs_solver(cube: &CubieCube, max_depth: usize) -> Option<Vec<Move>> {
+pub fn _iddfs_solver(cube: &CubieCube, max_depth: usize) -> Option<Vec<Move>> {
     for depth in 0..=max_depth {
         println!("Searching with depth limit: {}", depth);
         // Start the DFS from the root (the current cube state) with an empty move path.
-        if let Some(solution) = dfs(cube, depth, &mut Vec::new()) {
+        if let Some(solution) = _dfs(cube, depth, &mut Vec::new()) {
             return Some(solution);
         }
     }
@@ -28,7 +28,7 @@ pub fn iddfs_solver(cube: &CubieCube, max_depth: usize) -> Option<Vec<Move>> {
 /// - `cube`: current state of the cube.
 /// - `depth`: remaining depth allowed.
 /// - `path`: moves taken so far (will be built up as the search goes deeper).
-fn dfs(cube: &CubieCube, depth: usize, path: &mut Vec<Move>) -> Option<Vec<Move>> {
+fn _dfs(cube: &CubieCube, depth: usize, path: &mut Vec<Move>) -> Option<Vec<Move>> {
     // Check if the cube is solved.
     if cube.is_solved() {
         return Some(path.clone());
@@ -61,7 +61,7 @@ fn dfs(cube: &CubieCube, depth: usize, path: &mut Vec<Move>) -> Option<Vec<Move>
         path.push(m);
 
         // Continue depth-first search with one less depth.
-        if let Some(solution) = dfs(&next_cube, depth - 1, path) {
+        if let Some(solution) = _dfs(&next_cube, depth - 1, path) {
             return Some(solution);
         }
         // Backtrack: remove the move before trying the next possibility.

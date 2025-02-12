@@ -1,14 +1,14 @@
 use crate::rubiks_two_phase::solver::solve;
 
-use super::bfs::{ida_star_solver, iddfs_solver};
-use super::cubie::{generate_scramble, CubieCube};
+use super::bfs::{_iddfs_solver, ida_star_solver};
+use super::cubie::{CubieCube, _generate_scramble};
 use csv::Writer;
 use std::error::Error;
 use std::fs::File;
 use std::time::Instant;
 
 /// Measure the performance of IDA* start algorithm depending of different scramble lengths.
-pub fn measure_ida() -> Result<(), Box<dyn Error>> {
+pub fn _measure_ida() -> Result<(), Box<dyn Error>> {
     let max_depth = 20;
     let mut results = Vec::new();
     // Load tables
@@ -26,7 +26,7 @@ pub fn measure_ida() -> Result<(), Box<dyn Error>> {
 
             // Keep solving until a solution with the correct length is found
             while valid_solution.is_none() {
-                let scramble = generate_scramble(scramble_length);
+                let scramble = _generate_scramble(scramble_length);
                 let cube = CubieCube::from_scramble(&scramble);
                 start_ida = Instant::now();
                 let moves_ida = ida_star_solver(&cube, max_depth);
@@ -90,7 +90,7 @@ pub fn measure_ida() -> Result<(), Box<dyn Error>> {
 /// We are measuring the time performance of the solver with active IDA* option depending on
 /// the IDA* search depth. We want to find a perfect value for the depth s.t. the solving time
 /// is in 99% of cases lower than 200ms.
-pub fn measure_ida_depth_performance() -> Result<(), Box<dyn Error>> {
+pub fn _measure_ida_depth_performance() -> Result<(), Box<dyn Error>> {
     let mut results = Vec::new();
     // Load tables
     let init_scramble = "R U L F D";
@@ -100,7 +100,7 @@ pub fn measure_ida_depth_performance() -> Result<(), Box<dyn Error>> {
         println!("it: {}", i);
         for max_depth in 1..=8 {
             // Generate a random scramble of length 30
-            let scramble = generate_scramble(30);
+            let scramble = _generate_scramble(30);
 
             let start_ida = Instant::now();
             let _solution = solve(&scramble, 20, 2.0, true, true, Some(max_depth));
@@ -137,7 +137,7 @@ pub fn measure_ida_depth_performance() -> Result<(), Box<dyn Error>> {
 }
 
 /// Measure the performance of BFS algorithm depending on scramble length.
-pub fn measure_bfs() -> Result<(), Box<dyn Error>> {
+pub fn _measure_bfs() -> Result<(), Box<dyn Error>> {
     let mut results = Vec::new();
     // Load tables
     let init_scramble = "R U L F D";
@@ -156,12 +156,12 @@ pub fn measure_bfs() -> Result<(), Box<dyn Error>> {
 
             // Keep solving until a solution with the correct length is found
             while valid_solution.is_none() {
-                let scramble = generate_scramble(scramble_length);
+                let scramble = _generate_scramble(scramble_length);
                 let cube = CubieCube::from_scramble(&scramble);
                 let start = Instant::now();
 
                 // Use iterative deepening DFS up to scramble_length (or another max depth)
-                if let Some(solution) = iddfs_solver(&cube, scramble_length) {
+                if let Some(solution) = _iddfs_solver(&cube, scramble_length) {
                     if solution.len() == scramble_length {
                         valid_solution = Some(solution);
                         time_iddfs = start.elapsed();
@@ -217,7 +217,7 @@ pub fn measure_bfs() -> Result<(), Box<dyn Error>> {
 }
 
 // Measure the performance of the two phase solver
-pub fn measure_two_phase() -> Result<(), Box<dyn Error>> {
+pub fn _measure_two_phase() -> Result<(), Box<dyn Error>> {
     let mut results = Vec::new();
     let init_scramble = "R U L F D";
     let _solution = solve(init_scramble, 20, 2.0, true, false, Some(10));
@@ -225,7 +225,7 @@ pub fn measure_two_phase() -> Result<(), Box<dyn Error>> {
         println!("it: {}", i);
         for scramble_length in 1..=20 {
             // Generate a scramble of the given length
-            let scramble = generate_scramble(scramble_length);
+            let scramble = _generate_scramble(scramble_length);
             let start_time = Instant::now();
             let solution = solve(&scramble, 20, 2.0, true, false, Some(8));
             let end_time = start_time.elapsed();
@@ -262,7 +262,7 @@ pub fn measure_two_phase() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-pub fn measure_two_phase_ida() -> Result<(), Box<dyn Error>> {
+pub fn _measure_two_phase_ida() -> Result<(), Box<dyn Error>> {
     let mut results = Vec::new();
     let init_scramble = "R U L F D";
     let _solution = solve(init_scramble, 20, 2.0, true, false, Some(10));
@@ -271,7 +271,7 @@ pub fn measure_two_phase_ida() -> Result<(), Box<dyn Error>> {
         for scramble_length in 1..=20 {
             // Generate a scramble of the given length
 
-            let scramble = generate_scramble(scramble_length);
+            let scramble = _generate_scramble(scramble_length);
             let start_time = Instant::now();
             let solution = solve(&scramble, 20, 2.0, true, true, Some(6));
             let end_time = start_time.elapsed();
@@ -308,7 +308,7 @@ pub fn measure_two_phase_ida() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-pub fn two_phase_len_performance() -> Result<(), Box<dyn Error>> {
+pub fn _two_phase_len_performance() -> Result<(), Box<dyn Error>> {
     // The results will hold two columns. One colums is the time, second column is the solution length
     let mut results = Vec::new();
     // Load the tables
@@ -317,7 +317,7 @@ pub fn two_phase_len_performance() -> Result<(), Box<dyn Error>> {
     for i in 0..100000 {
         println!("it: {}", i);
         // Generate random scramble with length 30, should be random enough
-        let scramble = generate_scramble(30);
+        let scramble = _generate_scramble(30);
         let start_time = Instant::now();
         let solution = solve(&scramble, 20, 2.0, true, false, Some(8));
         let end_time = start_time.elapsed();

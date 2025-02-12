@@ -1,11 +1,5 @@
-use scicomp_project::cfop::total::cfop_solver;
-use scicomp_project::cfop::cross::solved_state;
-use scicomp_project::rubiks::cube::RubiksCube;
-use scicomp_project::cfop::cross::solve_cross;
 use scicomp_project::cfop::f2l::solve_f2l;
-use scicomp_project::cfop::oll::solve_oll;
-use scicomp_project::cfop::pll::solve_pll;
-use scicomp_project::helper::utils::*;
+use scicomp_project::rubiks::cube::RubiksCube;
 
 fn flip_and_toggle_moves(input: &str) -> String {
     input
@@ -23,8 +17,6 @@ fn flip_and_toggle_moves(input: &str) -> String {
         .collect::<Vec<_>>() // Collect into a vector of strings
         .join(" ") // Join back into a single string
 }
-
-
 
 #[test]
 // fn is_solved() {
@@ -69,7 +61,10 @@ fn f2l_solved() {
     // perform f2l to solve cube
     let moves = solve_f2l(&mut tested_cube, &bottom);
     println!("{:?}", moves);
-    assert_eq!((solved_cube, scramble), (tested_cube, moves.join(" ").as_str()));
+    assert_eq!(
+        (solved_cube, scramble),
+        (tested_cube, moves.join(" ").as_str())
+    );
 }
 
 // fn oll_solved() {
@@ -117,5 +112,5 @@ fn f2l_solved() {
 //     println!("{}", &moves.join(" ").as_str());
 //     tested_cube_clone.apply_scramble(&moves.join(" ").as_str());
 //     assert_eq!(solved_cube, tested_cube_clone);
-    
+
 // }

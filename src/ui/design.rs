@@ -1,7 +1,6 @@
-use std::time::Instant;
 use bevy::tasks::{AsyncComputeTaskPool, Task};
 use bevy_egui::egui;
-
+use std::time::Instant;
 
 // This file creates the design for ui
 use crate::rubiks::cube::RubiksCube;
@@ -10,20 +9,19 @@ use crate::ui::app::CubeSettings;
 use crate::ui::rotate::MoveQueue;
 // use crate::ui::rotate::Rotation;
 use crate::cfop::total::cfop_solver;
-use crate::rubiks_two_phase::solver::solve;
 use crate::rubiks_two_phase::bfs::bfs_solver;
 use crate::rubiks_two_phase::bfs::ida_star_solver;
+use crate::rubiks_two_phase::solver::solve;
 use crate::ui::pieces::Cubie;
 
 use bevy::prelude::*;
 use bevy_egui::EguiContexts;
 // use bevy_egui::{egui, EguiContexts};
 
-use rand::Rng;
 use rand::seq::SliceRandom;
+use rand::Rng;
 
 use futures_lite::future;
-
 
 // Interacting with egui
 #[derive(Debug, Default, Event)]
@@ -104,7 +102,7 @@ pub struct UiInformation {
 
 // time keeping resource
 #[derive(Debug, Resource)]
-pub struct TimekeepingTimer{
+pub struct TimekeepingTimer {
     pub time: Instant,
     pub running: bool,
     pub last_time: u128,
@@ -135,7 +133,6 @@ pub struct ResetEvent;
 #[derive(Debug, Default, Event)]
 pub struct SolveEvent;
 
-
 pub fn game_ui(
     mut egui_context: EguiContexts,
     mut cube_settings: ResMut<CubeSettings>,
@@ -158,60 +155,70 @@ pub fn game_ui(
         let row_spacing = 20.0;
         let font_size = 17.0;
 
-
         // adjust scramble length
         ui.horizontal(|ui| {
             ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
                 ui.add_space(col_spacing);
-                ui.add_sized([col1_width, 20.0],egui::Label::new("Scramble Length"));
+                ui.add_sized([col1_width, 20.0], egui::Label::new("Scramble Length"));
                 ui.add_space(col_spacing);
             });
             ui.add_space(col_spacing);
-            
+
             ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
-                ui.add_sized([col2_width, 20.0], egui::Slider::new(
-                    &mut cube_settings.num_scramble_moves,
-                    1..=20,
-                ));
-            });
-        });
-        ui.end_row();
-        ui.add_space(row_spacing);
-        
-        // generate scramble
-        ui.horizontal(|ui| {
-            // generate scramble
-            ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
-                if ui
-                .add_sized([col1_width, 20.0], egui::Button::new("Generate Random Scramble"))
-                .clicked()
-                {
-                    // first we remove any content from text_input
-                    scramble.input_text.clear();
-                    // add random scramble
-                    scramble.input_text.push_str(generate_random_scramble(&cube_settings).as_str());
-                }
-            });
-            ui.add_space(col_spacing);
-            // add textbox here
-            ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
-                ui.add_sized([150.0, 20.0],
-                    egui::TextEdit::singleline(&mut scramble.input_text)
-                    .desired_width(200.0)
-                    .hint_text("Type Scramble here ...")
+                ui.add_sized(
+                    [col2_width, 20.0],
+                    egui::Slider::new(&mut cube_settings.num_scramble_moves, 1..=20),
                 );
             });
         });
         ui.end_row();
         ui.add_space(row_spacing);
-        
+
+        // generate scramble
+        ui.horizontal(|ui| {
+            // generate scramble
+            ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+                if ui
+                    .add_sized(
+                        [col1_width, 20.0],
+                        egui::Button::new("Generate Random Scramble"),
+                    )
+                    .clicked()
+                {
+                    // first we remove any content from text_input
+                    scramble.input_text.clear();
+                    // add random scramble
+                    scramble
+                        .input_text
+                        .push_str(generate_random_scramble(&cube_settings).as_str());
+                }
+            });
+            ui.add_space(col_spacing);
+            // add textbox here
+            ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+                ui.add_sized(
+                    [150.0, 20.0],
+                    egui::TextEdit::singleline(&mut scramble.input_text)
+                        .desired_width(200.0)
+                        .hint_text("Type Scramble here ..."),
+                );
+            });
+        });
+        ui.end_row();
+        ui.add_space(row_spacing);
+
         // scramble cube and reset cube buttons
         ui.horizontal(|ui| {
             // perform scramble
             ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
                 ui.add_space(col_spacing);
                 // can only click scramble if there is a scramble
-                if ui.add_sized([col1_width, 30.0], egui::Button::new("Scramble")).clicked() && (solve_data.index == 0 || solve_data.index == solve_data.solve_sequence.len()) {
+                if ui
+                    .add_sized([col1_width, 30.0], egui::Button::new("Scramble"))
+                    .clicked()
+                    && (solve_data.index == 0
+                        || solve_data.index == solve_data.solve_sequence.len())
+                {
                     scramble_event.send_default();
                     // set the index to 0
                     solve_data.index = 0;
@@ -221,7 +228,9 @@ pub fn game_ui(
             // Reset cube
             ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
                 ui.add_space(col_spacing);
-                if ui.add_sized([col2_width, 30.0], egui::Button::new("Reset")).clicked()
+                if ui
+                    .add_sized([col2_width, 30.0], egui::Button::new("Reset"))
+                    .clicked()
                 {
                     reset_event.send_default();
                     // set the index to 0
@@ -230,16 +239,18 @@ pub fn game_ui(
                 ui.add_space(col_spacing);
             });
         });
-        
-        
+
         ui.end_row();
         ui.add_space(row_spacing);
-        
+
         // Display current scramble
         ui.horizontal(|ui| {
-                ui.add(egui::Label::new(egui::RichText::new(scramble.scramble_content.clone())
-                .font(egui::FontId::proportional(font_size)))
-                .wrap()
+            ui.add(
+                egui::Label::new(
+                    egui::RichText::new(scramble.scramble_content.clone())
+                        .font(egui::FontId::proportional(font_size)),
+                )
+                .wrap(),
             );
         });
         ui.end_row();
@@ -259,8 +270,15 @@ pub fn game_ui(
             ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
                 ui.add_space(col_spacing);
                 // Enable or disable CFOP solver
-                let cfop_solver = solver_information.solvers.iter_mut().find(|s| s.name == "CFOP Solver").unwrap();
-                if ui.add(egui::Checkbox::new(&mut cfop_solver.checked, "CFOP Solver")).clicked() {
+                let cfop_solver = solver_information
+                    .solvers
+                    .iter_mut()
+                    .find(|s| s.name == "CFOP Solver")
+                    .unwrap();
+                if ui
+                    .add(egui::Checkbox::new(&mut cfop_solver.checked, "CFOP Solver"))
+                    .clicked()
+                {
                     solver_information.uncheck_all_except("CFOP Solver");
                 }
                 ui.add_space(col_spacing);
@@ -273,17 +291,31 @@ pub fn game_ui(
             ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
                 ui.add_space(col_spacing);
                 // Enable or disable BFS solver
-                let bfs_solver = solver_information.solvers.iter_mut().find(|s| s.name == "BFS Solver").unwrap();
-                if ui.add(egui::Checkbox::new(&mut bfs_solver.checked, "BFS Solver")).clicked() {
+                let bfs_solver = solver_information
+                    .solvers
+                    .iter_mut()
+                    .find(|s| s.name == "BFS Solver")
+                    .unwrap();
+                if ui
+                    .add(egui::Checkbox::new(&mut bfs_solver.checked, "BFS Solver"))
+                    .clicked()
+                {
                     solver_information.uncheck_all_except("BFS Solver");
                 }
-                
+
                 // Enable or disable IDA solver
-                let ida_solver = solver_information.solvers.iter_mut().find(|s| s.name == "IDA Solver").unwrap();
-                if ui.add(egui::Checkbox::new(&mut ida_solver.checked, "IDA Solver")).clicked() {
+                let ida_solver = solver_information
+                    .solvers
+                    .iter_mut()
+                    .find(|s| s.name == "IDA Solver")
+                    .unwrap();
+                if ui
+                    .add(egui::Checkbox::new(&mut ida_solver.checked, "IDA Solver"))
+                    .clicked()
+                {
                     solver_information.uncheck_all_except("IDA Solver");
                 }
-                
+
                 ui.add_space(col_spacing);
             });
             ui.add_space(col_spacing);
@@ -294,8 +326,18 @@ pub fn game_ui(
             ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
                 ui.add_space(col_spacing);
                 // Enable or disable Two Phase solver
-                let two_phase_solver = solver_information.solvers.iter_mut().find(|s| s.name == "Two Phase Solver").unwrap();
-                if ui.add(egui::Checkbox::new(&mut two_phase_solver.checked, "Two Phase Solver")).clicked() {
+                let two_phase_solver = solver_information
+                    .solvers
+                    .iter_mut()
+                    .find(|s| s.name == "Two Phase Solver")
+                    .unwrap();
+                if ui
+                    .add(egui::Checkbox::new(
+                        &mut two_phase_solver.checked,
+                        "Two Phase Solver",
+                    ))
+                    .clicked()
+                {
                     solver_information.uncheck_all_except("Two Phase Solver");
                 }
                 ui.add_space(col_spacing);
@@ -316,7 +358,10 @@ pub fn game_ui(
                 ui.add_space(col_spacing);
                 ui.add_space(col_spacing);
                 // Enable or disable IDA
-                ui.add(egui::Checkbox::new(&mut solver_information.use_ida, "Use IDA"));
+                ui.add(egui::Checkbox::new(
+                    &mut solver_information.use_ida,
+                    "Use IDA",
+                ));
                 ui.add_space(col_spacing);
             });
             ui.add_space(col_spacing);
@@ -340,16 +385,19 @@ pub fn game_ui(
 
         ui.end_row();
         ui.add_space(row_spacing);
-        
+
         // add if we want to solve step by step
         ui.horizontal(|ui| {
             ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
                 // Enable or disable moving back and fourth
                 ui.add_space(col_spacing);
-                ui.add(egui::Checkbox::new(&mut ui_information.step_by_step, "Step by Step"));
+                ui.add(egui::Checkbox::new(
+                    &mut ui_information.step_by_step,
+                    "Step by Step",
+                ));
                 ui.add_space(col_spacing);
             });
-            
+
             // we will make forward and backward button if step by step is enabled
             if ui_information.step_by_step {
                 ui.horizontal(|ui| {
@@ -358,25 +406,33 @@ pub fn game_ui(
                             // look at previous index
                             solve_data.index -= 1;
                             // we look at the previous moves and determine its reverse
-                            let reverse_move = if solve_data.solve_sequence[solve_data.index].ends_with('\'') {
+                            let reverse_move = if solve_data.solve_sequence[solve_data.index]
+                                .ends_with('\'')
+                            {
                                 // Remove the trailing `'` if it exists
-                                solve_data.solve_sequence[solve_data.index].trim_end_matches('\'').to_string()
+                                solve_data.solve_sequence[solve_data.index]
+                                    .trim_end_matches('\'')
+                                    .to_string()
                             } else if solve_data.solve_sequence[solve_data.index].ends_with('2') {
                                 solve_data.solve_sequence[solve_data.index].clone()
                             } else {
                                 // Add `'` if it doesn't exist
                                 format!("{}'", solve_data.solve_sequence[solve_data.index].clone())
                             };
-                            
+
                             // now push this to move_queue
                             move_queue.0.push_back(reverse_move);
                         }
                         ui.add_space(col_spacing);
-                        if ui.add(egui::Button::new("Next")).clicked() && !solve_data.solve_sequence.is_empty(){
+                        if ui.add(egui::Button::new("Next")).clicked()
+                            && !solve_data.solve_sequence.is_empty()
+                        {
                             // if solve_data.index is at the solution length, we continue
                             if solve_data.index < solve_data.solve_sequence.len() {
                                 // we push the first value to the back
-                                move_queue.0.push_back(solve_data.solve_sequence[solve_data.index].clone());
+                                move_queue
+                                    .0
+                                    .push_back(solve_data.solve_sequence[solve_data.index].clone());
                                 // look at next index
                                 solve_data.index += 1;
                             }
@@ -388,16 +444,21 @@ pub fn game_ui(
         });
         ui.end_row();
         ui.add_space(row_spacing);
-        
+
         // Solve cube
         ui.horizontal(|ui| {
             ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
                 ui.add_space(col_spacing);
                 // Solve cube
-                if ui.add_sized([100.0, 30.0], egui::Button::new("Solve")).clicked()
+                if ui
+                    .add_sized([100.0, 30.0], egui::Button::new("Solve"))
+                    .clicked()
                 {
                     // make sure scramble is not empty and also one solver is selected and index is 0
-                    if !scramble.scramble_content.is_empty() && solver_information.solvers.iter().any(|s| s.checked) && solve_data.index == 0 {
+                    if !scramble.scramble_content.is_empty()
+                        && solver_information.solvers.iter().any(|s| s.checked)
+                        && solve_data.index == 0
+                    {
                         timer.time = Instant::now();
                         timer.running = true;
                         solve_event.send_default();
@@ -417,64 +478,65 @@ pub fn game_ui(
         });
         ui.end_row();
         ui.add_space(row_spacing);
-        
+
         // Display current solve sequence
         ui.horizontal_wrapped(|ui| {
             for (i, move_) in solve_data.solve_sequence.iter().enumerate() {
-                let text = if i as isize == solve_data.index as isize - 1 && ui_information.step_by_step {
-                    egui::RichText::new(move_.clone()).color(egui::Color32::GREEN)
-                } else {
-                    egui::RichText::new(move_.clone())
-                };
-                ui.add(egui::Label::new(text
-                    .font(egui::FontId::proportional(font_size)))
-                    .wrap()
-                );
+                let text =
+                    if i as isize == solve_data.index as isize - 1 && ui_information.step_by_step {
+                        egui::RichText::new(move_.clone()).color(egui::Color32::GREEN)
+                    } else {
+                        egui::RichText::new(move_.clone())
+                    };
+                ui.add(egui::Label::new(text.font(egui::FontId::proportional(font_size))).wrap());
             }
         });
 
         ui.end_row();
         ui.add_space(row_spacing);
-        
+
         // Time taken to solve the rubiks cube and number of moves
         ui.horizontal(|ui| {
             ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
-            ui.add(egui::Label::new(egui::RichText::new("Time Taken")
-                .font(egui::FontId::proportional(font_size))));
+                ui.add(egui::Label::new(
+                    egui::RichText::new("Time Taken").font(egui::FontId::proportional(font_size)),
+                ));
             });
             // check if timer is running
             let time_taken = match timer.running {
                 true => timer.time.elapsed().as_millis(),
                 false => timer.last_time,
             };
-            
+
             ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
-                ui.add(egui::Label::new(egui::RichText::new(format!("{:?} ms", time_taken))
-                .font(egui::FontId::proportional(font_size))));
+                ui.add(egui::Label::new(
+                    egui::RichText::new(format!("{:?} ms", time_taken))
+                        .font(egui::FontId::proportional(font_size)),
+                ));
             });
         });
         ui.end_row();
         ui.add_space(row_spacing);
-        
+
         // Total move length
         ui.horizontal(|ui| {
             ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
-                ui.add(egui::Label::new(egui::RichText::new("Move Length")
-                .font(egui::FontId::proportional(font_size))));
+                ui.add(egui::Label::new(
+                    egui::RichText::new("Move Length").font(egui::FontId::proportional(font_size)),
+                ));
             });
             ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
-                ui.add(egui::Label::new(egui::RichText::new(solve_data.solve_sequence.len().to_string())
-                .font(egui::FontId::proportional(font_size))));
+                ui.add(egui::Label::new(
+                    egui::RichText::new(solve_data.solve_sequence.len().to_string())
+                        .font(egui::FontId::proportional(font_size)),
+                ));
             });
         });
         ui.end_row();
-    
     });
 }
 
-fn generate_random_scramble(
-    cube_settings: &CubeSettings,
-) -> String {
+fn generate_random_scramble(cube_settings: &CubeSettings) -> String {
     /*
     This function generates a random scramble that is 20 characters long
      */
@@ -491,10 +553,9 @@ fn generate_random_scramble(
         // generate random index
         let index = loop {
             let num = rand::thread_rng().gen_range(0..6); // Generate a random number in range [1, 10]
-            if num == excluded && i!=0 {
-                continue
-            }
-            else {
+            if num == excluded && i != 0 {
+                continue;
+            } else {
                 break num; // Exit the loop if the number is not the excluded value
             }
         };
@@ -502,9 +563,7 @@ fn generate_random_scramble(
         let rotate = possible_moves[index];
 
         // pick a random direction
-        let direction = possible_directions
-            .choose(&mut rand::thread_rng())
-            .unwrap();
+        let direction = possible_directions.choose(&mut rand::thread_rng()).unwrap();
 
         // combine the 2 strings
         let mut notation = String::new();
@@ -513,18 +572,17 @@ fn generate_random_scramble(
 
         // push it to text, then add white space
         text.push_str(notation.as_str());
-        
+
         // update the excluded move
         excluded = index;
-        
+
         // if its not the very last move, we add a white space at the end
-        if i != cube_settings.num_scramble_moves-1{ 
+        if i != cube_settings.num_scramble_moves - 1 {
             text.push(' ');
             // text.push_str(" ");
         }
     }
     text
-
 }
 
 pub fn scramble_cube(
@@ -546,12 +604,16 @@ pub fn scramble_cube(
         scramble.scramble_content.push_str(&temp);
 
         // separate based on white space
-        let output_list: Vec<String> = [scramble.scramble_content.clone()].iter().flat_map(|s| s.split_whitespace()).map(|s| s.to_string()).collect();
-        
+        let output_list: Vec<String> = [scramble.scramble_content.clone()]
+            .iter()
+            .flat_map(|s| s.split_whitespace())
+            .map(|s| s.to_string())
+            .collect();
+
         // clear text_input
         scramble.input_text.clear();
         // push the notation to the queue
-        for notation in output_list.clone(){
+        for notation in output_list.clone() {
             move_queue.0.push_back(notation);
         }
     }
@@ -574,12 +636,11 @@ pub fn reset_cube(
         // Move the pieces back to its original position
         for (mut transform, mut cubie) in query.iter_mut() {
             transform.translation = cubie.original_position; // Reset to the original position
-            // Also reset the rotation
+                                                             // Also reset the rotation
             transform.rotation = Quat::from_xyzw(0.0, 0.0, 0.0, 1.0);
             // reset the left_angle
             cubie.left_angle = 0.0;
         }
-
     }
 }
 
@@ -604,16 +665,15 @@ pub fn poll_solve_task(
             // if step by step is enabled, we dont perfrom this
             if !ui_information.step_by_step {
                 // we push the moves to the move_queue starting from solve_data.index
-                for i in solve_data.index..output_list.len() {
-                    move_queue.0.push_back(output_list[i].clone());
+                for item in output_list.iter().skip(solve_data.index) {
+                    move_queue.0.push_back(item.clone());
                     solve_data.index += 1;
                 }
-                
+
                 // Finally we reset scramble
                 scramble.scramble_content.clear();
-
             }
-            
+
             // Add the moves to solve_data
             solve_data.solve_sequence = output_list.clone();
 
@@ -626,9 +686,7 @@ pub fn poll_solve_task(
     }
 }
 
-pub fn load_table(
-    mut ui_information: ResMut<UiInformation>,
-) {
+pub fn load_table(mut ui_information: ResMut<UiInformation>) {
     /*
     This function polls the async task and handles the result
     */
@@ -644,9 +702,7 @@ pub fn load_table(
     }
 }
 
-pub fn load_initial_table (
-    mut ui_information: ResMut<UiInformation>,
-) {
+pub fn load_initial_table(mut ui_information: ResMut<UiInformation>) {
     /*
     This function loads in the table when the event is triggered
     */
@@ -659,8 +715,7 @@ pub fn load_initial_table (
     });
 
     // Store the task in the resource
-    ui_information.loading_table = Some(result);       
-        
+    ui_information.loading_table = Some(result);
 }
 
 pub fn solve_cube(
@@ -677,41 +732,61 @@ pub fn solve_cube(
         let scramble_sequence = scramble.scramble_content.clone();
         let mut cube = RubiksCube::new();
         cube.apply_scramble(scramble_sequence.as_str());
-        
+
         // Clone necessary data for the async task
         let scramble_sequence_clone = scramble_sequence.clone();
 
         let use_ida = solver_information.use_ida;
         let ida_length = solver_information.ida_length;
-        
+
         // Spawn a task on Bevy's thread pool
         let task_pool = AsyncComputeTaskPool::get();
         if let Some(solver) = solver_information.solvers.iter().find(|s| s.checked) {
             match solver.name.as_str() {
                 "CFOP Solver" => {
-                    let result = task_pool.spawn(async move {
-                        cfop_solver(scramble_sequence_clone.as_str(), cube)
-                    });
+                    let result = task_pool
+                        .spawn(async move { cfop_solver(scramble_sequence_clone.as_str(), cube) });
                     // Store the task in the resource
                     solve_task.0 = Some(result);
                 }
                 "BFS Solver" => {
                     let result = task_pool.spawn(async move {
-                        bfs_solver(&CubieCube::from_scramble(scramble_sequence_clone.as_str()), 10).unwrap().iter().map(|m| m.to_string()).collect()
+                        bfs_solver(
+                            &CubieCube::from_scramble(scramble_sequence_clone.as_str()),
+                            10,
+                        )
+                        .unwrap()
+                        .iter()
+                        .map(|m| m.to_string())
+                        .collect()
                     });
                     // Store the task in the resource
                     solve_task.0 = Some(result);
                 }
                 "IDA Solver" => {
                     let result = task_pool.spawn(async move {
-                        ida_star_solver(&CubieCube::from_scramble(scramble_sequence_clone.as_str()), 10).unwrap().iter().map(|m| m.to_string()).collect()
+                        ida_star_solver(
+                            &CubieCube::from_scramble(scramble_sequence_clone.as_str()),
+                            10,
+                        )
+                        .unwrap()
+                        .iter()
+                        .map(|m| m.to_string())
+                        .collect()
                     });
                     // Store the task in the resource
                     solve_task.0 = Some(result);
                 }
                 "Two Phase Solver" => {
                     let result = task_pool.spawn(async move {
-                        solve(scramble_sequence_clone.as_str(), 20, 2.0, true, use_ida, Some(ida_length))
+                        solve(
+                            scramble_sequence_clone.as_str(),
+                            20,
+                            2.0,
+                            true,
+                            use_ida,
+                            Some(ida_length),
+                        )
                     });
                     // Store the task in the resource
                     solve_task.0 = Some(result);

@@ -207,7 +207,7 @@ pub static INV_IDX: Lazy<[u8; N_SYM]> = Lazy::new(|| {
 });
 
 // Generate the group table for the 48 cube symmetries
-pub static MULT_SYM: Lazy<[u8; N_SYM * N_SYM]> = Lazy::new(|| {
+pub static _MULT_SYM: Lazy<[u8; N_SYM * N_SYM]> = Lazy::new(|| {
     let mut table = [0u8; N_SYM * N_SYM];
 
     // For each pair (i, j) compute SYM_CUBE[i] * SYM_CUBE[j],

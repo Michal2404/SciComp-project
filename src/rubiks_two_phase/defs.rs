@@ -266,11 +266,11 @@ pub const TURN_B: CubieCube = CubieCube {
     eo: EO_B,
 };
 
-pub const CUBE_OK: bool = true;
+pub const _CUBE_OK: bool = true;
 
 // Constants
 pub const N_PERM_4: usize = 24;
-pub const N_CHOOSE_8_4: usize = 70;
+pub const _N_CHOOSE_8_4: usize = 70;
 pub const N_MOVE: usize = 18;
 
 pub const N_TWIST: usize = 2187; // 3^7 possible corner orientations in phase 1
@@ -280,14 +280,14 @@ pub const N_SLICE: usize = N_SLICE_SORTED / N_PERM_4; // Ignoring permutation of
 pub const N_FLIPSLICE_CLASS: usize = 64430; // Combined flip+slice equivalence classes for symmetry group D4h
 
 pub const N_U_EDGES_PHASE2: usize = 1680; // UR, UF, UL, UB positions in phase 2
-pub const N_D_EDGES_PHASE2: usize = 1680; // number of different positions of the edges DR, DF, DL and DB in phase 2
+pub const _N_D_EDGES_PHASE2: usize = 1680; // number of different positions of the edges DR, DF, DL and DB in phase 2
 pub const N_CORNERS: usize = 40320; // 8! corner permutations in phase 2
 pub const N_CORNERS_CLASS: usize = 2768; // Equivalence classes for symmetry group D4h
 pub const N_UD_EDGES: usize = 40320; // 8! U-face and D-face edge permutations in phase 2
 
 pub const N_SYM: usize = 48; // Cube symmetries of group Oh
 pub const N_SYM_D4H: usize = 16; // Subgroup D4h symmetries
-pub const FOLDER: &str = "rubiks_two_phase/twophase"; // Folder for generated tables
+pub const _FOLDER: &str = "rubiks_two_phase/twophase"; // Folder for generated tables
 
 // Dynamically resolve the path  the rubiks/twophase folder
 pub fn get_folder_path() -> PathBuf {

@@ -30,13 +30,13 @@ pub struct CoordCube {
     pub u_edges: u16,      // U edges coordinate (phase 1 and phase 2)
     pub d_edges: u16,      // D edges coordinate (phase 1 and phase 2)
     pub corners: usize,    // Corner permutation (phase 1 and phase 2)
-    pub ud_edges: isize,   // Permutation of the UD edges (valid only in phase 2)
-    pub flipslice_classidx: u16,
-    pub flipslice_sym: u8,
-    pub flipslice_rep: u32,
-    pub corner_classidx: u16,
-    pub corner_sym: u8,
-    pub corner_rep: u16,
+    pub _ud_edges: isize,  // Permutation of the UD edges (valid only in phase 2)
+    pub _flipslice_classidx: u16,
+    pub _flipslice_sym: u8,
+    pub _flipslice_rep: u32,
+    pub _corner_classidx: u16,
+    pub _corner_sym: u8,
+    pub _corner_rep: u16,
 }
 
 impl CoordCube {
@@ -49,13 +49,13 @@ impl CoordCube {
             u_edges: 1656, // Index of the solved u_edges
             d_edges: SOLVED as u16,
             corners: SOLVED,
-            ud_edges: SOLVED as isize,
-            flipslice_classidx: SOLVED as u16,
-            flipslice_sym: SOLVED as u8,
-            flipslice_rep: SOLVED as u32,
-            corner_classidx: SOLVED as u16,
-            corner_sym: SOLVED as u8,
-            corner_rep: SOLVED as u16,
+            _ud_edges: SOLVED as isize,
+            _flipslice_classidx: SOLVED as u16,
+            _flipslice_sym: SOLVED as u8,
+            _flipslice_rep: SOLVED as u32,
+            _corner_classidx: SOLVED as u16,
+            _corner_sym: SOLVED as u8,
+            _corner_rep: SOLVED as u16,
         }
     }
 
@@ -88,20 +88,20 @@ impl CoordCube {
             flip,
             slice_sorted,
             corners,
-            ud_edges,
+            _ud_edges: ud_edges,
             u_edges,
             d_edges,
-            flipslice_classidx,
-            flipslice_sym,
-            flipslice_rep,
-            corner_classidx,
-            corner_sym,
-            corner_rep,
+            _flipslice_classidx: flipslice_classidx,
+            _flipslice_sym: flipslice_sym,
+            _flipslice_rep: flipslice_rep,
+            _corner_classidx: corner_classidx,
+            _corner_sym: corner_sym,
+            _corner_rep: corner_rep,
         }
     }
 
     /// Updates phase 1 coordinates when move is applied
-    pub fn phase1_move(&mut self, m: usize) {
+    pub fn _phase1_move(&mut self, m: usize) {
         // Apply moves using the tables
         self.twist = TWIST_MOVE[N_MOVE * self.twist + m] as usize;
         self.flip = FLIP_MOVE[N_MOVE * self.flip as usize + m];
@@ -110,23 +110,23 @@ impl CoordCube {
         self.d_edges = D_EDGES_MOVE[N_MOVE * self.d_edges as usize + m];
         self.corners = CORNERS_MOVE[N_MOVE * self.corners + m] as usize;
 
-        self.flipslice_classidx = FLIPSLICE_CLASSIDX
+        self._flipslice_classidx = FLIPSLICE_CLASSIDX
             [N_FLIP * (self.slice_sorted as usize / N_PERM_4) + self.flip as usize];
-        self.flipslice_sym =
+        self._flipslice_sym =
             FLIPSLICE_SYM[N_FLIP * (self.slice_sorted as usize / N_PERM_4) + self.flip as usize];
-        self.flipslice_rep = FLIPSLICE_REP[self.flipslice_classidx as usize];
+        self._flipslice_rep = FLIPSLICE_REP[self._flipslice_classidx as usize];
 
-        self.corner_classidx = CORNER_CLASSIDX[self.corners];
-        self.corner_sym = CORNER_SYM[self.corners];
-        self.corner_rep = CORNER_REP[self.corner_classidx as usize];
+        self._corner_classidx = CORNER_CLASSIDX[self.corners];
+        self._corner_sym = CORNER_SYM[self.corners];
+        self._corner_rep = CORNER_REP[self._corner_classidx as usize];
     }
 
     /// Updates phase 2 coordinates when move is applied
-    pub fn phase2_move(&mut self, m: usize) {
+    pub fn _phase2_move(&mut self, m: usize) {
         // Apply moves using tables
         self.slice_sorted = SLICE_SORTED_MOVE[N_MOVE * self.slice_sorted as usize + m];
         self.corners = CORNERS_MOVE[N_MOVE * self.corners + m] as usize;
-        self.ud_edges = UD_EDGES_MOVE[N_MOVE * self.ud_edges as usize + m] as isize;
+        self._ud_edges = UD_EDGES_MOVE[N_MOVE * self._ud_edges as usize + m] as isize;
     }
 
     /// Compute the distance to the cube subgroup H where flip=slice=twist=0

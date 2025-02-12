@@ -1,3 +1,5 @@
+use std::fmt::{self, Display};
+
 /// Definitions that improve the readability of the code
 /// The names of the facelet positions of the cube
 ///              |************|
@@ -35,7 +37,7 @@ pub enum Facelet {
     U2,
     U3,
     U4,
-    U5,
+    _U5,
     U6,
     U7,
     U8,
@@ -44,7 +46,7 @@ pub enum Facelet {
     R2,
     R3,
     R4,
-    R5,
+    _R5,
     R6,
     R7,
     R8,
@@ -53,7 +55,7 @@ pub enum Facelet {
     F2,
     F3,
     F4,
-    F5,
+    _F5,
     F6,
     F7,
     F8,
@@ -62,7 +64,7 @@ pub enum Facelet {
     D2,
     D3,
     D4,
-    D5,
+    _D5,
     D6,
     D7,
     D8,
@@ -71,7 +73,7 @@ pub enum Facelet {
     L2,
     L3,
     L4,
-    L5,
+    _L5,
     L6,
     L7,
     L8,
@@ -80,7 +82,7 @@ pub enum Facelet {
     B2,
     B3,
     B4,
-    B5,
+    _B5,
     B6,
     B7,
     B8,
@@ -99,7 +101,7 @@ pub enum Color {
 }
 
 impl Color {
-    pub fn to_color32(&self) -> egui::Color32 {
+    pub fn _to_color32(&self) -> egui::Color32 {
         match self {
             Color::U => egui::Color32::WHITE,
             Color::R => egui::Color32::RED,
@@ -129,7 +131,7 @@ pub enum Corner {
 
 impl Corner {
     /// A constant array of all enum variants
-    pub const ALL: [Corner; 8] = [
+    pub const _ALL: [Corner; 8] = [
         Corner::URF,
         Corner::UFL,
         Corner::ULB,
@@ -156,11 +158,11 @@ pub enum Edge {
     FL = 9,  // Front-Left
     BL = 10, // Back-Left
     BR = 11, // Back-Right
-    Invalid,
+    _Invalid,
 }
 
 impl Edge {
-    pub fn iter() -> impl Iterator<Item = Edge> {
+    pub fn _iter() -> impl Iterator<Item = Edge> {
         [
             Edge::UR,
             Edge::UF,
@@ -181,7 +183,7 @@ impl Edge {
 }
 
 impl Edge {
-    pub fn from_index(index: usize) -> Edge {
+    pub fn _from_index(index: usize) -> Edge {
         match index {
             0 => Edge::UR,
             1 => Edge::UF,
@@ -222,8 +224,9 @@ pub enum Move {
     B2 = 16,
     B3 = 17, // Back face turns
 }
-impl Move {
-    pub fn to_string(&self) -> String {
+
+impl Display for Move {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let (face, count) = match self {
             Move::U1 => ("U", 1),
             Move::U2 => ("U", 2),
@@ -244,15 +247,16 @@ impl Move {
             Move::B2 => ("B", 2),
             Move::B3 => ("B", 3),
         };
-
         match count {
-            1 => face.to_string(),
-            2 => format!("{}2", face),
-            3 => format!("{}'", face),
+            1 => write!(f, "{}", face),
+            2 => write!(f, "{}2", face),
+            3 => write!(f, "{}'", face),
             _ => unreachable!(),
         }
     }
+}
 
+impl Move {
     pub fn from_id(id: usize) -> Self {
         match id {
             0 => Move::U1,
@@ -346,30 +350,6 @@ impl Move {
             Move::B1 => "B1",
             Move::B2 => "B2",
             Move::B3 => "B3",
-        }
-    }
-    /// Returns the inverse of a move.
-    pub fn invert(self) -> Self {
-        use Move::*;
-        match self {
-            U1 => U3,
-            U2 => U2,
-            U3 => U1,
-            R1 => R3,
-            R2 => R2,
-            R3 => R1,
-            F1 => F3,
-            F2 => F2,
-            F3 => F1,
-            D1 => D3,
-            D2 => D2,
-            D3 => D1,
-            L1 => L3,
-            L2 => L2,
-            L3 => L1,
-            B1 => B3,
-            B2 => B2,
-            B3 => B1,
         }
     }
 

@@ -1,5 +1,7 @@
 use super::color::Color;
 
+type MoveFn = fn(&mut RubiksCube);
+
 // Define main data structure for the cube
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct RubiksCube {
@@ -27,7 +29,7 @@ impl RubiksCube {
         }
     }
 
-    pub fn all_moves(&mut self) -> Vec<(&'static str, fn(&mut Self))> {
+    pub fn all_moves(&mut self) -> Vec<(&'static str, MoveFn)> {
         vec![
             ("U", RubiksCube::u_clockwise),
             ("U'", RubiksCube::u_counterclockwise),
@@ -392,5 +394,4 @@ impl RubiksCube {
         self.faces[3][5] = temp[0][3];
         self.faces[3][8] = temp[0][0];
     }
-
 }

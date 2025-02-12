@@ -1,23 +1,24 @@
 // This file contains information on the camera setting
 use crate::ui::app::CubeSettings;
 
-use bevy::input::mouse::{MouseScrollUnit, MouseWheel, MouseMotion};
+use bevy::input::mouse::{MouseMotion, MouseScrollUnit, MouseWheel};
 use bevy::prelude::*;
 use bevy_egui::EguiContexts;
 use std::f32::consts::TAU;
 
-
-pub fn spawn_camera(
-    mut commands: Commands,
-    cube_settings: Res<CubeSettings>,
-) {
+pub fn spawn_camera(mut commands: Commands, cube_settings: Res<CubeSettings>) {
     /*
     This function sets up the initial position of the camera
      */
     //camera
     commands.spawn((
-            Camera3d::default(),
-            Transform::from_xyz(cube_settings.camera_x, cube_settings.camera_y, cube_settings.camera_z).looking_at(Vec3::ZERO, Vec3::Y),
+        Camera3d::default(),
+        Transform::from_xyz(
+            cube_settings.camera_x,
+            cube_settings.camera_y,
+            cube_settings.camera_z,
+        )
+        .looking_at(Vec3::ZERO, Vec3::Y),
     ));
 }
 
@@ -100,42 +101,42 @@ pub fn move_camera(
         return;
     }
 
-    if buttons.pressed(MouseButton::Left) {
-        if recorder.piece.is_none() || recorder.start_pos.is_none() {
-            // println!("move camera");
-            for motion in motion_evr.read() {
-                // motion.delta.x Sliding the mouse left is negative, sliding right is positive
-                // motion.delta.y When the mouse slides up, it is negative, when it slides down, it is positive.
-                for mut transform in &mut q_camera {
-                    // println!("camera translation: {}, motion.delta: {}", transform.translation, motion.delta);
-                    if motion.delta.x.abs() > 0.001 {
-                        // For horizontal rotation, the camera only needs to rotate around the y-axis
-                        let max = transform
-                            .translation
-                            .x
-                            .abs()
-                            .max(transform.translation.y.abs())
-                            .max(transform.translation.z.abs());
-                        let quat = Quat::from_euler(
-                            EulerRot::XYZ,
-                            0.0,
-                            0.0002 * -motion.delta.x * max * TAU, // Multiplying by max is to maintain the same rate as sliding up and down
-                            0.0,
-                        );
-                        transform.rotate_around(Vec3::ZERO, quat);
-                        // transform.rotate_around(Vec3::new(cube_settings.cube_x, cube_settings.cube_y, cube_settings.cube_z), quat);
-                    }
-                    if motion.delta.y.abs() > 0.001 {
-                        // Vertical rotation requires rotation around the x-axis and z-axis at the same time, and the rotation angle is inversely proportional to the angle with the coordinate axis.
-                        let quat = Quat::from_euler(
-                            EulerRot::XYZ,
-                            0.0002 * -motion.delta.y * transform.translation.z * TAU,
-                            0.0,
-                            0.0002 * motion.delta.y * transform.translation.x * TAU,
-                        );
-                        transform.rotate_around(Vec3::ZERO, quat);
-                        // transform.rotate_around(Vec3::new(cube_settings.cube_x, cube_settings.cube_y, cube_settings.cube_z), quat);
-                    }
+    if buttons.pressed(MouseButton::Left)
+        && (recorder.piece.is_none() || recorder.start_pos.is_none())
+    {
+        // println!("move camera");
+        for motion in motion_evr.read() {
+            // motion.delta.x Sliding the mouse left is negative, sliding right is positive
+            // motion.delta.y When the mouse slides up, it is negative, when it slides down, it is positive.
+            for mut transform in &mut q_camera {
+                // println!("camera translation: {}, motion.delta: {}", transform.translation, motion.delta);
+                if motion.delta.x.abs() > 0.001 {
+                    // For horizontal rotation, the camera only needs to rotate around the y-axis
+                    let max = transform
+                        .translation
+                        .x
+                        .abs()
+                        .max(transform.translation.y.abs())
+                        .max(transform.translation.z.abs());
+                    let quat = Quat::from_euler(
+                        EulerRot::XYZ,
+                        0.0,
+                        0.0002 * -motion.delta.x * max * TAU, // Multiplying by max is to maintain the same rate as sliding up and down
+                        0.0,
+                    );
+                    transform.rotate_around(Vec3::ZERO, quat);
+                    // transform.rotate_around(Vec3::new(cube_settings.cube_x, cube_settings.cube_y, cube_settings.cube_z), quat);
+                }
+                if motion.delta.y.abs() > 0.001 {
+                    // Vertical rotation requires rotation around the x-axis and z-axis at the same time, and the rotation angle is inversely proportional to the angle with the coordinate axis.
+                    let quat = Quat::from_euler(
+                        EulerRot::XYZ,
+                        0.0002 * -motion.delta.y * transform.translation.z * TAU,
+                        0.0,
+                        0.0002 * motion.delta.y * transform.translation.x * TAU,
+                    );
+                    transform.rotate_around(Vec3::ZERO, quat);
+                    // transform.rotate_around(Vec3::new(cube_settings.cube_x, cube_settings.cube_y, cube_settings.cube_z), quat);
                 }
             }
         }
@@ -146,7 +147,7 @@ pub fn move_camera(
 pub fn pan_camera_with_keys(
     keyboard_input: Res<ButtonInput<KeyCode>>,
     cube_settings: ResMut<CubeSettings>,
-    mut query: Query<&mut Transform, With<Camera>>
+    mut query: Query<&mut Transform, With<Camera>>,
 ) {
     for mut transform in query.iter_mut() {
         // left arrow
@@ -169,6 +170,5 @@ pub fn pan_camera_with_keys(
             transform.translation.z -= cube_settings.pan_speed;
             transform.translation.x -= cube_settings.pan_speed;
         }
-
     }
 }
